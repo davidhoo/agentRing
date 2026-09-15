@@ -22,8 +22,6 @@
   <img alt="CI" src="https://img.shields.io/github/actions/workflow/status/haorui-lab/agentRing/ci.yml?branch=main&label=CI" />
 </p>
 
-Display name: **Agent Ring** · Repo: `agentRing` · Binary: `AgentRing.app`
-
 ## Download
 
 1. Open [Latest Release](https://github.com/haorui-lab/agentRing/releases/latest)
@@ -33,17 +31,9 @@ Display name: **Agent Ring** · Repo: `agentRing` · Binary: `AgentRing.app`
 
 > Public builds are ad-hoc signed and not Apple-notarized yet. Developer ID + notarization can be added later.
 
-## Screenshots
-
-| Menu bar popover | General settings | Auth settings |
-| --- | --- | --- |
-| ![popover placeholder](AgentRing/Resources/Assets.xcassets/AppIcon.appiconset/128.png) | ![settings placeholder](AgentRing/Resources/Assets.xcassets/AppIcon.appiconset/128.png) | ![auth placeholder](AgentRing/Resources/Assets.xcassets/AppIcon.appiconset/128.png) |
-
-Add real captures under [`docs/screenshots/`](docs/screenshots/README.md) and update the table. Placeholders use the app icon only.
-
 ## Features
 
-- **Three providers, one glance**: Codex / Cursor / Antigravity rings
+- **AI usage aggregation**: glanceable menu bar rings; currently supports: Codex, Cursor, and Antigravity
 - **Native settings feel**: sidebar + segmented auth
 - **Follows the system**: appearance and clock; UI languages: Simplified Chinese / English
 - **Multi-account**: login, switch, aliases; Antigravity uses local credential discovery

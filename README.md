@@ -22,8 +22,6 @@
   <img alt="CI" src="https://img.shields.io/github/actions/workflow/status/haorui-lab/agentRing/ci.yml?branch=main&label=CI" />
 </p>
 
-正式名称：**Agent Ring** · 仓库：`agentRing` · 产物：`AgentRing.app`
-
 ## 下载
 
 1. 打开 [Latest Release](https://github.com/haorui-lab/agentRing/releases/latest)
@@ -33,17 +31,9 @@
 
 > 当前公开发布包为 ad-hoc 签名，尚未 Apple 公证。接入 Developer ID 并完成公证后，此步骤将不再需要。
 
-## 截图
-
-| 菜单栏用量 | 通用设置 | 认证设置 |
-| --- | --- | --- |
-| ![popover placeholder](AgentRing/Resources/Assets.xcassets/AppIcon.appiconset/128.png) | ![settings placeholder](AgentRing/Resources/Assets.xcassets/AppIcon.appiconset/128.png) | ![auth placeholder](AgentRing/Resources/Assets.xcassets/AppIcon.appiconset/128.png) |
-
-请将实拍图放入 [`docs/screenshots/`](docs/screenshots/README.md) 并更新上表链接。占位图仅为 App 图标。
-
 ## 功能
 
-- **三家额度一网打尽**：Codex / Cursor / Antigravity 同屏圆环
+- **AI 编程助手额度聚合监控**：菜单栏同屏圆环监视，当前支持：Codex、Cursor、Antigravity
 - **原生设置质感**：侧边栏 + 分段认证页
 - **跟随系统**：深浅色、时间格式；界面语言为简体中文 / English
 - **多账户**：登录、切换、别名；Antigravity 使用本机凭证探测
