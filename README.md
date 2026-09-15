@@ -24,16 +24,14 @@
 
 正式名称：**Agent Ring** · 仓库：`agentRing` · 产物：`AgentRing.app`
 
-## 下载（普通用户）
+## 下载
 
 1. 打开 [Latest Release](https://github.com/haorui-lab/agentRing/releases/latest)
 2. 下载 `AgentRing-*-macos.zip`
-3. 解压，把 `AgentRing.app` 拖进「应用程序」
+3. 解压，将 `AgentRing.app` 拖入「应用程序」
 4. 若系统提示无法验证开发者：右键 App → **打开** → **仍要打开**
 
-> 当前公开发布包是 ad-hoc 签名，**还没做 Apple 公证**。这不是偷懒文案，是现阶段真实状态。接上 Developer ID + 公证后，这一步会消失。
-
-还没有 Release？先按下面「本地启动」用 Xcode 跑，或等打上 `v*` 标签后由 GitHub Actions 自动出包。
+> 当前公开发布包为 ad-hoc 签名，尚未 Apple 公证。接入 Developer ID 并完成公证后，此步骤将不再需要。
 
 ## 截图
 
@@ -41,20 +39,20 @@
 | --- | --- | --- |
 | ![popover placeholder](AgentRing/Resources/Assets.xcassets/AppIcon.appiconset/128.png) | ![settings placeholder](AgentRing/Resources/Assets.xcassets/AppIcon.appiconset/128.png) | ![auth placeholder](AgentRing/Resources/Assets.xcassets/AppIcon.appiconset/128.png) |
 
-请把实拍图放到 [`docs/screenshots/`](docs/screenshots/README.md)，再替换上表链接。没有真图之前，这里只用 App 图标占位——**不会拿假界面糊弄人**。
+请将实拍图放入 [`docs/screenshots/`](docs/screenshots/README.md) 并更新上表链接。占位图仅为 App 图标。
 
-## 功能亮点
+## 功能
 
 - **三家额度一网打尽**：Codex / Cursor / Antigravity 同屏圆环
-- **原生设置质感**：侧边栏 + 分段认证页，跟系统设置一个味儿
-- **完全跟随系统**：深浅色、时间格式跟 macOS；语言仅简体中文 / English
-- **多账号**：登录、切换、别名；Antigravity 走本机凭证探测
-- **智能刷新**：用量在动就勤刷，闲下来就放慢
-- **极简入口**：数据面板 `…` 直接进设置，不堆二级菜单
+- **原生设置质感**：侧边栏 + 分段认证页
+- **跟随系统**：深浅色、时间格式；界面语言为简体中文 / English
+- **多账户**：登录、切换、别名；Antigravity 使用本机凭证探测
+- **智能刷新**：用量变化时加快，空闲时放慢
+- **极简入口**：数据面板 `…` 直接进入设置
 
-## 本地如何启动一个新的
+## 从源码构建
 
-### 方法 A：Xcode（推荐）
+**要求**：macOS 13+、Xcode 15+
 
 ```bash
 git clone https://github.com/haorui-lab/agentRing.git
@@ -62,12 +60,9 @@ cd agentRing
 open AgentRing.xcodeproj
 ```
 
-1. 上方 scheme 选 **AgentRing**
-2. 按 `⌘R` 运行
-3. 看菜单栏右侧出现圆环
-4. 若已有旧进程在跑，先退出旧的，避免俩实例打架
+在 Xcode 中选择 scheme **AgentRing**，按 `⌘R` 运行。应用图标将出现在菜单栏。
 
-### 方法 B：命令行
+命令行构建：
 
 ```bash
 xcodebuild -project AgentRing.xcodeproj -scheme AgentRing \
@@ -75,35 +70,12 @@ xcodebuild -project AgentRing.xcodeproj -scheme AgentRing \
   && open ./build-temp/Build/Products/Debug/AgentRing.app
 ```
 
-`build-temp/` 已被 `.gitignore` 忽略，别提交上去。
-
-## 推到 GitHub 之后如何自动打包
-
-仓库已带 GitHub Actions：
-
-| 工作流 | 触发 | 干什么 |
-| --- | --- | --- |
-| [`.github/workflows/ci.yml`](.github/workflows/ci.yml) | push / PR 到 `main` | 云端编译，证明能过构建 |
-| [`.github/workflows/release.yml`](.github/workflows/release.yml) | 推送 `v*` 标签 | 编译 Release → 打 zip → 挂到 Releases |
-
-发版示例：
-
-```bash
-git tag v0.1.0
-git push origin v0.1.0
-```
-
-然后到 Actions 看流水线，完成后去 [Releases](https://github.com/haorui-lab/agentRing/releases) 下载。
-
-也可在 Actions 里手动跑 **Release** 工作流（`workflow_dispatch`）做试打包。
-
 ## 系统要求
 
 - macOS 13.0+
-- 开发构建：Xcode 15+（建议当前正式版）
 - Apple Silicon 或 Intel
 
-## 开源协议与致谢
+## 开源协议
 
 [MIT License](LICENSE)
 
@@ -111,5 +83,5 @@ git push origin v0.1.0
 
 ## 说明
 
-- Bundle ID 仍为 `app.agentsring.AgentsRing`，避免已有钥匙串账号失效；对外显示名始终是 **Agent Ring**。
-- `build/`、DerivedData、本地工具目录不进仓库。
+- Bundle ID 为 `app.agentsring.AgentsRing`，用于兼容已有钥匙串账号；对外显示名为 **Agent Ring**。
+- 维护者发布流程见 [`docs/RELEASING.md`](docs/RELEASING.md)。

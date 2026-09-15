@@ -24,16 +24,14 @@
 
 Display name: **Agent Ring** · Repo: `agentRing` · Binary: `AgentRing.app`
 
-## Download (end users)
+## Download
 
 1. Open [Latest Release](https://github.com/haorui-lab/agentRing/releases/latest)
 2. Download `AgentRing-*-macos.zip`
 3. Unzip and drag `AgentRing.app` into Applications
 4. If macOS blocks it: right-click → **Open** → **Open Anyway**
 
-> Public builds are **ad-hoc signed**, not Apple-notarized yet. That is intentional honesty for this stage. Developer ID + notarization can be added later.
-
-No release yet? Use the local run steps below, or push a `v*` tag and let GitHub Actions publish one.
+> Public builds are ad-hoc signed and not Apple-notarized yet. Developer ID + notarization can be added later.
 
 ## Screenshots
 
@@ -41,20 +39,20 @@ No release yet? Use the local run steps below, or push a `v*` tag and let GitHub
 | --- | --- | --- |
 | ![popover placeholder](AgentRing/Resources/Assets.xcassets/AppIcon.appiconset/128.png) | ![settings placeholder](AgentRing/Resources/Assets.xcassets/AppIcon.appiconset/128.png) | ![auth placeholder](AgentRing/Resources/Assets.xcassets/AppIcon.appiconset/128.png) |
 
-Drop real captures into [`docs/screenshots/`](docs/screenshots/README.md) and update the table. Until then we only show the app icon — no fake UI mockups.
+Add real captures under [`docs/screenshots/`](docs/screenshots/README.md) and update the table. Placeholders use the app icon only.
 
-## Highlights
+## Features
 
 - **Three providers, one glance**: Codex / Cursor / Antigravity rings
-- **Native settings feel**: sidebar + segmented auth, System Settings vibe
+- **Native settings feel**: sidebar + segmented auth
 - **Follows the system**: appearance and clock; UI languages: Simplified Chinese / English
 - **Multi-account**: login, switch, aliases; Antigravity uses local credential discovery
 - **Smart refresh**: faster when usage moves, slower when idle
 - **Short path**: popover `…` opens Settings directly
 
-## Run locally
+## Building from Source
 
-### Option A: Xcode
+**Requires**: macOS 13+, Xcode 15+
 
 ```bash
 git clone https://github.com/haorui-lab/agentRing.git
@@ -62,9 +60,9 @@ cd agentRing
 open AgentRing.xcodeproj
 ```
 
-Select scheme **AgentRing**, press `⌘R`. Quit any older instance first.
+Select scheme **AgentRing**, press `⌘R`. The app icon appears in the menu bar.
 
-### Option B: CLI
+CLI build:
 
 ```bash
 xcodebuild -project AgentRing.xcodeproj -scheme AgentRing \
@@ -72,22 +70,9 @@ xcodebuild -project AgentRing.xcodeproj -scheme AgentRing \
   && open ./build-temp/Build/Products/Debug/AgentRing.app
 ```
 
-## Automatic packaging on GitHub
-
-| Workflow | Trigger | What it does |
-| --- | --- | --- |
-| [`ci.yml`](.github/workflows/ci.yml) | push / PR to `main` | Cloud build check |
-| [`release.yml`](.github/workflows/release.yml) | push `v*` tag | Release zip on GitHub Releases |
-
-```bash
-git tag v0.1.0
-git push origin v0.1.0
-```
-
 ## Requirements
 
 - macOS 13.0+
-- Xcode 15+ for development builds
 - Apple Silicon or Intel
 
 ## License
@@ -96,5 +81,5 @@ git push origin v0.1.0
 
 ## Notes
 
-- Bundle ID stays `app.agentsring.AgentsRing` for Keychain continuity; the display name is always **Agent Ring**.
-- Local build folders are gitignored.
+- Bundle ID is `app.agentsring.AgentsRing` for Keychain continuity; display name is **Agent Ring**.
+- Maintainer release process: [`docs/RELEASING.md`](docs/RELEASING.md).
