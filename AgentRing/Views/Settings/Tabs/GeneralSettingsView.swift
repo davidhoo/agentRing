@@ -37,7 +37,7 @@ struct GeneralSettingsView: View {
     private var limitsCard: some View {
         SettingCard(
             icon: "rectangle.3.group",
-            iconColor: .purple,
+            iconColor: .secondary,
             title: L.DisplayOptions.title,
             hint: settings.displayMode == .smart ? L.DisplayOptions.smartDisplayDescription : L.DisplayOptions.customDisplayDescription
         ) {
@@ -110,7 +110,7 @@ struct GeneralSettingsView: View {
     private var refreshCard: some View {
         SettingCard(
             icon: "clock.arrow.trianglehead.2.counterclockwise.rotate.90",
-            iconColor: .green,
+            iconColor: .secondary,
             title: L.SettingsGeneral.refreshSection,
             hint: settings.refreshMode == .smart ? L.SettingsGeneral.refreshHintSmart : L.SettingsGeneral.refreshHintFixed
         ) {
@@ -139,7 +139,7 @@ struct GeneralSettingsView: View {
     private var notificationCard: some View {
         SettingCard(
             icon: "bell.badge",
-            iconColor: .red,
+            iconColor: .secondary,
             title: L.SettingsNotification.section,
             hint: L.SettingsNotification.hint
         ) {
@@ -162,7 +162,7 @@ struct GeneralSettingsView: View {
     private var launchCard: some View {
         SettingCard(
             icon: "power",
-            iconColor: launchStatusColor,
+            iconColor: .secondary,
             title: L.SettingsGeneral.launchSection,
             hint: statusText
         ) {
@@ -190,7 +190,7 @@ struct GeneralSettingsView: View {
     private var resetCard: some View {
         SettingCard(
             icon: "arrow.counterclockwise",
-            iconColor: .orange,
+            iconColor: .secondary,
             title: L.SettingsGeneral.resetSection,
             hint: L.SettingsGeneral.resetHint
         ) {

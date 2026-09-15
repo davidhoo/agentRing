@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-    Static Info.plist for the agentsRing app target.
+    Static Info.plist for the Agent Ring app target.
 
     Switched from Xcode's auto-generated Info.plist (GENERATE_INFOPLIST_FILE = YES)
     to this static file because third-party keys like SUFeedURL, SUPublicEDKey,

@@ -17,8 +17,8 @@
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "8873E4CE2E9F61C700ACFF5C"
                BuildableName = "AgentRing.app"
-               BlueprintName = "AgentsRing"
-               ReferencedContainer = "container:AgentsRing.xcodeproj">
+               BlueprintName = "AgentRing"
+               ReferencedContainer = "container:AgentRing.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -46,8 +46,8 @@
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "8873E4CE2E9F61C700ACFF5C"
             BuildableName = "AgentRing.app"
-            BlueprintName = "AgentsRing"
-            ReferencedContainer = "container:AgentsRing.xcodeproj">
+            BlueprintName = "AgentRing"
+            ReferencedContainer = "container:AgentRing.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </LaunchAction>
@@ -63,8 +63,8 @@
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "8873E4CE2E9F61C700ACFF5C"
             BuildableName = "AgentRing.app"
-            BlueprintName = "AgentsRing"
-            ReferencedContainer = "container:AgentsRing.xcodeproj">
+            BlueprintName = "AgentRing"
+            ReferencedContainer = "container:AgentRing.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </ProfileAction>

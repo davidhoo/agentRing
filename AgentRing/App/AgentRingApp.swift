@@ -7,9 +7,9 @@ import SwiftUI
 import Combine
 import Sparkle
 
-/// agentsRing 应用主入口
+/// Agent Ring 应用主入口
 @main
-struct AgentsRingApp: App {
+struct AgentRingApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
 
     var body: some Scene {

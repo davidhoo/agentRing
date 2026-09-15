@@ -15,9 +15,9 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		8873E4D12E9F61C700ACFF5C /* AgentsRing */ = {
+		8873E4D12E9F61C700ACFF5C /* AgentRing */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			path = AgentsRing;
+			path = AgentRing;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -37,7 +37,7 @@
 		8873E4C62E9F61C700ACFF5C = {
 			isa = PBXGroup;
 			children = (
-				8873E4D12E9F61C700ACFF5C /* AgentsRing */,
+				8873E4D12E9F61C700ACFF5C /* AgentRing */,
 				8873E4D02E9F61C700ACFF5C /* Products */,
 			);
 			sourceTree = "<group>";
@@ -53,9 +53,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		8873E4CE2E9F61C700ACFF5C /* AgentsRing */ = {
+		8873E4CE2E9F61C700ACFF5C /* AgentRing */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 8873E4DA2E9F61C800ACFF5C /* Build configuration list for PBXNativeTarget "AgentsRing" */;
+			buildConfigurationList = 8873E4DA2E9F61C800ACFF5C /* Build configuration list for PBXNativeTarget "AgentRing" */;
 			buildPhases = (
 				8873E4CB2E9F61C700ACFF5C /* Sources */,
 				8873E4CC2E9F61C700ACFF5C /* Frameworks */,
@@ -66,9 +66,9 @@
 			dependencies = (
 			);
 			fileSystemSynchronizedGroups = (
-				8873E4D12E9F61C700ACFF5C /* AgentsRing */,
+				8873E4D12E9F61C700ACFF5C /* AgentRing */,
 			);
-			name = AgentsRing;
+			name = AgentRing;
 			packageProductDependencies = (
 				5A8B7E5022F0099000ACFF5C /* Sparkle */,
 			);
@@ -92,7 +92,7 @@
 					};
 				};
 			};
-			buildConfigurationList = 8873E4CA2E9F61C700ACFF5C /* Build configuration list for PBXProject "AgentsRing" */;
+			buildConfigurationList = 8873E4CA2E9F61C700ACFF5C /* Build configuration list for PBXProject "AgentRing" */;
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
@@ -110,7 +110,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				8873E4CE2E9F61C700ACFF5C /* AgentsRing */,
+				8873E4CE2E9F61C700ACFF5C /* AgentRing */,
 			);
 		};
 /* End PBXProject section */
@@ -262,7 +262,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CLANG_ENABLE_MODULES = YES;
-				CODE_SIGN_ENTITLEMENTS = Config/AgentsRing.entitlements;
+				CODE_SIGN_ENTITLEMENTS = Config/AgentRing.entitlements;
 				CODE_SIGN_IDENTITY = "-";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
@@ -311,7 +311,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CLANG_ENABLE_MODULES = YES;
-				CODE_SIGN_ENTITLEMENTS = Config/AgentsRing.entitlements;
+				CODE_SIGN_ENTITLEMENTS = Config/AgentRing.entitlements;
 				CODE_SIGN_IDENTITY = "-";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
@@ -357,7 +357,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		8873E4CA2E9F61C700ACFF5C /* Build configuration list for PBXProject "AgentsRing" */ = {
+		8873E4CA2E9F61C700ACFF5C /* Build configuration list for PBXProject "AgentRing" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				8873E4D82E9F61C800ACFF5C /* Debug */,
@@ -366,7 +366,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		8873E4DA2E9F61C800ACFF5C /* Build configuration list for PBXNativeTarget "AgentsRing" */ = {
+		8873E4DA2E9F61C800ACFF5C /* Build configuration list for PBXNativeTarget "AgentRing" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				8873E4DB2E9F61C800ACFF5C /* Debug */,

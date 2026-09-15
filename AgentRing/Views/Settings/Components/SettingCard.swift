@@ -1,6 +1,6 @@
 //
 //  SettingCard.swift
-//  CodexRings
+//  Agent Ring
 //
 
 import SwiftUI
@@ -16,7 +16,7 @@ struct SettingCard<Content: View>: View {
 
     init(
         icon: String,
-        iconColor: Color = .blue,
+        iconColor: Color = .secondary,
         title: String,
         hint: String = "",
         @ViewBuilder content: () -> Content
@@ -30,7 +30,6 @@ struct SettingCard<Content: View>: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            // 标题行：图标 + 标题
             HStack(spacing: 8) {
                 Image(systemName: icon)
                     .font(.title3)
@@ -44,13 +43,11 @@ struct SettingCard<Content: View>: View {
 
             Divider()
 
-            // 内容区域
             VStack(alignment: .leading, spacing: 8) {
                 content
             }
             .padding(.leading, 32)
 
-            // 提示信息
             if !hint.isEmpty {
                 HStack(alignment: .top, spacing: 4) {
                     Image(systemName: "lightbulb.fill")
