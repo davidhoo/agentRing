@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 60;
+	objectVersion = 77;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -105,7 +105,7 @@
 			packageReferences = (
 				5A8B7E5012F0099000ACFF5C /* XCRemoteSwiftPackageReference "Sparkle" */,
 			);
-			preferredProjectObjectVersion = 60;
+			preferredProjectObjectVersion = 77;
 			productRefGroup = 8873E4D02E9F61C700ACFF5C /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
