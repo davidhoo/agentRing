@@ -289,12 +289,12 @@ final class MenuBarIconRenderer {
         context.imageInterpolation = .high
 
         let center = NSPoint(x: pointSize.width / 2, y: pointSize.height / 2)
-        // 菜单栏适中厚度：比细线清晰，又不过分抢戏
+        // 菜单栏适中厚度：微调更纤细精致，契合 macOS 现代菜单栏原生质感
         let hasInner = innerPercentage != nil
-        let outerLineWidth: CGFloat = hasInner ? 3.6 : 4.0
-        let innerLineWidth: CGFloat = 3.1
-        let ringGap: CGFloat = 1.05
-        let outerRadius = (pointSize.width / 2) - outerLineWidth / 2 - 0.55
+        let outerLineWidth: CGFloat = hasInner ? 2.8 : 3.0
+        let innerLineWidth: CGFloat = 2.3
+        let ringGap: CGFloat = 1.15
+        let outerRadius = (pointSize.width / 2) - outerLineWidth / 2 - 0.6
         let innerRadius = outerRadius - outerLineWidth / 2 - ringGap - innerLineWidth / 2
 
         drawActivityRing(
