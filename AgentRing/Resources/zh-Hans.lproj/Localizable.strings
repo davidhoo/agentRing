@@ -236,8 +236,8 @@
 "antigravity_secondary_limit" = "Antigravity 7天限制";
 
 // MARK: - Detail Row Labels
-"detail_row.five_hour_limit" = "5小时限制";
-"detail_row.seven_day_limit" = "7天限制";
+"detail_row.five_hour_limit" = "5小时";
+"detail_row.seven_day_limit" = "7天";
 "detail_row.opus_weekly_limit" = "Opus 7天限制";
 "detail_row.sonnet_weekly_limit" = "Sonnet 7天限制";
 "detail_row.extra_usage" = "额外用量";
@@ -322,10 +322,10 @@
 
 // MARK: - Usage Data - Compact Remaining Formats
 "usage_data.compact_resetting_soon" = "即将重置";
-"usage_data.compact_remaining_minutes" = "还剩 %d分钟";
-"usage_data.compact_remaining_hours" = "还剩 %d小时%d分钟";
-"usage_data.compact_remaining_days" = "还剩 %d天%d小时";
-"usage_data.compact_remaining_days_with_minutes" = "还剩 %d天%d小时%d分";
+"usage_data.compact_remaining_minutes" = "%d分钟";
+"usage_data.compact_remaining_hours" = "%d小时 %d分";
+"usage_data.compact_remaining_days" = "%d天 %d小时";
+"usage_data.compact_remaining_days_with_minutes" = "%d天 %d小时";
 
 // MARK: - Extra Usage
 "extra_usage.not_enabled" = "未启用";
@@ -383,7 +383,7 @@
 "notification.section" = "通知";
 "notification.hint" = "用量达到阈值或重置时发送通知";
 "notification.enable" = "启用用量通知";
-"notification.description" = "当任意限制达到 90%%，或用量重置时，发送系统通知。";
+"notification.description" = "当任意限制达到 90%，或用量重置时，发送系统通知。";
 "notification.warning_title" = "用量警告";
 "notification.warning_body" = "%@ 已达到 %d%% 用量";
 "notification.reset_title" = "用量已重置";

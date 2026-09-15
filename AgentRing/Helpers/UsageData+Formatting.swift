@@ -37,6 +37,7 @@ extension UsageLimitData {
         return TimeFormatHelper.formatDateMinute(resetsAt, dateTemplate: "MMMd")
     }
 
+    /// 剩余时间展示：不足 1 天保留分；≥1 天只保留天+小时，避免挤扁左侧标签
     var formattedCompactRemainingWithMinutes: String {
         guard let resetsAt else { return "-" }
         let resetsIn = resetsAt.timeIntervalSinceNow
@@ -55,6 +56,6 @@ extension UsageLimitData {
 
         let days = totalHours / 24
         let hours = totalHours % 24
-        return L.UsageData.compactRemainingDaysWithMinutes(days, hours, remainingMinutes)
+        return L.UsageData.compactRemainingDays(days, hours)
     }
 }

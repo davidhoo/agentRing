@@ -195,8 +195,9 @@ struct UnifiedLimitRow: View {
 
             // 日期/额度优先完整显示，避免被左侧名称挤成省略号
             Text(displayValue)
-                .font(.system(size: 12))
+                .font(.system(size: 12).monospacedDigit())
                 .fontWeight(.medium)
+                .foregroundColor(.secondary)
                 .lineLimit(1)
                 .fixedSize(horizontal: true, vertical: false)
                 .layoutPriority(1)

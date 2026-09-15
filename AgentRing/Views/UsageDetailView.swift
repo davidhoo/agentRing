@@ -108,9 +108,14 @@ struct UsageDetailView: View {
         let baseHeight: CGFloat = 190
         let rowHeight: CGFloat = 26
         let spacing: CGFloat = 5
-        let activeCount = activeDisplayTypes.count
+        // 多列并排时高度应按「最高那一列」算，不能把各 provider 行数加总（会撑出大片空白）
+        let maxRowsPerProvider = [
+            UserSettings.shared.getActiveCodexDisplayTypes(codexUsageData: codexUsageData).count,
+            UserSettings.shared.getActiveCursorDisplayTypes(cursorUsageData: cursorUsageData).count,
+            UserSettings.shared.getActiveAntigravityDisplayTypes(antigravityUsageData: antigravityUsageData).count
+        ].max() ?? 0
         let hasAnyData = codexUsageData != nil || cursorUsageData != nil || antigravityUsageData != nil
-        let rowCount = activeCount == 1 ? 2 : max(activeCount, hasAnyData ? 1 : 0)
+        let rowCount = max(maxRowsPerProvider, hasAnyData || !activeProviders.isEmpty ? 1 : 0)
         let textHeight = CGFloat(rowCount) * rowHeight + CGFloat(max(0, rowCount - 1)) * spacing
         return baseHeight + textHeight
     }

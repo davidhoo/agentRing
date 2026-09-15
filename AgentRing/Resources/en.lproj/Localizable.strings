@@ -236,8 +236,8 @@
 "antigravity_secondary_limit" = "Antigravity 7-Day Limit";
 
 // MARK: - Detail Row Labels
-"detail_row.five_hour_limit" = "5-Hour Limit";
-"detail_row.seven_day_limit" = "7-Day Limit";
+"detail_row.five_hour_limit" = "5h";
+"detail_row.seven_day_limit" = "7d";
 "detail_row.opus_weekly_limit" = "7D Opus Limit";
 "detail_row.sonnet_weekly_limit" = "7D Sonnet Limit";
 "detail_row.extra_usage" = "Extra Usage";
@@ -324,10 +324,10 @@
 
 // MARK: - Usage Data - Compact Remaining Formats
 "usage_data.compact_resetting_soon" = "Resetting soon";
-"usage_data.compact_remaining_minutes" = "%dm left";
-"usage_data.compact_remaining_hours" = "%dh %dm left";
-"usage_data.compact_remaining_days" = "%dd %dh left";
-"usage_data.compact_remaining_days_with_minutes" = "%dd %dh %dm left";
+"usage_data.compact_remaining_minutes" = "%dm";
+"usage_data.compact_remaining_hours" = "%dh %dm";
+"usage_data.compact_remaining_days" = "%dd %dh";
+"usage_data.compact_remaining_days_with_minutes" = "%dd %dh";
 
 // MARK: - Extra Usage
 "extra_usage.not_enabled" = "Not Enabled";
@@ -385,7 +385,7 @@
 "notification.section" = "Notifications";
 "notification.hint" = "Get notified when usage reaches threshold or resets";
 "notification.enable" = "Enable Usage Notifications";
-"notification.description" = "Receive a notification when any limit reaches 90%%, or when usage resets.";
+"notification.description" = "Receive a notification when any limit reaches 90%, or when usage resets.";
 "notification.warning_title" = "Usage Warning";
 "notification.warning_body" = "%@ has reached %d%% usage";
 "notification.reset_title" = "Usage Reset";

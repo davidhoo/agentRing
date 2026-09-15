@@ -332,11 +332,12 @@ final class MenuBarManager: ObservableObject {
 
             settingsWindow = NSWindow(contentViewController: hostingController)
             settingsWindow?.title = L.Window.settingsTitle
+            // 宽度锁死（对齐系统设置）；高度仍可微调
             settingsWindow?.styleMask = [.titled, .closable, .miniaturizable, .resizable]
-            settingsWindow?.minSize = NSSize(width: 720, height: 560)
-            settingsWindow?.maxSize = NSSize(width: 960, height: 1200)
+            settingsWindow?.minSize = NSSize(width: 760, height: 560)
+            settingsWindow?.maxSize = NSSize(width: 760, height: 1200)
             settingsWindow?.setContentSize(NSSize(width: 760, height: 680))
-            settingsWindow?.setFrameAutosaveName("AgentRing.SettingsWindow.v3")
+            settingsWindow?.setFrameAutosaveName("AgentRing.SettingsWindow.v4")
 
             if let windowCloseObserver {
                 NotificationCenter.default.removeObserver(windowCloseObserver)

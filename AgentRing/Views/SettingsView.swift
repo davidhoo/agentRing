@@ -39,8 +39,8 @@ struct SettingsView: View {
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
-        .frame(minWidth: 520, minHeight: 440)
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .frame(minWidth: 760, minHeight: 440)
+        .frame(maxWidth: 760, maxHeight: .infinity)
         .id(localization.updateTrigger)
     }
 
