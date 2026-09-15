@@ -20,6 +20,7 @@ class KeychainManager {
         if let bundleID = Bundle.main.bundleIdentifier {
             service = bundleID
         }
+        migrateFromLegacyServiceIfNeeded()
         #endif
     }
     
@@ -30,7 +31,10 @@ class KeychainManager {
     private let debugKeyPrefix = "DEBUG_"
     #else
     /// Keychain 服务标识符（自动从 Bundle 获取）
-    private var service: String = "app.agentsring.AgentsRing"
+    private var service: String = "app.agentring.AgentRing"
+    /// 旧版 Bundle ID 对应的 Keychain service，用于一次性迁移
+    private let legacyService = "app.agentsring.AgentsRing"
+    private let migratableAccountKeys = ["accounts", "accounts_codex", "accounts_cursor"]
     #endif
     
     // MARK: - 账户列表存储（v2.1.0 多账户支持）
@@ -241,6 +245,24 @@ class KeychainManager {
 
     #if !DEBUG
     // MARK: - 通用 Keychain 操作（仅 Release 模式）
+
+    /// 将旧 Bundle ID 下的凭据迁到当前 service，避免改名后要重新登录
+    private func migrateFromLegacyServiceIfNeeded() {
+        guard service != legacyService else { return }
+
+        for key in migratableAccountKeys {
+            if load(key: key, service: service) != nil {
+                continue
+            }
+            guard let legacyValue = load(key: key, service: legacyService) else {
+                continue
+            }
+            if save(key: key, value: legacyValue, service: service) {
+                _ = delete(key: key, service: legacyService)
+                Logger.keychain.info("已从旧 Keychain service 迁移: \(key)")
+            }
+        }
+    }
     
     /// 保存数据到 Keychain
     /// - Parameters:
@@ -248,6 +270,10 @@ class KeychainManager {
     ///   - value: 要保存的值
     /// - Returns: 是否保存成功
     private func save(key: String, value: String) -> Bool {
+        save(key: key, value: value, service: service)
+    }
+
+    private func save(key: String, value: String, service: String) -> Bool {
         guard let data = value.data(using: .utf8) else {
             return false
         }
@@ -278,6 +304,10 @@ class KeychainManager {
     /// - Parameter key: 键名
     /// - Returns: 读取的值，如果不存在返回 nil
     private func load(key: String) -> String? {
+        load(key: key, service: service)
+    }
+
+    private func load(key: String, service: String) -> String? {
         let query: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,
             kSecAttrService as String: service,
@@ -304,6 +334,10 @@ class KeychainManager {
     /// - Parameter key: 键名
     /// - Returns: 是否删除成功
     private func delete(key: String) -> Bool {
+        delete(key: key, service: service)
+    }
+
+    private func delete(key: String, service: String) -> Bool {
         let query: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,
             kSecAttrService as String: service,

@@ -15,7 +15,7 @@ import OSLog
 final class OAuthCallbackServer {
 
     private var listener: NWListener?
-    private let queue = DispatchQueue(label: "app.agentsring.AgentsRing.oauth.callback")
+    private let queue = DispatchQueue(label: "app.agentring.AgentRing.oauth.callback")
     private(set) var port: UInt16 = 0
     private var onCallback: (([String: String]) -> Void)?
     private var didDeliver = false

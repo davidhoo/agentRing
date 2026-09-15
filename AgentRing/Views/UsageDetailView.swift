@@ -75,6 +75,14 @@ struct UsageDetailView: View {
         orderedProviders.isEmpty ? activeProviders : orderedProviders
     }
 
+    private var providerColumnWidth: CGFloat {
+        switch max(activeProviders.count, 1) {
+        case 3: return 240
+        case 2: return 248
+        default: return 270
+        }
+    }
+
     private var showsMultipleProviders: Bool {
         activeProviders.count > 1
     }
@@ -234,13 +242,20 @@ struct UsageDetailView: View {
         if showsMultipleProviders {
             HStack(alignment: .top, spacing: 8) {
                 ForEach(Array(displayProviders.enumerated()), id: \.element) { index, provider in
-                    if index > 0 {
+                    let isDragging = draggedProvider == provider
+                    let hasVisiblePredecessor = displayProviders
+                        .prefix(index)
+                        .contains { $0 != draggedProvider }
+
+                    if hasVisiblePredecessor && !isDragging {
                         ProviderDivider(height: providerDividerHeight)
                     }
-                    draggableProviderColumn(for: provider)
+
+                    draggableProviderColumn(for: provider, isDragging: isDragging)
                 }
             }
             .padding(.horizontal, 8)
+            .animation(.easeInOut(duration: 0.22), value: draggedProvider)
         } else if let singleProvider = activeProviders.first {
             providerColumn(for: singleProvider)
         } else if let errorMessage {
@@ -272,13 +287,21 @@ struct UsageDetailView: View {
         .frame(maxWidth: .infinity, alignment: .top)
     }
 
-    private func draggableProviderColumn(for provider: ProviderType) -> some View {
+    /// 拖起后原位收成宽度 0，旁边卡片补位；跟着鼠标的是半透明预览，目标位不再插占位卡片。
+    private func draggableProviderColumn(for provider: ProviderType, isDragging: Bool) -> some View {
         providerColumn(for: provider)
-            .opacity(draggedProvider == provider ? 0.35 : 1.0)
+            .opacity(isDragging ? 0 : 1)
+            .frame(maxWidth: isDragging ? 0 : .infinity)
+            .clipped()
             .contentShape(Rectangle())
             .onDrag {
                 draggedProvider = provider
                 return NSItemProvider(object: provider.rawValue as NSString)
+            } preview: {
+                providerColumn(for: provider)
+                    .frame(width: providerColumnWidth)
+                    .opacity(0.45)
+                    .padding(8)
             }
             .onDrop(
                 of: [UTType.text.identifier],
@@ -537,20 +560,7 @@ private struct ProviderDropDelegate: DropDelegate {
     @Binding var draggedItem: ProviderType?
 
     func dropEntered(info: DropInfo) {
-        if providers.isEmpty {
-            providers = UserSettings.shared.orderedActiveProviders()
-        }
-        guard let currentDragged = draggedItem,
-              currentDragged != item,
-              let from = providers.firstIndex(of: currentDragged),
-              let to = providers.firstIndex(of: item) else { return }
-
-        if providers[to] != currentDragged {
-            withAnimation(.easeInOut(duration: 0.25)) {
-                providers.move(fromOffsets: IndexSet(integer: from), toOffset: to > from ? to + 1 : to)
-                UserSettings.shared.setProviderOrder(providers)
-            }
-        }
+        // 悬停时不把被拖卡片插进目标位，避免半透明占位；只在松开时落位。
     }
 
     func dropUpdated(info: DropInfo) -> DropProposal? {
@@ -558,8 +568,22 @@ private struct ProviderDropDelegate: DropDelegate {
     }
 
     func performDrop(info: DropInfo) -> Bool {
-        draggedItem = nil
-        UserSettings.shared.setProviderOrder(providers)
+        defer { draggedItem = nil }
+
+        if providers.isEmpty {
+            providers = UserSettings.shared.orderedActiveProviders()
+        }
+        guard let currentDragged = draggedItem,
+              currentDragged != item,
+              let from = providers.firstIndex(of: currentDragged),
+              let to = providers.firstIndex(of: item) else {
+            return false
+        }
+
+        withAnimation(.easeInOut(duration: 0.22)) {
+            providers.move(fromOffsets: IndexSet(integer: from), toOffset: to > from ? to + 1 : to)
+            UserSettings.shared.setProviderOrder(providers)
+        }
         return true
     }
 }

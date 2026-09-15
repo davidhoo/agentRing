@@ -14,7 +14,6 @@ struct GeneralSettingsView: View {
     var body: some View {
         SettingsPaneScroll {
             VStack(spacing: 16) {
-                limitsCard
                 refreshCard
                 notificationCard
                 launchCard
@@ -31,79 +30,6 @@ struct GeneralSettingsView: View {
             Button(L.Update.okButton, role: .cancel) {}
         } message: {
             Text(errorMessage)
-        }
-    }
-
-    private var limitsCard: some View {
-        SettingCard(
-            icon: "rectangle.3.group",
-            iconColor: .secondary,
-            title: L.DisplayOptions.title,
-            hint: settings.displayMode == .smart ? L.DisplayOptions.smartDisplayDescription : L.DisplayOptions.customDisplayDescription
-        ) {
-            VStack(alignment: .leading, spacing: 16) {
-                VStack(alignment: .leading, spacing: 8) {
-                    Text(L.DisplayOptions.displayModeLabel)
-                        .font(.subheadline)
-                        .fontWeight(.medium)
-                        .foregroundColor(.secondary)
-
-                    radioGroup(selection: $settings.displayMode, values: DisplayMode.allCases) { $0.localizedName }
-                }
-
-                if settings.displayMode == .custom {
-                    Divider()
-
-                    VStack(alignment: .leading, spacing: 12) {
-                        Text(L.DisplayOptions.selectLimitTypes)
-                            .font(.subheadline)
-                            .fontWeight(.medium)
-                            .foregroundColor(.secondary)
-
-                        VStack(alignment: .leading, spacing: 8) {
-                            ForEach(LimitType.allCases, id: \.self) { limitType in
-                                LimitTypeCheckbox(
-                                    limitType: limitType,
-                                    isSelected: settings.customDisplayTypes.contains(limitType),
-                                    isDisabled: shouldDisableCheckbox(for: limitType)
-                                ) {
-                                    toggleLimitType(limitType)
-                                }
-                            }
-                        }
-                        .padding(.leading, 20)
-
-                        if hasOnlyOneCircularIcon {
-                            hintRow(L.DisplayOptions.circularIconConstraint, color: .blue)
-                        }
-
-                        if !settings.canUseColoredTheme() {
-                            hintRow(
-                                L.DisplayOptions.coloredThemeUnavailable,
-                                color: .orange,
-                                textColor: .orange,
-                                systemImage: "exclamationmark.circle.fill"
-                            )
-                        }
-
-                        Divider()
-
-                        VStack(alignment: .leading, spacing: 6) {
-                            Toggle(isOn: $settings.customDisplayMenuBarOnly) {
-                                Text(L.DisplayOptions.menuBarOnlyToggle)
-                                    .font(.subheadline)
-                            }
-                            .toggleStyle(.checkbox)
-
-                            Text(L.DisplayOptions.menuBarOnlyDescription)
-                                .font(.caption)
-                                .foregroundColor(.secondary)
-                                .fixedSize(horizontal: false, vertical: true)
-                                .padding(.leading, 20)
-                        }
-                    }
-                }
-            }
         }
     }
 
@@ -201,11 +127,6 @@ struct GeneralSettingsView: View {
         }
     }
 
-    private var hasOnlyOneCircularIcon: Bool {
-        let selectedCircular = settings.customDisplayTypes.filter(\.isCircular)
-        return selectedCircular.count == 1
-    }
-
     private var launchStatusColor: Color {
         switch settings.launchAtLoginStatus {
         case .enabled: return .green
@@ -223,27 +144,6 @@ struct GeneralSettingsView: View {
         case .notRegistered: return L.LaunchAtLogin.statusDisabled
         case .notFound: return L.LaunchAtLogin.statusNotFound
         @unknown default: return L.LaunchAtLogin.statusDisabled
-        }
-    }
-
-    private func shouldDisableCheckbox(for limitType: LimitType) -> Bool {
-        #if DEBUG
-        if settings.debugShowAllShapesIndividually {
-            return false
-        }
-        #endif
-
-        guard limitType.isCircular else { return false }
-        let selectedCircular = settings.customDisplayTypes.filter(\.isCircular)
-        return selectedCircular.count == 1 && selectedCircular.contains(limitType)
-    }
-
-    private func toggleLimitType(_ limitType: LimitType) {
-        if settings.customDisplayTypes.contains(limitType) {
-            guard !shouldDisableCheckbox(for: limitType) else { return }
-            settings.customDisplayTypes.remove(limitType)
-        } else {
-            settings.customDisplayTypes.insert(limitType)
         }
     }
 
@@ -284,79 +184,4 @@ struct GeneralSettingsView: View {
         }
     }
 
-    private func hintRow(_ text: String, color: Color, textColor: Color = .secondary, systemImage: String = "info.circle.fill") -> some View {
-        HStack(alignment: .top, spacing: 4) {
-            Image(systemName: systemImage)
-                .font(.caption2)
-                .foregroundColor(color)
-            Text(text)
-                .font(.caption)
-                .foregroundColor(textColor)
-                .fixedSize(horizontal: false, vertical: true)
-        }
-        .padding(.leading, 20)
-    }
-
-}
-
-struct LimitTypeCheckbox: View {
-    let limitType: LimitType
-    let isSelected: Bool
-    let isDisabled: Bool
-    let onToggle: () -> Void
-
-    var body: some View {
-        Button(action: {
-            if !isDisabled {
-                onToggle()
-            }
-        }) {
-            HStack(spacing: 8) {
-                Image(systemName: isSelected ? "checkmark.square.fill" : "square")
-                    .foregroundColor(isDisabled ? .secondary : (isSelected ? .blue : .primary))
-                    .font(.body)
-
-                HStack(spacing: 6) {
-                    limitTypeIcon
-                        .font(.caption)
-
-                    Text(limitType.displayName)
-                        .foregroundColor(isDisabled ? .secondary : .primary)
-                }
-            }
-        }
-        .buttonStyle(.plain)
-        .disabled(isDisabled)
-        .help(isDisabled ? L.DisplayOptions.circularIconConstraint : "")
-        .fixedSize()
-    }
-
-    private var limitTypeIcon: some View {
-        Canvas { context, canvasSize in
-            let lineWidth: CGFloat = 1.8
-            let path = IconShapePaths.pathForLimitType(limitType, in: CGRect(origin: .zero, size: canvasSize))
-            context.stroke(path, with: .color(Color.gray.opacity(0.3)), lineWidth: lineWidth)
-            context.stroke(path, with: .color(iconColor(for: limitType)), lineWidth: lineWidth)
-        }
-        .frame(width: 14, height: 14)
-    }
-
-    private func iconColor(for type: LimitType) -> Color {
-        switch type {
-        case .codexPrimary:
-            return UsageColorScheme.codexPrimaryColorSwiftUI(0)
-        case .codexSecondary:
-            return UsageColorScheme.codexSecondaryColorSwiftUI(0)
-        case .codexExtraUsage:
-            return UsageColorScheme.codexExtraUsageColorSwiftUI(0)
-        case .cursorIncluded:
-            return UsageColorScheme.cursorIncludedColorSwiftUI(0)
-        case .cursorOnDemand:
-            return UsageColorScheme.cursorOnDemandColorSwiftUI(0)
-        case .antigravityPrimary:
-            return UsageColorScheme.antigravityPrimaryColorSwiftUI(0)
-        case .antigravitySecondary:
-            return UsageColorScheme.antigravitySecondaryColorSwiftUI(0)
-        }
-    }
 }

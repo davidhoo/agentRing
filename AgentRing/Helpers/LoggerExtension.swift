@@ -8,7 +8,7 @@ import OSLog
 
 extension Logger {
     /// 应用的统一 subsystem 标识符
-    private static var subsystem = Bundle.main.bundleIdentifier ?? "app.agentsring.AgentsRing"
+    private static var subsystem = Bundle.main.bundleIdentifier ?? "app.agentring.AgentRing"
 
     /// 菜单栏管理器日志
     /// 用于记录菜单栏、刷新、更新检查等相关操作

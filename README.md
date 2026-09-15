@@ -73,5 +73,5 @@ xcodebuild -project AgentRing.xcodeproj -scheme AgentRing \
 
 ## 说明
 
-- Bundle ID 为 `app.agentsring.AgentsRing`，用于兼容已有钥匙串账号；对外显示名为 **Agent Ring**。
+- Bundle ID 为 `app.agentring.AgentRing`；首次升级会从旧 ID `app.agentsring.AgentsRing` 迁移钥匙串与偏好设置。对外显示名为 **Agent Ring**。
 - 维护者发布流程见 [`docs/RELEASING.md`](docs/RELEASING.md)。

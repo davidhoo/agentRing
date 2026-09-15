@@ -525,6 +525,8 @@ final class UserSettings: ObservableObject {
     }
 
     private init() {
+        LegacyBundleMigration.runIfNeeded()
+
         let loadedCodexAccounts = keychain.loadCodexAccounts() ?? keychain.loadAccounts() ?? []
         let mappedCodexAccounts = loadedCodexAccounts.map { account in
             var copy = account
@@ -566,7 +568,11 @@ final class UserSettings: ObservableObject {
         timeFormatPreference = .system
         defaults.set(AppAppearance.system.rawValue, forKey: "appearance")
         defaults.set(TimeFormatPreference.system.rawValue, forKey: "timeFormatPreference")
-        displayMode = defaults.string(forKey: "displayMode").flatMap(DisplayMode.init(rawValue:)) ?? .smart
+        // 显示模式固定为智能，设置页已移除手动切换
+        displayMode = .smart
+        defaults.set(DisplayMode.smart.rawValue, forKey: "displayMode")
+        customDisplayMenuBarOnly = false
+        defaults.set(false, forKey: "customDisplayMenuBarOnly")
 
         if let rawValues = defaults.array(forKey: "customDisplayTypes") as? [String] {
             let migrated = rawValues.compactMap(LimitType.init(rawValue:))
@@ -574,8 +580,6 @@ final class UserSettings: ObservableObject {
         } else {
             customDisplayTypes = [.codexPrimary, .codexSecondary]
         }
-
-        customDisplayMenuBarOnly = defaults.bool(forKey: "customDisplayMenuBarOnly")
 
         if let rawValues = defaults.array(forKey: "providerOrder") as? [String] {
             let saved = rawValues.compactMap(ProviderType.init(rawValue:))

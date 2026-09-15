@@ -71,5 +71,5 @@ xcodebuild -project AgentRing.xcodeproj -scheme AgentRing \
 
 ## Notes
 
-- Bundle ID is `app.agentsring.AgentsRing` for Keychain continuity; display name is **Agent Ring**.
+- Bundle ID is `app.agentring.AgentRing`. On first upgrade, credentials and preferences migrate from the legacy ID `app.agentsring.AgentsRing`. Display name is **Agent Ring**.
 - Maintainer release process: [`docs/RELEASING.md`](docs/RELEASING.md).
