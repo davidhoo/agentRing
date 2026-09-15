@@ -1,0 +1,461 @@
+//
+//  MenuBarIconRenderer.swift
+//  agentsRing
+//
+
+import SwiftUI
+import AppKit
+
+final class MenuBarIconRenderer {
+    private let settings: UserSettings
+    private let providerBrandIconSize: CGFloat = 16
+    private let metricIconSize: CGFloat = 22
+    private let extraIconSize: CGFloat = 18
+
+    init(settings: UserSettings = .shared) {
+        self.settings = settings
+    }
+
+    func createIcon(
+        codexUsageData: CodexUsageData?,
+        cursorUsageData: CursorUsageData?,
+        antigravityUsageData: AntigravityUsageData? = nil,
+        hasUpdate: Bool,
+        button: NSStatusBarButton?
+    ) -> NSImage {
+        let isMonochrome = settings.iconStyleMode == .monochrome
+        let icon = buildIcon(
+            codexUsageData: codexUsageData,
+            cursorUsageData: cursorUsageData,
+            antigravityUsageData: antigravityUsageData,
+            isMonochrome: isMonochrome,
+            button: button
+        )
+        return hasUpdate ? addBadgeToImage(icon) : icon
+    }
+
+    private func buildIcon(
+        codexUsageData: CodexUsageData?,
+        cursorUsageData: CursorUsageData?,
+        antigravityUsageData: AntigravityUsageData? = nil,
+        isMonochrome: Bool,
+        button: NSStatusBarButton?
+    ) -> NSImage {
+        let showingCodex = codexUsageData != nil
+        let showingCursor = cursorUsageData != nil
+        let showingAntigravity = antigravityUsageData != nil
+        let activeProvidersCount = (showingCodex ? 1 : 0) + (showingCursor ? 1 : 0) + (showingAntigravity ? 1 : 0)
+        let showingMultiple = activeProvidersCount > 1
+
+        switch settings.iconDisplayMode {
+        case .none:
+            return createMenuBarDividerIcon(isMonochrome: isMonochrome)
+
+        case .iconOnly:
+            var brands: [NSImage] = []
+            if showingCodex || settings.hasValidCodexCredentials,
+               let brand = createProviderBrandIcon(provider: .codex, isMonochrome: isMonochrome, size: providerBrandIconSize) {
+                brands.append(brand)
+            }
+            if showingCursor || settings.hasValidCursorCredentials,
+               let brand = createProviderBrandIcon(provider: .cursor, isMonochrome: isMonochrome, size: providerBrandIconSize) {
+                brands.append(brand)
+            }
+            if showingAntigravity || settings.hasValidAntigravityCredentials,
+               let brand = createProviderBrandIcon(provider: .antigravity, isMonochrome: isMonochrome, size: providerBrandIconSize) {
+                brands.append(brand)
+            }
+            guard !brands.isEmpty else {
+                return createProviderBrandIcon(provider: .antigravity, isMonochrome: isMonochrome, size: providerBrandIconSize)
+                    ?? createSimpleCircleIcon()
+            }
+            return brands.count == 1 ? brands[0] : combineIcons(brands, spacing: 3, height: providerBrandIconSize)
+
+        case .percentageOnly, .both:
+            var icons: [NSImage] = []
+            let includeBrand = settings.iconDisplayMode == .both && !showingMultiple
+
+            if includeBrand, showingCodex,
+               let brand = createProviderBrandIcon(provider: .codex, isMonochrome: isMonochrome, size: providerBrandIconSize) {
+                icons.append(brand)
+            }
+            if let codexUsageData {
+                // 菜单栏用量环始终走系统模板色（浅色栏黑 / 深色栏白）
+                icons.append(contentsOf: buildCodexCluster(
+                    codex: codexUsageData,
+                    isMonochrome: true,
+                    button: button
+                ))
+            }
+
+            if includeBrand, showingCursor,
+               let brand = createProviderBrandIcon(provider: .cursor, isMonochrome: isMonochrome, size: providerBrandIconSize) {
+                icons.append(brand)
+            }
+            if let cursorUsageData {
+                icons.append(contentsOf: buildCursorCluster(
+                    cursor: cursorUsageData,
+                    isMonochrome: true,
+                    button: button
+                ))
+            }
+
+            if includeBrand, showingAntigravity,
+               let brand = createProviderBrandIcon(provider: .antigravity, isMonochrome: isMonochrome, size: providerBrandIconSize) {
+                icons.append(brand)
+            }
+            if let antigravityUsageData {
+                icons.append(contentsOf: buildAntigravityCluster(
+                    antigravity: antigravityUsageData,
+                    isMonochrome: true,
+                    button: button
+                ))
+            }
+
+            guard !icons.isEmpty else {
+                return createEmptyPlaceholder(isMonochrome: true, button: button)
+            }
+            let combined = icons.count == 1 ? icons[0] : combineIcons(icons, spacing: 4, height: metricIconSize)
+            combined.isTemplate = icons.allSatisfy(\.isTemplate)
+            return combined
+        }
+    }
+
+    private func buildCodexCluster(
+        codex: CodexUsageData,
+        isMonochrome: Bool,
+        button: NSStatusBarButton?
+    ) -> [NSImage] {
+        let types = settings.getActiveCodexDisplayTypes(codexUsageData: codex, forMenuBar: true)
+        let showPlaceholder = settings.displayMode == .custom
+        var icons: [NSImage] = []
+
+        let outerType: LimitType? = {
+            if types.contains(.codexPrimary) { return .codexPrimary }
+            if types.contains(.codexSecondary) { return .codexSecondary }
+            return nil
+        }()
+
+        if let outerType {
+            let outerPercentage: Double? = {
+                switch outerType {
+                case .codexPrimary: return codex.primary?.percentage ?? (showPlaceholder ? 0 : nil)
+                case .codexSecondary: return codex.secondary?.percentage ?? (showPlaceholder ? 0 : nil)
+                default: return nil
+                }
+            }()
+
+            if let outerPercentage {
+                let innerPercentage: Double? = {
+                    guard outerType == .codexPrimary, types.contains(.codexSecondary) else { return nil }
+                    return codex.secondary?.percentage ?? (showPlaceholder ? 0 : nil)
+                }()
+
+                icons.append(createConcentricRingImage(
+                    outerPercentage: UsageRingDisplay.remainingPercentage(usedPercentage: outerPercentage),
+                    innerPercentage: innerPercentage.map {
+                        UsageRingDisplay.remainingPercentage(usedPercentage: $0)
+                    },
+                    outerColor: .black,
+                    innerColor: NSColor.black.withAlphaComponent(0.78),
+                    isMonochrome: true,
+                    button: button
+                ))
+            }
+        }
+
+        if types.contains(.codexExtraUsage) {
+            let percentage: Double?
+            if let extra = codex.extraUsage, extra.enabled {
+                percentage = extra.percentage
+            } else if showPlaceholder {
+                percentage = 0
+            } else {
+                percentage = nil
+            }
+            if let percentage {
+                icons.append(ShapeIconRenderer.createHexagonIcon(
+                    percentage: UsageRingDisplay.remainingPercentage(usedPercentage: percentage),
+                    isMonochrome: true,
+                    button: button,
+                    removeBackground: false,
+                    colorOverride: nil
+                ))
+            }
+        }
+
+        return icons
+    }
+
+    private func buildCursorCluster(
+        cursor: CursorUsageData,
+        isMonochrome: Bool,
+        button: NSStatusBarButton?
+    ) -> [NSImage] {
+        let types = settings.getActiveCursorDisplayTypes(cursorUsageData: cursor, forMenuBar: true)
+        let showPlaceholder = settings.displayMode == .custom
+        guard types.contains(.cursorIncluded) || types.contains(.cursorOnDemand) else { return [] }
+
+        let outerPercentage = cursor.included?.percentage ?? (showPlaceholder && types.contains(.cursorIncluded) ? 0 : nil)
+        let resolvedOuter = outerPercentage ?? (types.contains(.cursorOnDemand) ? cursor.onDemand?.percentage : nil)
+        guard let resolvedOuter else { return [] }
+
+        let innerPercentage: Double? = {
+            guard types.contains(.cursorIncluded), types.contains(.cursorOnDemand) else { return nil }
+            return cursor.onDemand?.percentage ?? (showPlaceholder ? 0 : nil)
+        }()
+
+        return [
+            createConcentricRingImage(
+                outerPercentage: UsageRingDisplay.remainingPercentage(usedPercentage: resolvedOuter),
+                innerPercentage: innerPercentage.map {
+                    UsageRingDisplay.remainingPercentage(usedPercentage: $0)
+                },
+                outerColor: .black,
+                innerColor: NSColor.black.withAlphaComponent(0.78),
+                isMonochrome: true,
+                button: button
+            )
+        ]
+    }
+
+    private func buildAntigravityCluster(
+        antigravity: AntigravityUsageData,
+        isMonochrome: Bool,
+        button: NSStatusBarButton?
+    ) -> [NSImage] {
+        let types = settings.getActiveAntigravityDisplayTypes(antigravityUsageData: antigravity, forMenuBar: true)
+        let showPlaceholder = settings.displayMode == .custom
+        guard types.contains(.antigravityPrimary) || types.contains(.antigravitySecondary) else { return [] }
+
+        let outerPercentage = antigravity.primary?.percentage ?? (showPlaceholder && types.contains(.antigravityPrimary) ? 0 : nil)
+        let resolvedOuter = outerPercentage ?? (types.contains(.antigravitySecondary) ? antigravity.secondary?.percentage : nil)
+        guard let resolvedOuter else { return [] }
+
+        let innerPercentage: Double? = {
+            guard types.contains(.antigravityPrimary), types.contains(.antigravitySecondary) else { return nil }
+            return antigravity.secondary?.percentage ?? (showPlaceholder ? 0 : nil)
+        }()
+
+        return [
+            createConcentricRingImage(
+                outerPercentage: UsageRingDisplay.remainingPercentage(usedPercentage: resolvedOuter),
+                innerPercentage: innerPercentage.map {
+                    UsageRingDisplay.remainingPercentage(usedPercentage: $0)
+                },
+                outerColor: .black,
+                innerColor: NSColor.black.withAlphaComponent(0.78),
+                isMonochrome: true,
+                button: button
+            )
+        ]
+    }
+
+    private func createConcentricRingImage(
+        outerPercentage: Double,
+        innerPercentage: Double?,
+        outerColor: NSColor,
+        innerColor: NSColor,
+        isMonochrome: Bool,
+        button: NSStatusBarButton?
+    ) -> NSImage {
+        let pointSize = NSSize(width: metricIconSize, height: metricIconSize)
+        let scale = max(NSScreen.main?.backingScaleFactor ?? 2.0, 2.0)
+        let pixels = NSSize(width: pointSize.width * scale, height: pointSize.height * scale)
+
+        guard let rep = NSBitmapImageRep(
+            bitmapDataPlanes: nil,
+            pixelsWide: Int(pixels.width),
+            pixelsHigh: Int(pixels.height),
+            bitsPerSample: 8,
+            samplesPerPixel: 4,
+            hasAlpha: true,
+            isPlanar: false,
+            colorSpaceName: .deviceRGB,
+            bytesPerRow: 0,
+            bitsPerPixel: 0
+        ) else {
+            return NSImage(size: pointSize)
+        }
+        rep.size = pointSize
+
+        NSGraphicsContext.saveGraphicsState()
+        guard let context = NSGraphicsContext(bitmapImageRep: rep) else {
+            NSGraphicsContext.restoreGraphicsState()
+            return NSImage(size: pointSize)
+        }
+        NSGraphicsContext.current = context
+        context.shouldAntialias = true
+        context.imageInterpolation = .high
+
+        let center = NSPoint(x: pointSize.width / 2, y: pointSize.height / 2)
+        // 菜单栏适中厚度：比细线清晰，又不过分抢戏
+        let hasInner = innerPercentage != nil
+        let outerLineWidth: CGFloat = hasInner ? 3.6 : 4.0
+        let innerLineWidth: CGFloat = 3.1
+        let ringGap: CGFloat = 1.05
+        let outerRadius = (pointSize.width / 2) - outerLineWidth / 2 - 0.55
+        let innerRadius = outerRadius - outerLineWidth / 2 - ringGap - innerLineWidth / 2
+
+        drawActivityRing(
+            percentage: outerPercentage,
+            center: center,
+            radius: outerRadius,
+            lineWidth: outerLineWidth,
+            color: isMonochrome ? NSColor.black : outerColor
+        )
+
+        if let innerPercentage {
+            drawActivityRing(
+                percentage: innerPercentage,
+                center: center,
+                radius: innerRadius,
+                lineWidth: innerLineWidth,
+                color: isMonochrome ? NSColor.black.withAlphaComponent(0.78) : innerColor
+            )
+        }
+
+        NSGraphicsContext.restoreGraphicsState()
+
+        let image = NSImage(size: pointSize)
+        image.addRepresentation(rep)
+        // 模板图随菜单栏自动变黑/白，和其他系统图标一致
+        image.isTemplate = isMonochrome
+        return image
+    }
+
+    /// 健身环：只画已用进度弧，未用区间不展示底轨
+    private func drawActivityRing(
+        percentage: Double,
+        center: NSPoint,
+        radius: CGFloat,
+        lineWidth: CGFloat,
+        color: NSColor
+    ) {
+        drawRingProgress(
+            percentage: percentage,
+            center: center,
+            radius: radius,
+            lineWidth: lineWidth,
+            color: color
+        )
+    }
+
+    private func drawRingProgress(
+        percentage: Double,
+        center: NSPoint,
+        radius: CGFloat,
+        lineWidth: CGFloat,
+        color: NSColor
+    ) {
+        let clamped = min(100, max(0, percentage))
+        guard clamped > 0.5 else { return }
+
+        let baseAngle = CGFloat(clamped) / 100 * 360
+        let circumference = 2 * CGFloat.pi * radius
+        let capAngle = (lineWidth / circumference) * 360
+
+        let progressAngle: CGFloat
+        let startAngle: CGFloat
+        if clamped >= 100 {
+            progressAngle = 360
+            startAngle = 90
+        } else {
+            progressAngle = max(capAngle * 0.4, baseAngle - capAngle * min(1, CGFloat(clamped / 35)))
+            startAngle = 90 - capAngle / 2
+        }
+
+        let path = NSBezierPath()
+        path.appendArc(
+            withCenter: center,
+            radius: radius,
+            startAngle: startAngle,
+            endAngle: startAngle - progressAngle,
+            clockwise: true
+        )
+        path.lineWidth = lineWidth
+        path.lineCapStyle = clamped >= 99.5 ? .butt : .round
+        color.setStroke()
+        path.stroke()
+    }
+
+    private func createProviderBrandIcon(provider: ProviderType, isMonochrome: Bool, size: CGFloat) -> NSImage? {
+        switch provider {
+        case .codex:
+            let iconName = isMonochrome ? "CodexMenuBarTemplate" : "CodexIcon"
+            return ImageHelper.createSquareIcon(named: iconName, size: size, isTemplate: isMonochrome, sourceInset: isMonochrome ? 0 : 2)
+        case .cursor:
+            return ImageHelper.createCursorIcon(size: size, isTemplate: isMonochrome)
+        case .antigravity:
+            return ImageHelper.createAntigravityIcon(size: size, isTemplate: isMonochrome)
+        }
+    }
+
+    private func createEmptyPlaceholder(isMonochrome: Bool, button: NSStatusBarButton?) -> NSImage {
+        createConcentricRingImage(
+            outerPercentage: 0,
+            innerPercentage: nil,
+            outerColor: NSColor.gray,
+            innerColor: NSColor.gray,
+            isMonochrome: isMonochrome,
+            button: button
+        )
+    }
+
+    private func createSimpleCircleIcon() -> NSImage {
+        let size = NSSize(width: 18, height: 18)
+        let image = NSImage(size: size)
+        image.lockFocus()
+        let path = NSBezierPath(ovalIn: NSRect(x: 3, y: 3, width: 12, height: 12))
+        NSColor.labelColor.setStroke()
+        path.lineWidth = 2
+        path.stroke()
+        image.unlockFocus()
+        image.isTemplate = true
+        return image
+    }
+
+    private func addBadgeToImage(_ baseImage: NSImage) -> NSImage {
+        let size = baseImage.size
+        let expandedSize = NSSize(width: size.width + 2.5, height: size.height + 2.5)
+        let badgedImage = NSImage(size: expandedSize)
+
+        badgedImage.lockFocus()
+        baseImage.draw(in: NSRect(origin: .zero, size: size))
+        NSColor.systemRed.setFill()
+        NSBezierPath(ovalIn: NSRect(x: expandedSize.width - 5.5, y: expandedSize.height - 5.5, width: 4, height: 4)).fill()
+        badgedImage.unlockFocus()
+        badgedImage.isTemplate = baseImage.isTemplate
+        return badgedImage
+    }
+
+    private func combineIcons(_ icons: [NSImage], spacing: CGFloat, height: CGFloat) -> NSImage {
+        let totalWidth = icons.reduce(0) { $0 + $1.size.width } + CGFloat(icons.count - 1) * spacing
+        let image = NSImage(size: NSSize(width: totalWidth, height: height))
+        image.lockFocus()
+        var currentX: CGFloat = 0
+        for icon in icons {
+            let y = (height - icon.size.height) / 2
+            icon.draw(at: NSPoint(x: currentX, y: y), from: NSRect(origin: .zero, size: icon.size), operation: .sourceOver, fraction: 1)
+            currentX += icon.size.width + spacing
+        }
+        image.unlockFocus()
+        return image
+    }
+
+    private func createMenuBarDividerIcon(isMonochrome: Bool) -> NSImage {
+        let width: CGFloat = 5
+        let image = NSImage(size: NSSize(width: width, height: extraIconSize))
+        image.lockFocus()
+        let linePath = NSBezierPath(rect: NSRect(x: (width - 1) / 2, y: 1, width: 1, height: extraIconSize - 2))
+        let lineColor = isMonochrome ? NSColor.labelColor : NSColor.secondaryLabelColor
+        NSGradient(colors: [
+            lineColor.withAlphaComponent(0),
+            lineColor.withAlphaComponent(0.55),
+            lineColor.withAlphaComponent(0)
+        ])?.draw(in: linePath, angle: 90)
+        image.unlockFocus()
+        if isMonochrome { image.isTemplate = true }
+        return image
+    }
+}
