@@ -278,10 +278,8 @@ struct UsageDetailView: View {
                 .font(.system(size: 13, weight: .semibold))
                 .foregroundColor(.secondary)
                 .lineLimit(1)
-            Spacer(minLength: 0)
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(.horizontal, 6)
+        .frame(maxWidth: .infinity, alignment: .center)
     }
 
     private func providerTitle(for provider: ProviderType) -> String {
