@@ -105,8 +105,8 @@ struct UsageDetailView: View {
     }
 
     private var contentHeight: CGFloat {
-        // 多厂商时圆环上方多一行标题，底座加高
-        let baseHeight: CGFloat = showsMultipleProviders ? 212 : 190
+        // 多厂商时圆环上方多一行标题，底座加高，保证呼吸感与间距
+        let baseHeight: CGFloat = showsMultipleProviders ? 222 : 190
         let rowHeight: CGFloat = 26
         let spacing: CGFloat = 5
         // 多列并排时高度应按「最高那一列」算，不能把各 provider 行数加总（会撑出大片空白）
@@ -262,7 +262,7 @@ struct UsageDetailView: View {
 
     @ViewBuilder
     private func providerColumn(for provider: ProviderType) -> some View {
-        VStack(spacing: 6) {
+        VStack(spacing: 14) {
             if showsMultipleProviders {
                 providerHeader(for: provider)
             }
@@ -277,6 +277,7 @@ struct UsageDetailView: View {
             .foregroundColor(.secondary)
             .lineLimit(1)
             .frame(maxWidth: .infinity, alignment: .center)
+            .padding(.top, 2)
     }
 
     private func providerTitle(for provider: ProviderType) -> String {

@@ -26,10 +26,25 @@ final class RefreshState: ObservableObject {
     }
 }
 
+private final class SettingsWindowDelegate: NSObject, NSWindowDelegate {
+    func windowWillResize(_ sender: NSWindow, to frameSize: NSSize) -> NSSize {
+        NSSize(width: 760, height: max(560, frameSize.height))
+    }
+
+    func windowShouldZoom(_ window: NSWindow, toFrame newFrame: NSRect) -> Bool {
+        var targetFrame = newFrame
+        targetFrame.size.width = 760
+        targetFrame.origin.x = window.frame.origin.x
+        window.setFrame(targetFrame, display: true, animate: true)
+        return false
+    }
+}
+
 final class MenuBarManager: ObservableObject {
     private let ui = MenuBarUI()
     private let dataManager = DataRefreshManager()
     private var settingsWindow: NSWindow?
+    private let settingsWindowDelegate = SettingsWindowDelegate()
     @ObservedObject private var settings = UserSettings.shared
     private var cancellables = Set<AnyCancellable>()
     private var windowCloseObserver: NSObjectProtocol?
@@ -332,12 +347,15 @@ final class MenuBarManager: ObservableObject {
 
             settingsWindow = NSWindow(contentViewController: hostingController)
             settingsWindow?.title = L.Window.settingsTitle
-            // 宽度锁死（对齐系统设置）；高度仍可微调
+            settingsWindow?.delegate = settingsWindowDelegate
+            settingsWindow?.collectionBehavior = [.fullScreenNone]
+            // 宽度严格锁定 760（对齐 macOS 系统设置，禁止任何方式调整宽度）；高度仍可按需微调
             settingsWindow?.styleMask = [.titled, .closable, .miniaturizable, .resizable]
             settingsWindow?.minSize = NSSize(width: 760, height: 560)
             settingsWindow?.maxSize = NSSize(width: 760, height: 1200)
-            settingsWindow?.setContentSize(NSSize(width: 760, height: 680))
-            settingsWindow?.setFrameAutosaveName("AgentRing.SettingsWindow.v4")
+            settingsWindow?.setContentSize(NSSize(width: 760, height: 640))
+            UserDefaults.standard.removeObject(forKey: "NSWindow Frame AgentRing.SettingsWindow.v4")
+            settingsWindow?.center()
 
             if let windowCloseObserver {
                 NotificationCenter.default.removeObserver(windowCloseObserver)
