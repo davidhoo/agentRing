@@ -49,18 +49,12 @@ struct SettingCard<Content: View>: View {
             .padding(.leading, 32)
 
             if !hint.isEmpty {
-                HStack(alignment: .top, spacing: 4) {
-                    Image(systemName: "lightbulb.fill")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-
-                    Text(hint)
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                        .fixedSize(horizontal: false, vertical: true)
-                }
-                .padding(.leading, 32)
-                .padding(.top, 4)
+                Text(hint)
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .padding(.leading, 32)
+                    .padding(.top, 4)
             }
         }
         .padding()
