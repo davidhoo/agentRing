@@ -17,6 +17,12 @@ jobs:
           sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
           xcodebuild -version
 
+      - name: Resolve package dependencies
+        run: |
+          xcodebuild -resolvePackageDependencies \
+            -project AgentRing.xcodeproj \
+            -scheme AgentRing
+
       - name: Build Debug
         run: |
           set -euo pipefail
