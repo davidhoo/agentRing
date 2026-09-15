@@ -42,6 +42,7 @@
 "usage.cursor_relogin" = "重新登录";
 "usage.antigravity_title" = "Antigravity";
 "usage.antigravity_relogin" = "重新登录";
+"usage.drag_to_reorder" = "拖动调整显示顺序";
 
 // MARK: - Settings - Tabs
 "settings.tab.general" = "通用";

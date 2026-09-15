@@ -4,6 +4,7 @@
 //
 
 import SwiftUI
+import UniformTypeIdentifiers
 
 struct UsageDetailView: View {
     @Binding var codexUsageData: CodexUsageData?
@@ -59,19 +60,19 @@ struct UsageDetailView: View {
     @AppStorage("showRemainingMode") private var savedRemainingMode = true
     @State private var showRemainingMode = true
     @State private var remainingModeAnimationTrigger = 0
+    @State private var orderedProviders: [ProviderType] = []
+    @State private var draggedProvider: ProviderType? = nil
 
     private var activeProviders: [ProviderType] {
-        var providers: [ProviderType] = []
-        if UserSettings.shared.hasValidCodexCredentials || codexUsageData != nil {
-            providers.append(.codex)
-        }
-        if UserSettings.shared.hasValidCursorCredentials || cursorUsageData != nil {
-            providers.append(.cursor)
-        }
-        if UserSettings.shared.hasValidAntigravityCredentials || antigravityUsageData != nil {
-            providers.append(.antigravity)
-        }
-        return providers
+        UserSettings.shared.orderedActiveProviders(
+            codexUsageData: codexUsageData,
+            cursorUsageData: cursorUsageData,
+            antigravityUsageData: antigravityUsageData
+        )
+    }
+
+    private var displayProviders: [ProviderType] {
+        orderedProviders.isEmpty ? activeProviders : orderedProviders
     }
 
     private var showsMultipleProviders: Bool {
@@ -232,11 +233,11 @@ struct UsageDetailView: View {
     private var mainContent: some View {
         if showsMultipleProviders {
             HStack(alignment: .top, spacing: 8) {
-                ForEach(Array(activeProviders.enumerated()), id: \.element) { index, provider in
+                ForEach(Array(displayProviders.enumerated()), id: \.element) { index, provider in
                     if index > 0 {
                         ProviderDivider(height: providerDividerHeight)
                     }
-                    providerColumn(for: provider)
+                    draggableProviderColumn(for: provider)
                 }
             }
             .padding(.horizontal, 8)
@@ -271,6 +272,24 @@ struct UsageDetailView: View {
         .frame(maxWidth: .infinity, alignment: .top)
     }
 
+    private func draggableProviderColumn(for provider: ProviderType) -> some View {
+        providerColumn(for: provider)
+            .opacity(draggedProvider == provider ? 0.35 : 1.0)
+            .contentShape(Rectangle())
+            .onDrag {
+                draggedProvider = provider
+                return NSItemProvider(object: provider.rawValue as NSString)
+            }
+            .onDrop(
+                of: [UTType.text.identifier],
+                delegate: ProviderDropDelegate(
+                    item: provider,
+                    providers: $orderedProviders,
+                    draggedItem: $draggedProvider
+                )
+            )
+    }
+
     private func providerHeader(for provider: ProviderType) -> some View {
         Text(providerTitle(for: provider))
             .font(.system(size: 13, weight: .semibold))
@@ -278,6 +297,7 @@ struct UsageDetailView: View {
             .lineLimit(1)
             .frame(maxWidth: .infinity, alignment: .center)
             .padding(.top, 2)
+            .help(L.Usage.dragToReorder)
     }
 
     private func providerTitle(for provider: ProviderType) -> String {
@@ -430,6 +450,7 @@ struct UsageDetailView: View {
         .animation(.easeInOut(duration: 0.25), value: showAnimationTypeHint)
         .id(localization.updateTrigger)
         .onAppear {
+            orderedProviders = activeProviders
             var transaction = Transaction(animation: nil)
             transaction.disablesAnimations = true
             withTransaction(transaction) {
@@ -452,6 +473,16 @@ struct UsageDetailView: View {
                 }
             }
         }
+        .onChange(of: activeProviders) { newProviders in
+            if orderedProviders != newProviders && draggedProvider == nil {
+                orderedProviders = newProviders
+            }
+        }
+        .onHover { _ in
+            if NSEvent.pressedMouseButtons == 0 && draggedProvider != nil {
+                draggedProvider = nil
+            }
+        }
         .onChange(of: refreshState.isRefreshing) { newValue in
             newValue ? startRotationAnimation() : stopRotationAnimation()
         }
@@ -466,6 +497,7 @@ struct UsageDetailView: View {
             }
         }
         .onDisappear {
+            draggedProvider = nil
             stopRotationAnimation()
             animationTypeHintDismissWorkItem?.cancel()
         }
@@ -496,6 +528,39 @@ struct UsageDetailView: View {
             remainingModeAnimationTrigger += 1
         }
         savedRemainingMode = showRemainingMode
+    }
+}
+
+private struct ProviderDropDelegate: DropDelegate {
+    let item: ProviderType
+    @Binding var providers: [ProviderType]
+    @Binding var draggedItem: ProviderType?
+
+    func dropEntered(info: DropInfo) {
+        if providers.isEmpty {
+            providers = UserSettings.shared.orderedActiveProviders()
+        }
+        guard let currentDragged = draggedItem,
+              currentDragged != item,
+              let from = providers.firstIndex(of: currentDragged),
+              let to = providers.firstIndex(of: item) else { return }
+
+        if providers[to] != currentDragged {
+            withAnimation(.easeInOut(duration: 0.25)) {
+                providers.move(fromOffsets: IndexSet(integer: from), toOffset: to > from ? to + 1 : to)
+                UserSettings.shared.setProviderOrder(providers)
+            }
+        }
+    }
+
+    func dropUpdated(info: DropInfo) -> DropProposal? {
+        DropProposal(operation: .move)
+    }
+
+    func performDrop(info: DropInfo) -> Bool {
+        draggedItem = nil
+        UserSettings.shared.setProviderOrder(providers)
+        return true
     }
 }
 

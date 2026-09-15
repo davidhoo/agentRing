@@ -42,6 +42,7 @@
 "usage.cursor_relogin" = "Sign In Again";
 "usage.antigravity_title" = "Antigravity";
 "usage.antigravity_relogin" = "Sign In Again";
+"usage.drag_to_reorder" = "Drag to reorder";
 
 // MARK: - Settings - Tabs
 "settings.tab.general" = "General";

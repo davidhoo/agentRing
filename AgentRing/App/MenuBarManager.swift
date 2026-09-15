@@ -242,30 +242,25 @@ final class MenuBarManager: ObservableObject {
     }
 
     private func usageDetailContentSize() -> NSSize {
-        let baseHeight: CGFloat = 190
+        let activeProviders = settings.orderedActiveProviders(
+            codexUsageData: codexUsageData,
+            cursorUsageData: cursorUsageData,
+            antigravityUsageData: antigravityUsageData
+        )
+        let activeProvidersCount = activeProviders.count
+        let showsMultiple = activeProvidersCount > 1
+        let baseHeight: CGFloat = showsMultiple ? 222 : 190
         let rowHeight: CGFloat = 26
         let spacing: CGFloat = 5
 
-        let activeProvidersCount = [
-            settings.hasValidCodexCredentials || codexUsageData != nil,
-            settings.hasValidCursorCredentials || cursorUsageData != nil,
-            settings.hasValidAntigravityCredentials || antigravityUsageData != nil
-        ].filter { $0 }.count
-
         let width: CGFloat = activeProvidersCount >= 3 ? 760 : (activeProvidersCount == 2 ? 520 : 290)
-        let activeCount: Int
-        var types: [LimitType] = []
-        if let codexUsageData {
-            types.append(contentsOf: settings.getActiveCodexDisplayTypes(codexUsageData: codexUsageData))
-        }
-        if let cursorUsageData {
-            types.append(contentsOf: settings.getActiveCursorDisplayTypes(cursorUsageData: cursorUsageData))
-        }
-        if let antigravityUsageData {
-            types.append(contentsOf: settings.getActiveAntigravityDisplayTypes(antigravityUsageData: antigravityUsageData))
-        }
-        activeCount = types.count
-        let rowCount = activeCount == 1 ? 2 : max(activeCount, (codexUsageData == nil && cursorUsageData == nil && antigravityUsageData == nil) ? 0 : 1)
+        let maxRowsPerProvider = [
+            settings.getActiveCodexDisplayTypes(codexUsageData: codexUsageData).count,
+            settings.getActiveCursorDisplayTypes(cursorUsageData: cursorUsageData).count,
+            settings.getActiveAntigravityDisplayTypes(antigravityUsageData: antigravityUsageData).count
+        ].max() ?? 0
+        let hasAnyData = codexUsageData != nil || cursorUsageData != nil || antigravityUsageData != nil
+        let rowCount = max(maxRowsPerProvider, hasAnyData || activeProvidersCount > 0 ? 1 : 0)
         let rowsHeight = CGFloat(rowCount) * rowHeight + CGFloat(max(0, rowCount - 1)) * spacing
         return NSSize(width: width, height: baseHeight + rowsHeight)
     }

@@ -84,6 +84,7 @@ enum L {
         static var cursorRelogin: String { localized("usage.cursor_relogin") }
         static var antigravityTitle: String { localized("usage.antigravity_title") }
         static var antigravityRelogin: String { localized("usage.antigravity_relogin") }
+        static var dragToReorder: String { localized("usage.drag_to_reorder") }
     }
     
     // MARK: - Settings Tabs

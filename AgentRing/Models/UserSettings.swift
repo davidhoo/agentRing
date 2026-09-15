@@ -399,6 +399,13 @@ final class UserSettings: ObservableObject {
         }
     }
 
+    @Published var providerOrder: [ProviderType] {
+        didSet {
+            defaults.set(providerOrder.map(\.rawValue), forKey: "providerOrder")
+            NotificationCenter.default.post(name: .settingsChanged, object: nil)
+        }
+    }
+
     var shouldShowCustomPlaceholderInPopover: Bool {
         displayMode == .custom && !customDisplayMenuBarOnly
     }
@@ -570,6 +577,19 @@ final class UserSettings: ObservableObject {
 
         customDisplayMenuBarOnly = defaults.bool(forKey: "customDisplayMenuBarOnly")
 
+        if let rawValues = defaults.array(forKey: "providerOrder") as? [String] {
+            let saved = rawValues.compactMap(ProviderType.init(rawValue:))
+            var result = saved
+            for p in ProviderType.allCases {
+                if !result.contains(p) {
+                    result.append(p)
+                }
+            }
+            providerOrder = result
+        } else {
+            providerOrder = ProviderType.allCases
+        }
+
         if !defaults.bool(forKey: "hasLaunched") {
             isFirstLaunch = true
             defaults.set(true, forKey: "hasLaunched")
@@ -640,10 +660,41 @@ final class UserSettings: ObservableObject {
         language = Self.detectSystemLanguage()
         timeFormatPreference = .system
         displayMode = .smart
+        providerOrder = ProviderType.allCases
         customDisplayTypes = [.codexPrimary, .codexSecondary]
         customDisplayMenuBarOnly = false
         notificationsEnabled = true
         resetSmartMonitoringState()
+    }
+
+    func setProviderOrder(_ newOrder: [ProviderType]) {
+        var updated = newOrder
+        for p in ProviderType.allCases {
+            if !updated.contains(p) {
+                updated.append(p)
+            }
+        }
+        if providerOrder != updated {
+            providerOrder = updated
+        }
+    }
+
+    func orderedActiveProviders(
+        codexUsageData: CodexUsageData? = nil,
+        cursorUsageData: CursorUsageData? = nil,
+        antigravityUsageData: AntigravityUsageData? = nil
+    ) -> [ProviderType] {
+        var active: Set<ProviderType> = []
+        if hasValidCodexCredentials || codexUsageData != nil {
+            active.insert(.codex)
+        }
+        if hasValidCursorCredentials || cursorUsageData != nil {
+            active.insert(.cursor)
+        }
+        if hasValidAntigravityCredentials || antigravityUsageData != nil {
+            active.insert(.antigravity)
+        }
+        return providerOrder.filter { active.contains($0) }
     }
 
     func isValidSessionKey(_ key: String) -> Bool {

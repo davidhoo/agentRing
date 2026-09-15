@@ -44,8 +44,12 @@ final class MenuBarIconRenderer {
         let showingCodex = codexUsageData != nil
         let showingCursor = cursorUsageData != nil
         let showingAntigravity = antigravityUsageData != nil
-        let activeProvidersCount = (showingCodex ? 1 : 0) + (showingCursor ? 1 : 0) + (showingAntigravity ? 1 : 0)
-        let showingMultiple = activeProvidersCount > 1
+        let ordered = settings.orderedActiveProviders(
+            codexUsageData: codexUsageData,
+            cursorUsageData: cursorUsageData,
+            antigravityUsageData: antigravityUsageData
+        )
+        let showingMultiple = ordered.count > 1
 
         switch settings.iconDisplayMode {
         case .none:
@@ -53,17 +57,10 @@ final class MenuBarIconRenderer {
 
         case .iconOnly:
             var brands: [NSImage] = []
-            if showingCodex || settings.hasValidCodexCredentials,
-               let brand = createProviderBrandIcon(provider: .codex, isMonochrome: isMonochrome, size: providerBrandIconSize) {
-                brands.append(brand)
-            }
-            if showingCursor || settings.hasValidCursorCredentials,
-               let brand = createProviderBrandIcon(provider: .cursor, isMonochrome: isMonochrome, size: providerBrandIconSize) {
-                brands.append(brand)
-            }
-            if showingAntigravity || settings.hasValidAntigravityCredentials,
-               let brand = createProviderBrandIcon(provider: .antigravity, isMonochrome: isMonochrome, size: providerBrandIconSize) {
-                brands.append(brand)
+            for provider in ordered {
+                if let brand = createProviderBrandIcon(provider: provider, isMonochrome: isMonochrome, size: providerBrandIconSize) {
+                    brands.append(brand)
+                }
             }
             guard !brands.isEmpty else {
                 return createProviderBrandIcon(provider: .antigravity, isMonochrome: isMonochrome, size: providerBrandIconSize)
@@ -75,41 +72,46 @@ final class MenuBarIconRenderer {
             var icons: [NSImage] = []
             let includeBrand = settings.iconDisplayMode == .both && !showingMultiple
 
-            if includeBrand, showingCodex,
-               let brand = createProviderBrandIcon(provider: .codex, isMonochrome: isMonochrome, size: providerBrandIconSize) {
-                icons.append(brand)
-            }
-            if let codexUsageData {
-                // 菜单栏用量环始终走系统模板色（浅色栏黑 / 深色栏白）
-                icons.append(contentsOf: buildCodexCluster(
-                    codex: codexUsageData,
-                    isMonochrome: true,
-                    button: button
-                ))
-            }
-
-            if includeBrand, showingCursor,
-               let brand = createProviderBrandIcon(provider: .cursor, isMonochrome: isMonochrome, size: providerBrandIconSize) {
-                icons.append(brand)
-            }
-            if let cursorUsageData {
-                icons.append(contentsOf: buildCursorCluster(
-                    cursor: cursorUsageData,
-                    isMonochrome: true,
-                    button: button
-                ))
-            }
-
-            if includeBrand, showingAntigravity,
-               let brand = createProviderBrandIcon(provider: .antigravity, isMonochrome: isMonochrome, size: providerBrandIconSize) {
-                icons.append(brand)
-            }
-            if let antigravityUsageData {
-                icons.append(contentsOf: buildAntigravityCluster(
-                    antigravity: antigravityUsageData,
-                    isMonochrome: true,
-                    button: button
-                ))
+            for provider in ordered {
+                switch provider {
+                case .codex:
+                    if includeBrand, showingCodex,
+                       let brand = createProviderBrandIcon(provider: .codex, isMonochrome: isMonochrome, size: providerBrandIconSize) {
+                        icons.append(brand)
+                    }
+                    if let codexUsageData {
+                        // 菜单栏用量环始终走系统模板色（浅色栏黑 / 深色栏白）
+                        icons.append(contentsOf: buildCodexCluster(
+                            codex: codexUsageData,
+                            isMonochrome: true,
+                            button: button
+                        ))
+                    }
+                case .cursor:
+                    if includeBrand, showingCursor,
+                       let brand = createProviderBrandIcon(provider: .cursor, isMonochrome: isMonochrome, size: providerBrandIconSize) {
+                        icons.append(brand)
+                    }
+                    if let cursorUsageData {
+                        icons.append(contentsOf: buildCursorCluster(
+                            cursor: cursorUsageData,
+                            isMonochrome: true,
+                            button: button
+                        ))
+                    }
+                case .antigravity:
+                    if includeBrand, showingAntigravity,
+                       let brand = createProviderBrandIcon(provider: .antigravity, isMonochrome: isMonochrome, size: providerBrandIconSize) {
+                        icons.append(brand)
+                    }
+                    if let antigravityUsageData {
+                        icons.append(contentsOf: buildAntigravityCluster(
+                            antigravity: antigravityUsageData,
+                            isMonochrome: true,
+                            button: button
+                        ))
+                    }
+                }
             }
 
             guard !icons.isEmpty else {
