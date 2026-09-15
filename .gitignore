@@ -38,3 +38,5 @@ Package.resolved
 *.log
 *.swp
 *~
+build-temp/
+

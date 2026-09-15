@@ -1,0 +1,93 @@
+name: Release
+
+# 推送形如 v0.1.0 的 tag 时，自动在云端 Mac 上编译并挂到 GitHub Releases。
+# 当前是 ad-hoc 签名（与本地 CODE_SIGN_IDENTITY="-" 一致），未做 Apple 公证。
+# 用户首次打开可能需右键 → 打开；后续若接公证/Developer ID，再改签名步骤即可。
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Only build and upload artifact; skip creating a GitHub Release"
+        required: false
+        default: "false"
+        type: choice
+        options:
+          - "false"
+          - "true"
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-release:
+    runs-on: macos-14
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Show Xcode version
+        run: |
+          sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
+          xcodebuild -version
+
+      - name: Resolve package dependencies
+        run: |
+          xcodebuild -resolvePackageDependencies \
+            -project AgentRing.xcodeproj \
+            -scheme AgentRing
+
+      - name: Build Release
+        run: |
+          set -euo pipefail
+          xcodebuild \
+            -project AgentRing.xcodeproj \
+            -scheme AgentRing \
+            -configuration Release \
+            -derivedDataPath "$RUNNER_TEMP/DerivedData" \
+            -destination "generic/platform=macOS" \
+            CODE_SIGN_IDENTITY="-" \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGNING_ALLOWED=YES \
+            build
+
+      - name: Package zip
+        id: package
+        run: |
+          set -euo pipefail
+          APP="$RUNNER_TEMP/DerivedData/Build/Products/Release/AgentRing.app"
+          test -d "$APP"
+          if [[ "${GITHUB_REF_TYPE}" == "tag" ]]; then
+            VERSION="${GITHUB_REF_NAME#v}"
+          else
+            VERSION="dev-$(echo "${GITHUB_SHA}" | cut -c1-7)"
+          fi
+          ZIP="AgentRing-${VERSION}-macos.zip"
+          ditto -c -k --sequesterRsrc --keepParent "$APP" "$ZIP"
+          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
+          echo "zip=${ZIP}" >> "$GITHUB_OUTPUT"
+          ls -lh "$ZIP"
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: AgentRing-${{ steps.package.outputs.version }}
+          path: ${{ steps.package.outputs.zip }}
+          if-no-files-found: error
+
+      - name: Create GitHub Release
+        if: github.ref_type == 'tag' && (github.event_name != 'workflow_dispatch' || inputs.dry_run != 'true')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: ${{ steps.package.outputs.zip }}
+          generate_release_notes: true
+          fail_on_unmatched_files: true
+          body: |
+            ## Agent Ring ${{ steps.package.outputs.version }}
+
+            下载 `AgentRing-*-macos.zip`，解压后把 `Agent Ring` / `AgentRing.app` 拖到「应用程序」。
+
+            > 当前构建为 ad-hoc 签名，未经 Apple 公证。若系统提示无法打开：右键 App → 打开 → 仍要打开。
