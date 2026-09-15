@@ -36,11 +36,11 @@
 "usage.refresh" = "Refresh";
 "usage.refresh_cooldown" = "Please wait a moment";
 "usage.run_diagnostic" = "Run Diagnostic";
-"usage.codex_title" = "Codex Usage";
+"usage.codex_title" = "Codex";
 "usage.codex_relogin" = "Sign In Again";
-"usage.cursor_title" = "Cursor Usage";
+"usage.cursor_title" = "Cursor";
 "usage.cursor_relogin" = "Sign In Again";
-"usage.antigravity_title" = "Antigravity Usage";
+"usage.antigravity_title" = "Antigravity";
 "usage.antigravity_relogin" = "Sign In Again";
 
 // MARK: - Settings - Tabs

@@ -272,14 +272,11 @@ struct UsageDetailView: View {
     }
 
     private func providerHeader(for provider: ProviderType) -> some View {
-        HStack(spacing: 5) {
-            providerGlyph(for: provider, size: 14)
-            Text(providerTitle(for: provider))
-                .font(.system(size: 13, weight: .semibold))
-                .foregroundColor(.secondary)
-                .lineLimit(1)
-        }
-        .frame(maxWidth: .infinity, alignment: .center)
+        Text(providerTitle(for: provider))
+            .font(.system(size: 13, weight: .semibold))
+            .foregroundColor(.secondary)
+            .lineLimit(1)
+            .frame(maxWidth: .infinity, alignment: .center)
     }
 
     private func providerTitle(for provider: ProviderType) -> String {
@@ -287,45 +284,6 @@ struct UsageDetailView: View {
         case .codex: return L.Usage.codexTitle
         case .cursor: return L.Usage.cursorTitle
         case .antigravity: return L.Usage.antigravityTitle
-        }
-    }
-
-    @ViewBuilder
-    private func providerGlyph(for provider: ProviderType, size: CGFloat) -> some View {
-        switch provider {
-        case .codex:
-            if let icon = ImageHelper.createCodexIcon(size: size) {
-                Image(nsImage: icon)
-                    .resizable()
-                    .frame(width: size, height: size)
-            } else {
-                Image(systemName: "circle.hexagongrid.fill")
-                    .font(.system(size: size - 2))
-                    .foregroundColor(.secondary)
-                    .frame(width: size, height: size)
-            }
-        case .cursor:
-            if let icon = ImageHelper.createCursorIcon(size: size, isTemplate: false) {
-                Image(nsImage: icon)
-                    .resizable()
-                    .frame(width: size, height: size)
-            } else {
-                Image(systemName: "cursorarrow.click")
-                    .font(.system(size: size - 2, weight: .semibold))
-                    .foregroundColor(.secondary)
-                    .frame(width: size, height: size)
-            }
-        case .antigravity:
-            if let icon = ImageHelper.createAntigravityIcon(size: size, isTemplate: false) {
-                Image(nsImage: icon)
-                    .resizable()
-                    .frame(width: size, height: size)
-            } else {
-                Image(systemName: "sparkles")
-                    .font(.system(size: size - 2))
-                    .foregroundColor(.secondary)
-                    .frame(width: size, height: size)
-            }
         }
     }
 
