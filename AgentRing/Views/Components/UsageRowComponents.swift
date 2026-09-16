@@ -55,6 +55,7 @@ enum UsageRingDisplay {
 struct DetailUsageRingCenterText: View {
     let usedPercentage: Double
     let showRemainingMode: Bool
+    var fontSize: CGFloat = 28
 
     private var modeLabel: String {
         showRemainingMode ? L.Usage.available : L.Usage.used
@@ -68,7 +69,7 @@ struct DetailUsageRingCenterText: View {
                     showRemainingMode: showRemainingMode
                 )
             )
-                .font(.system(size: 28, weight: .bold))
+                .font(.system(size: fontSize, weight: .bold))
             Text(modeLabel)
                 .font(.caption)
                 .foregroundColor(.secondary)

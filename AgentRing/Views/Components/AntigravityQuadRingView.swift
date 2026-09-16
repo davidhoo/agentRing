@@ -47,7 +47,8 @@ struct AntigravityQuadRingView: View {
 
             DetailUsageRingCenterText(
                 usedPercentage: centerUsedPercentage,
-                showRemainingMode: showRemainingMode
+                showRemainingMode: showRemainingMode,
+                fontSize: 24
             )
         }
         .frame(width: diameter, height: diameter)
@@ -78,8 +79,7 @@ struct AntigravityQuadRingView: View {
                     layer.color,
                     style: StrokeStyle(
                         lineWidth: lineWidth,
-                        lineCap: .round,
-                        dash: layer.dashed ? [6, 5] : []
+                        lineCap: .round
                     )
                 )
                 .frame(width: diameter, height: diameter)
