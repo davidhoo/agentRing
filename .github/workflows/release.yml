@@ -1,6 +1,8 @@
 name: Release
 
 # 推送形如 v0.1.0 的 tag 时，自动在云端 Mac 上编译并挂到 GitHub Releases。
+# 版本号以 tag 为准：构建时会把 tag 版本注入 MARKETING_VERSION，
+# 保证 App「关于」页显示的版本永远与发布版本一致，无需在多个地方对齐。
 # 当前是 ad-hoc 签名（与本地 CODE_SIGN_IDENTITY="-" 一致），未做 Apple 公证。
 # 用户首次打开可能需右键 → 打开；后续若接公证/Developer ID，再改签名步骤即可。
 
@@ -34,15 +36,33 @@ jobs:
           sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
           xcodebuild -version
 
+      # tag 版本与项目文件版本不一致时仅告警，不阻断发布：
+      # 构建时会注入 tag 版本，发布产物始终与 tag 一致。
+      - name: Check tag vs project version
+        if: github.ref_type == 'tag'
+        run: |
+          TAG_VERSION="${GITHUB_REF_NAME#v}"
+          PROJECT_VERSION=$(grep -m1 'MARKETING_VERSION = ' AgentRing.xcodeproj/project.pbxproj | sed 's/.*MARKETING_VERSION = \([0-9.]*\);.*/\1/')
+          echo "tag: ${TAG_VERSION} / project: ${PROJECT_VERSION}"
+          if [[ "${TAG_VERSION}" != "${PROJECT_VERSION}" ]]; then
+            echo "::warning::tag v${TAG_VERSION} 与项目 MARKETING_VERSION ${PROJECT_VERSION} 不一致（发布不受影响，构建已注入 tag 版本）。建议运行 ./Scripts/set-version.sh ${TAG_VERSION} 同步。"
+          fi
+
       - name: Resolve package dependencies
         run: |
           xcodebuild -resolvePackageDependencies \
             -project AgentRing.xcodeproj \
             -scheme AgentRing
 
+      # tag 构建时注入 tag 版本，这是 App 内版本号的唯一事实来源。
       - name: Build Release
         run: |
           set -euo pipefail
+          if [[ "${GITHUB_REF_TYPE}" == "tag" ]]; then
+            EXTRA="MARKETING_VERSION=${GITHUB_REF_NAME#v}"
+          else
+            EXTRA=""
+          fi
           xcodebuild \
             -project AgentRing.xcodeproj \
             -scheme AgentRing \
@@ -52,7 +72,22 @@ jobs:
             CODE_SIGN_IDENTITY="-" \
             CODE_SIGNING_REQUIRED=NO \
             CODE_SIGNING_ALLOWED=YES \
+            $EXTRA \
             build
+
+      # 发布前最后一道闸：直接读构建产物的 Info.plist，确认发出去的包就是 tag 的版本。
+      - name: Verify built app version
+        if: github.ref_type == 'tag'
+        run: |
+          set -euo pipefail
+          APP="$RUNNER_TEMP/DerivedData/Build/Products/Release/AgentRing.app"
+          BUILT_VERSION=$(/usr/libexec/PlistBuddy -c "Print :CFBundleShortVersionString" "$APP/Contents/Info.plist")
+          TAG_VERSION="${GITHUB_REF_NAME#v}"
+          echo "built: ${BUILT_VERSION} / tag: ${TAG_VERSION}"
+          if [[ "${BUILT_VERSION}" != "${TAG_VERSION}" ]]; then
+            echo "::error::构建出的 App 版本 ${BUILT_VERSION} 与 tag v${TAG_VERSION} 不一致，停止发布。"
+            exit 1
+          fi
 
       - name: Package DMG and Zip
         id: package
