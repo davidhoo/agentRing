@@ -284,7 +284,10 @@ class KeychainManager {
         // Data Protection Keychain + AfterFirstUnlock：
         // 避免 file-based keychain 把 ACL 绑死在 ad-hoc 签名上，
         // 每次重装/更新都弹「要访问钥匙串，请输入密码」。
-        let query: [String: Any] = [
+        // 但 DP keychain 要求付费 Team ID 签名；本地 ad-hoc 构建会被系统拒绝
+        // （-34018 errSecmissingEntitlement），因此失败时自动降级回文件钥匙串，
+        // 保证凭据无论如何都能落盘，不会出现「每次更新都要重新登录」。
+        var query: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,
             kSecAttrService as String: service,
             kSecAttrAccount as String: key,
@@ -293,7 +296,13 @@ class KeychainManager {
             kSecUseDataProtectionKeychain as String: true
         ]
 
-        let status = SecItemAdd(query as CFDictionary, nil)
+        var status = SecItemAdd(query as CFDictionary, nil)
+        if status != errSecSuccess {
+            // DP keychain 写入失败（典型为 ad-hoc 签名缺 Entitlement），
+            // 去掉 DP 标志降级为标准文件钥匙串重试
+            query.removeValue(forKey: kSecUseDataProtectionKeychain as String)
+            status = SecItemAdd(query as CFDictionary, nil)
+        }
 
         if status == errSecSuccess {
             return true
@@ -316,11 +325,33 @@ class KeychainManager {
             return value
         }
         if let legacy = copyMatching(key: key, service: service, useDataProtection: false) {
-            // 读到旧条目后立刻用新属性重写，后续不再弹窗
-            _ = save(key: key, value: legacy, service: service)
+            // 迁移铁律：DP keychain 写入成功后才清理旧 file keychain 条目；
+            // 写入失败（本地 ad-hoc 签名 -34018）时绝不动旧条目，直接返回读到的值。
+            // 否则每次读取都会触发「先删后写」，并发读取的竞态窗口、
+            // 或删除后写回前崩溃，都会造成凭据永久丢失。
+            if addToDataProtection(key: key, value: legacy, service: service) {
+                _ = deleteMatching(key: key, service: service, useDataProtection: false)
+                Logger.keychain.info("已迁移凭据到 Data Protection keychain: \(key)")
+            }
             return legacy
         }
         return nil
+    }
+
+    /// 仅写入 DP keychain（不预删旧项、不降级），供 load() 一次性迁移旧条目
+    private func addToDataProtection(key: String, value: String, service: String) -> Bool {
+        guard let data = value.data(using: .utf8) else {
+            return false
+        }
+        let query: [String: Any] = [
+            kSecClass as String: kSecClassGenericPassword,
+            kSecAttrService as String: service,
+            kSecAttrAccount as String: key,
+            kSecValueData as String: data,
+            kSecAttrAccessible as String: kSecAttrAccessibleAfterFirstUnlock,
+            kSecUseDataProtectionKeychain as String: true
+        ]
+        return SecItemAdd(query as CFDictionary, nil) == errSecSuccess
     }
 
     private func copyMatching(key: String, service: String, useDataProtection: Bool) -> String? {
@@ -342,7 +373,9 @@ class KeychainManager {
            let data = result as? Data,
            let value = String(data: data, encoding: .utf8) {
             return value
-        } else if status != errSecItemNotFound {
+        } else if status != errSecItemNotFound && !isMissingEntitlement(status) {
+            // ad-hoc 签名下 DP keychain 读取同样返回 -34018，
+            // 属于环境不支持而非数据异常，降为 debug 不刷 error 日志
             Logger.keychain.error(
                 "Keychain 读取失败: \(key), dp=\(useDataProtection), 状态码: \(status)"
             )
@@ -377,10 +410,18 @@ class KeychainManager {
         if status == errSecSuccess || status == errSecItemNotFound {
             return true
         }
-        Logger.keychain.error(
-            "Keychain 删除失败: \(key), dp=\(useDataProtection), 状态码: \(status)"
-        )
+        if !isMissingEntitlement(status) {
+            Logger.keychain.error(
+                "Keychain 删除失败: \(key), dp=\(useDataProtection), 状态码: \(status)"
+            )
+        }
         return false
+    }
+
+    /// ad-hoc 签名（无付费 Team ID）访问 DP keychain 时被系统拒绝的错误码，
+    /// 属于环境限制而非数据问题，调用方无需按严重错误处理
+    private func isMissingEntitlement(_ status: OSStatus) -> Bool {
+        status == errSecMissingEntitlement
     }
     #endif
 }
