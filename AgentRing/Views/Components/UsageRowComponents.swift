@@ -192,11 +192,11 @@ struct UnifiedLimitRow: View {
                 .frame(width: 36, alignment: .trailing)
 
             Text(limitName)
-                .font(.system(size: 12))
+                .font(.system(size: isCompactAntigravityRow ? 11 : 12))
                 .foregroundColor(.secondary)
                 .lineLimit(1)
-                .minimumScaleFactor(0.8)
-                .layoutPriority(0)
+                .minimumScaleFactor(isCompactAntigravityRow ? 0.65 : 0.8)
+                .layoutPriority(isCompactAntigravityRow ? 1 : 0)
 
             Spacer(minLength: 4)
 
@@ -221,6 +221,16 @@ struct UnifiedLimitRow: View {
     }
 
     // MARK: - Computed Properties
+
+    private var isCompactAntigravityRow: Bool {
+        switch type {
+        case .antigravityPrimary, .antigravitySecondary,
+             .antigravityThirdPartyPrimary, .antigravityThirdPartySecondary:
+            return true
+        default:
+            return false
+        }
+    }
 
     private var limitName: String {
         type.detailDisplayName
