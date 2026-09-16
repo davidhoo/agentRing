@@ -189,35 +189,36 @@ struct UsageDetailView: View {
     }
 
     private var refreshAndMenuButtons: some View {
-        HStack(spacing: 10) {
+        HStack(spacing: 6) {
             Button(action: { onMenuAction?(.refresh) }) {
                 Image(systemName: "arrow.clockwise")
-                    .font(.system(size: 14))
+                    .font(.system(size: 13, weight: .medium))
                     .foregroundColor(.secondary)
-                    .opacity(refreshState.canRefresh ? 1 : 0.3)
                     .rotationEffect(.degrees(refreshState.isRefreshing ? rotationAngle : 0))
                     .frame(width: 20, height: 20)
+                    .contentShape(Rectangle())
             }
-            .buttonStyle(.plain)
+            .buttonStyle(.borderless)
             .disabled(!refreshState.canRefresh || refreshState.isRefreshing)
             .focusable(false)
+            .help(L.Usage.refresh)
 
             ZStack(alignment: .topTrailing) {
                 Button(action: { onMenuAction?(.generalSettings) }) {
                     Image(systemName: "ellipsis")
-                        .font(.system(size: 14))
+                        .font(.system(size: 13, weight: .medium))
                         .foregroundColor(.secondary)
                         .rotationEffect(.degrees(90))
                         .frame(width: 20, height: 20)
                         .contentShape(Rectangle())
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(.borderless)
                 .focusable(false)
                 .help(L.Menu.generalSettings)
 
                 if shouldShowUpdateBadge {
                     Circle()
-                        .fill(Color.red)
+                        .fill(Color(nsColor: .systemRed))
                         .frame(width: 6, height: 6)
                         .offset(x: 2, y: -2)
                         .allowsHitTesting(false)

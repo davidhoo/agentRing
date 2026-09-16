@@ -155,22 +155,27 @@ struct AnimationTypeHintView: View {
 
 // MARK: - Provider Divider
 
-/// 柔和竖线，视觉与设置页标签分隔线一致
+/// 多厂商列之间的竖向分隔线：系统语义色 separatorColor，自动适配深浅色与增强对比度；
+/// 上下两端用 mask 渐隐，避免与顶部标题/底部留白硬碰
 struct ProviderDivider: View {
     let height: CGFloat
 
     var body: some View {
-        LinearGradient(
-            gradient: Gradient(colors: [
-                Color.secondary.opacity(0.0),
-                Color.secondary.opacity(0.3),
-                Color.secondary.opacity(0.3),
-                Color.secondary.opacity(0.0)
-            ]),
-            startPoint: .top,
-            endPoint: .bottom
-        )
-        .frame(width: 1, height: height)
+        Rectangle()
+            .fill(Color(nsColor: .separatorColor))
+            .frame(width: 1, height: height)
+            .mask(
+                LinearGradient(
+                    gradient: Gradient(stops: [
+                        .init(color: .clear, location: 0),
+                        .init(color: .black, location: 0.12),
+                        .init(color: .black, location: 0.88),
+                        .init(color: .clear, location: 1)
+                    ]),
+                    startPoint: .top,
+                    endPoint: .bottom
+                )
+            )
     }
 }
 
