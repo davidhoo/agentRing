@@ -199,12 +199,13 @@ final class MenuBarIconRenderer {
         guard types.contains(.cursorIncluded) || types.contains(.cursorOnDemand) else { return [] }
 
         let outerPercentage = cursor.included?.percentage ?? (showPlaceholder && types.contains(.cursorIncluded) ? 0 : nil)
-        let resolvedOuter = outerPercentage ?? (types.contains(.cursorOnDemand) ? cursor.onDemand?.percentage : nil)
+        let secondaryPercentage = cursor.apiModels?.percentage ?? cursor.onDemand?.percentage
+        let resolvedOuter = outerPercentage ?? (types.contains(.cursorOnDemand) ? secondaryPercentage : nil)
         guard let resolvedOuter else { return [] }
 
         let innerPercentage: Double? = {
             guard types.contains(.cursorIncluded), types.contains(.cursorOnDemand) else { return nil }
-            return cursor.onDemand?.percentage ?? (showPlaceholder ? 0 : nil)
+            return secondaryPercentage ?? (showPlaceholder ? 0 : nil)
         }()
 
         return [

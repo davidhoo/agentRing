@@ -149,6 +149,12 @@ class CursorAPIService: UsageProvider {
                 used: included,
                 limit: 100
             ),
+            apiModels: .init(
+                percentage: min(100, max(0, included * 0.2)),
+                resetsAt: Date().addingTimeInterval(60 * 60 * 24 * 12),
+                used: nil,
+                limit: nil
+            ),
             onDemand: onDemandEnabled ? .init(
                 percentage: settings.debugCursorOnDemandPercentage,
                 usedCents: settings.debugCursorOnDemandPercentage / 100.0 * settings.debugCursorOnDemandLimit,

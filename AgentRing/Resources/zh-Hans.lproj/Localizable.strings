@@ -231,8 +231,8 @@
 "codex_primary_limit" = "Codex 5小时限制";
 "codex_secondary_limit" = "Codex 7天限制";
 "codex_extra_usage" = "Codex 额外用量";
-"cursor_included_limit" = "Cursor 30天限制";
-"cursor_ondemand_limit" = "Cursor 按需用量";
+"cursor_included_limit" = "Cursor 模型";
+"cursor_ondemand_limit" = "其他模型";
 "antigravity_primary_limit" = "Antigravity 5小时限制";
 "antigravity_secondary_limit" = "Antigravity 7天限制";
 
@@ -242,8 +242,8 @@
 "detail_row.opus_weekly_limit" = "Opus 7天限制";
 "detail_row.sonnet_weekly_limit" = "Sonnet 7天限制";
 "detail_row.extra_usage" = "额外用量";
-"detail_row.cursor_included" = "30天";
-"detail_row.cursor_ondemand" = "按需用量";
+"detail_row.cursor_included" = "模型";
+"detail_row.cursor_ondemand" = "其他";
 
 // MARK: - Display Options (v2.0.0)
 "display_options" = "显示选项";

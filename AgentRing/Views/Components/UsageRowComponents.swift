@@ -26,6 +26,15 @@ enum UsageRingDisplay {
         return showRemainingMode ? remainingPercentage(usedPercentage: used) : used
     }
 
+    /// One shared rounding rule so the big ring and detail rows never disagree.
+    static func percentLabel(usedPercentage: Double, showRemainingMode: Bool) -> String {
+        let displayed = displayedPercentage(
+            usedPercentage: usedPercentage,
+            showRemainingMode: showRemainingMode
+        )
+        return "\(Int(displayed.rounded()))%"
+    }
+
     static func usedFraction(_ usedPercentage: Double) -> CGFloat {
         CGFloat(clampedPercentage(usedPercentage) / 100.0)
     }
@@ -47,20 +56,18 @@ struct DetailUsageRingCenterText: View {
     let usedPercentage: Double
     let showRemainingMode: Bool
 
-    private var displayPercentage: Double {
-        UsageRingDisplay.displayedPercentage(
-            usedPercentage: usedPercentage,
-            showRemainingMode: showRemainingMode
-        )
-    }
-
     private var modeLabel: String {
         showRemainingMode ? L.Usage.available : L.Usage.used
     }
 
     var body: some View {
         VStack(spacing: 2) {
-            Text("\(Int(displayPercentage))%")
+            Text(
+                UsageRingDisplay.percentLabel(
+                    usedPercentage: usedPercentage,
+                    showRemainingMode: showRemainingMode
+                )
+            )
                 .font(.system(size: 28, weight: .bold))
             Text(modeLabel)
                 .font(.caption)
@@ -221,11 +228,10 @@ struct UnifiedLimitRow: View {
 
     private var percentageLabel: String {
         guard let percentageValue else { return "—" }
-        let displayed = UsageRingDisplay.displayedPercentage(
+        return UsageRingDisplay.percentLabel(
             usedPercentage: percentageValue,
             showRemainingMode: showRemainingMode
         )
-        return "\(Int(displayed.rounded()))%"
     }
 
     private var iconColor: Color {
@@ -253,7 +259,7 @@ struct UnifiedLimitRow: View {
         case .codexSecondary: return codexData?.secondary?.percentage
         case .codexExtraUsage: return codexData?.extraUsage?.percentage
         case .cursorIncluded: return cursorData?.included?.percentage
-        case .cursorOnDemand: return cursorData?.onDemand?.percentage
+        case .cursorOnDemand: return cursorData?.apiModels?.percentage ?? cursorData?.onDemand?.percentage
         case .antigravityPrimary: return antigravityData?.primary?.percentage
         case .antigravitySecondary: return antigravityData?.secondary?.percentage
         }
@@ -279,6 +285,10 @@ struct UnifiedLimitRow: View {
             return showRemainingMode ? limitData.formattedCompactRemainingWithMinutes : limitData.formattedCompactResetDateWithMinutes
 
         case .cursorOnDemand:
+            if let apiModels = cursorData?.apiModels {
+                let limitData = UsageLimitData(percentage: apiModels.percentage, resetsAt: apiModels.resetsAt)
+                return showRemainingMode ? limitData.formattedCompactRemainingWithMinutes : limitData.formattedCompactResetDateWithMinutes
+            }
             guard let onDemand = cursorData?.onDemand else { return "-" }
             if showRemainingMode {
                 let remaining = max(0, onDemand.limitDollars - onDemand.usedDollars)

@@ -231,8 +231,8 @@
 "codex_primary_limit" = "Codex 5-Hour Limit";
 "codex_secondary_limit" = "Codex 7-Day Limit";
 "codex_extra_usage" = "Codex Extra Usage";
-"cursor_included_limit" = "Cursor 30-Day Limit";
-"cursor_ondemand_limit" = "Cursor On-Demand";
+"cursor_included_limit" = "Cursor Models";
+"cursor_ondemand_limit" = "Other Models";
 "antigravity_primary_limit" = "Antigravity 5-Hour Limit";
 "antigravity_secondary_limit" = "Antigravity 7-Day Limit";
 
@@ -242,8 +242,8 @@
 "detail_row.opus_weekly_limit" = "7D Opus Limit";
 "detail_row.sonnet_weekly_limit" = "7D Sonnet Limit";
 "detail_row.extra_usage" = "Extra Usage";
-"detail_row.cursor_included" = "30d";
-"detail_row.cursor_ondemand" = "On-Demand";
+"detail_row.cursor_included" = "Models";
+"detail_row.cursor_ondemand" = "Other";
 
 // MARK: - Display Options (v2.0.0)
 "display_options" = "Display Options";

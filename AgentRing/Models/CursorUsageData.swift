@@ -7,7 +7,11 @@ import Foundation
 import OSLog
 
 struct CursorUsageData: Sendable {
+    /// Cursor Models pool (`autoPercentUsed`) — primary dashboard bar.
     let included: LimitData?
+    /// Other Models pool (`apiPercentUsed`) — secondary dashboard bar.
+    let apiModels: LimitData?
+    /// Paid on-demand spend, when Cursor exposes a dollar cap.
     let onDemand: OnDemandData?
     let membershipType: String?
     let billingCycleEnd: Date?
@@ -100,7 +104,7 @@ nonisolated struct CursorUsageSummaryResponse: Codable, Sendable {
         let usage = CursorUsageMapper.map(self, now: now)
         let plan = individualUsage?.plan
         Logger.api.info(
-            "Cursor map unlimited=\(self.isUnlimited ?? false, privacy: .public) total=\(plan?.totalPercentUsed ?? -1, privacy: .public) auto=\(plan?.autoPercentUsed ?? -1, privacy: .public) api=\(plan?.apiPercentUsed ?? -1, privacy: .public) included=\(usage.included?.percentage ?? -1, privacy: .public) onDemand=\(usage.onDemand?.percentage ?? -1, privacy: .public)"
+            "Cursor map unlimited=\(self.isUnlimited ?? false, privacy: .public) total=\(plan?.totalPercentUsed ?? -1, privacy: .public) auto=\(plan?.autoPercentUsed ?? -1, privacy: .public) api=\(plan?.apiPercentUsed ?? -1, privacy: .public) included=\(usage.included?.percentage ?? -1, privacy: .public) apiModels=\(usage.apiModels?.percentage ?? -1, privacy: .public) onDemand=\(usage.onDemand?.percentage ?? -1, privacy: .public)"
         )
         return usage
     }
@@ -151,10 +155,12 @@ enum CursorUsageMapper {
     static func map(_ response: CursorUsageSummaryResponse, now: Date = Date()) -> CursorUsageData {
         let cycleEnd = parseISO8601(response.billingCycleEnd)
         let included = includedLimit(from: response, cycleEnd: cycleEnd)
+        let apiModels = apiModelsLimit(from: response, cycleEnd: cycleEnd)
         let onDemand = onDemandLimit(from: response, cycleEnd: cycleEnd)
 
         return CursorUsageData(
             included: included,
+            apiModels: apiModels,
             onDemand: onDemand,
             membershipType: response.membershipType,
             billingCycleEnd: cycleEnd
@@ -180,22 +186,28 @@ enum CursorUsageMapper {
         return nil
     }
 
-    /// Dashboard headline, then auto/api pools, then cents ratios, then prose messages.
-    /// Never treat a present `plan` object as 0% just because `totalPercentUsed` is missing.
+    static func apiModelsLimit(from response: CursorUsageSummaryResponse, cycleEnd: Date?) -> CursorUsageData.LimitData? {
+        guard let api = response.individualUsage?.plan?.apiPercentUsed else { return nil }
+        return CursorUsageData.LimitData(
+            percentage: clampPercent(api),
+            resetsAt: cycleEnd,
+            used: nil,
+            limit: nil
+        )
+    }
+
+    /// Prefer Cursor Models (`autoPercentUsed`) to match the spending dashboard primary bar.
+    /// Fall back to composite total, then other numeric signals.
     static func includedPercentage(from response: CursorUsageSummaryResponse) -> Double? {
         if let plan = response.individualUsage?.plan {
+            if let auto = plan.autoPercentUsed {
+                return clampPercent(auto)
+            }
             if let total = plan.totalPercentUsed {
                 return clampPercent(total)
             }
-            let auto = plan.autoPercentUsed.map(clampPercent)
-            let api = plan.apiPercentUsed.map(clampPercent)
-            switch (auto, api) {
-            case let (auto?, api?):
-                return max(auto, api)
-            case let (auto?, nil), let (nil, auto?):
-                return auto
-            default:
-                break
+            if let api = plan.apiPercentUsed {
+                return clampPercent(api)
             }
             if let used = plan.used?.value, let limit = plan.limit?.value, limit > 0 {
                 return clampPercent(used / limit * 100)

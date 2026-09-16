@@ -969,7 +969,8 @@ final class UserSettings: ObservableObject {
             if cursorUsageData.included != nil {
                 types.append(.cursorIncluded)
             }
-            if cursorUsageData.onDemand != nil {
+            // Prefer Other Models (api) when present; otherwise fall back to paid on-demand.
+            if cursorUsageData.apiModels != nil || cursorUsageData.onDemand != nil {
                 types.append(.cursorOnDemand)
             }
             return types

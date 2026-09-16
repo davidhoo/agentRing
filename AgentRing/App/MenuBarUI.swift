@@ -304,6 +304,7 @@ final class MenuBarUI {
                 .joined(separator: ",")
             key += "_cu\(activeTypes)"
             if let included = cursorUsageData.included { key += "_i\(Int(included.percentage))" }
+            if let apiModels = cursorUsageData.apiModels { key += "_a\(Int(apiModels.percentage))" }
             if let onDemand = cursorUsageData.onDemand { key += "_o\(Int(onDemand.percentage))" }
         } else {
             key += "_no_cursor"
