@@ -15,6 +15,16 @@ enum UsageColorScheme {
     private static let activityStand = NSColor(red: 0/255.0, green: 212/255.0, blue: 255/255.0, alpha: 1.0)
     private static let activityAmber = NSColor(red: 255/255.0, green: 159/255.0, blue: 10/255.0, alpha: 1.0)
 
+    // Dashboard 使用低饱和、相近明度的安静色板；菜单栏仍保留高辨识度 Activity 色。
+    private static let dashboardCodexGreen = NSColor(red: 113/255.0, green: 143/255.0, blue: 102/255.0, alpha: 1.0)
+    private static let dashboardCodexTeal = NSColor(red: 102/255.0, green: 139/255.0, blue: 145/255.0, alpha: 1.0)
+    private static let dashboardOchre = NSColor(red: 161/255.0, green: 132/255.0, blue: 98/255.0, alpha: 1.0)
+    private static let dashboardCursorRose = NSColor(red: 183/255.0, green: 103/255.0, blue: 118/255.0, alpha: 1.0)
+    private static let dashboardAntigravityBlue = NSColor(red: 97/255.0, green: 127/255.0, blue: 168/255.0, alpha: 1.0)
+    private static let dashboardAntigravityViolet = NSColor(red: 129/255.0, green: 116/255.0, blue: 155/255.0, alpha: 1.0)
+    private static let dashboardThirdPartyTerracotta = NSColor(red: 168/255.0, green: 120/255.0, blue: 93/255.0, alpha: 1.0)
+    private static let dashboardThirdPartyTeal = NSColor(red: 102/255.0, green: 138/255.0, blue: 130/255.0, alpha: 1.0)
+
     static func isDarkMode(for statusButton: NSStatusBarButton? = nil) -> Bool {
         if let button = statusButton,
            let appearance = button.effectiveAppearance.bestMatch(from: [.darkAqua, .aqua]) {
@@ -33,7 +43,7 @@ enum UsageColorScheme {
     }
 
     static func codexPrimaryColorSwiftUI(_ percentage: Double, opacity: Double = 1.0) -> Color {
-        color(codexPrimaryColor(percentage), opacity: opacity)
+        color(dashboardCodexGreen, opacity: opacity)
     }
 
     static func codexPrimaryColorAdaptive(_ percentage: Double, for statusButton: NSStatusBarButton? = nil) -> NSColor {
@@ -46,12 +56,12 @@ enum UsageColorScheme {
     }
 
     static func codexSecondaryColorSwiftUI(_ percentage: Double, opacity: Double = 1.0) -> Color {
-        color(codexSecondaryColor(percentage), opacity: opacity)
+        color(dashboardCodexTeal, opacity: opacity)
     }
 
     /// Dashboard 双环内环：外环绿的压暗版
     static func codexPairedInnerColorSwiftUI(_ percentage: Double, opacity: Double = 1.0) -> Color {
-        color(darkened(codexPrimaryColor(percentage), by: 0.82), opacity: opacity)
+        color(darkened(dashboardCodexGreen, by: 0.92), opacity: opacity)
     }
 
     static func codexSecondaryColorAdaptive(_ percentage: Double, for statusButton: NSStatusBarButton? = nil) -> NSColor {
@@ -64,7 +74,7 @@ enum UsageColorScheme {
     }
 
     static func codexExtraUsageColorSwiftUI(_ percentage: Double, opacity: Double = 1.0) -> Color {
-        color(codexExtraUsageColor(percentage), opacity: opacity)
+        color(dashboardOchre, opacity: opacity)
     }
 
     static func codexExtraUsageColorAdaptive(_ percentage: Double, for statusButton: NSStatusBarButton? = nil) -> NSColor {
@@ -77,7 +87,7 @@ enum UsageColorScheme {
     }
 
     static func cursorIncludedColorSwiftUI(_ percentage: Double, opacity: Double = 1.0) -> Color {
-        color(cursorIncludedColor(percentage), opacity: opacity)
+        color(dashboardCursorRose, opacity: opacity)
     }
 
     static func cursorIncludedColorAdaptive(_ percentage: Double, for statusButton: NSStatusBarButton? = nil) -> NSColor {
@@ -90,12 +100,12 @@ enum UsageColorScheme {
     }
 
     static func cursorOnDemandColorSwiftUI(_ percentage: Double, opacity: Double = 1.0) -> Color {
-        color(cursorOnDemandColor(percentage), opacity: opacity)
+        color(dashboardOchre, opacity: opacity)
     }
 
     /// Dashboard 双环内环：外环红粉的压暗版
     static func cursorPairedInnerColorSwiftUI(_ percentage: Double, opacity: Double = 1.0) -> Color {
-        color(darkened(cursorIncludedColor(percentage), by: 0.82), opacity: opacity)
+        color(darkened(dashboardCursorRose, by: 0.92), opacity: opacity)
     }
 
     static func cursorOnDemandColorAdaptive(_ percentage: Double, for statusButton: NSStatusBarButton? = nil) -> NSColor {
@@ -116,7 +126,7 @@ enum UsageColorScheme {
     }
 
     static func antigravityPrimaryColorSwiftUI(_ percentage: Double, opacity: Double = 1.0) -> Color {
-        color(antigravityPrimaryColor(percentage), opacity: opacity)
+        color(dashboardAntigravityBlue, opacity: opacity)
     }
 
     static func antigravityPrimaryColorAdaptive(_ percentage: Double, for statusButton: NSStatusBarButton? = nil) -> NSColor {
@@ -128,12 +138,12 @@ enum UsageColorScheme {
     }
 
     static func antigravitySecondaryColorSwiftUI(_ percentage: Double, opacity: Double = 1.0) -> Color {
-        color(antigravitySecondaryColor(percentage), opacity: opacity)
+        color(dashboardAntigravityViolet, opacity: opacity)
     }
 
     /// Dashboard 双环内环：外环蓝的压暗版
     static func antigravityPairedInnerColorSwiftUI(_ percentage: Double, opacity: Double = 1.0) -> Color {
-        color(darkened(antigravityPrimaryColor(percentage), by: 0.82), opacity: opacity)
+        color(darkened(dashboardAntigravityBlue, by: 0.92), opacity: opacity)
     }
 
     static func antigravitySecondaryColorAdaptive(_ percentage: Double, for statusButton: NSStatusBarButton? = nil) -> NSColor {
@@ -145,7 +155,7 @@ enum UsageColorScheme {
     }
 
     static func antigravityThirdPartyPrimaryColorSwiftUI(_ percentage: Double, opacity: Double = 1.0) -> Color {
-        color(antigravityThirdPartyPrimaryColor(percentage), opacity: opacity)
+        color(dashboardThirdPartyTerracotta, opacity: opacity)
     }
 
     static func antigravityThirdPartyPrimaryColorAdaptive(_ percentage: Double, for statusButton: NSStatusBarButton? = nil) -> NSColor {
@@ -157,12 +167,12 @@ enum UsageColorScheme {
     }
 
     static func antigravityThirdPartySecondaryColorSwiftUI(_ percentage: Double, opacity: Double = 1.0) -> Color {
-        color(antigravityThirdPartySecondaryColor(percentage), opacity: opacity)
+        color(dashboardThirdPartyTeal, opacity: opacity)
     }
 
     /// Dashboard 双环内环：外环珊瑚橙的压暗版
     static func antigravityThirdPartyPairedInnerColorSwiftUI(_ percentage: Double, opacity: Double = 1.0) -> Color {
-        color(darkened(antigravityThirdPartyPrimaryColor(percentage), by: 0.82), opacity: opacity)
+        color(darkened(dashboardThirdPartyTerracotta, by: 0.92), opacity: opacity)
     }
 
     static func antigravityThirdPartySecondaryColorAdaptive(_ percentage: Double, for statusButton: NSStatusBarButton? = nil) -> NSColor {
