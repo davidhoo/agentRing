@@ -59,7 +59,7 @@ struct ActivityRingView: View {
         .frame(width: diameter, height: diameter)
     }
 
-    private let usedPortionOpacity: Double = 0.18
+    private let usedPortionOpacity: Double = 0.12
 
     @ViewBuilder
     private func ring(diameter: CGFloat, percentage: Double, color: Color, isInner: Bool) -> some View {
