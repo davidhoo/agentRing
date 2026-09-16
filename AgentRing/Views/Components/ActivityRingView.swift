@@ -52,7 +52,8 @@ struct ActivityRingView: View {
 
             DetailUsageRingCenterText(
                 usedPercentage: outerPercentage,
-                showRemainingMode: showRemainingMode
+                showRemainingMode: showRemainingMode,
+                fontSize: 22
             )
         }
         .frame(width: diameter, height: diameter)

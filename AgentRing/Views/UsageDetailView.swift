@@ -57,8 +57,9 @@ struct UsageDetailView: View {
     @State private var animationTypeHintName = ""
     @State private var animationTypeHintDismissWorkItem: DispatchWorkItem?
     @State private var showUpdateNotification = false
+    @ObservedObject private var settings = UserSettings.shared
     private var showRemainingMode: Bool {
-        UserSettings.shared.showRemainingMode
+        settings.showRemainingMode
     }
     @State private var remainingModeAnimationTrigger = 0
     @State private var orderedProviders: [ProviderType] = []
@@ -78,7 +79,7 @@ struct UsageDetailView: View {
 
     private var providerColumnWidth: CGFloat {
         switch max(activeProviders.count, 1) {
-        case 4...: return 240
+        case 4...: return 245
         case 3: return 272
         case 2: return 276
         default: return 290
@@ -91,7 +92,7 @@ struct UsageDetailView: View {
 
     private var popoverWidth: CGFloat {
         switch activeProviders.count {
-        case 4...: return 1020
+        case 4...: return 1040
         case 3: return 860
         case 2: return 580
         default: return 320
@@ -511,6 +512,11 @@ struct UsageDetailView: View {
         .onChange(of: activeProviders) { newProviders in
             if orderedProviders != newProviders && draggedProvider == nil {
                 orderedProviders = newProviders
+            }
+        }
+        .onChange(of: settings.showRemainingMode) { _ in
+            withAnimation(.spring(response: 0.35, dampingFraction: 0.85)) {
+                remainingModeAnimationTrigger += 1
             }
         }
         .onHover { _ in

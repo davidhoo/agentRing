@@ -284,7 +284,7 @@ final class MenuBarUI {
         antigravityUsageData: AntigravityUsageData?,
         hasUpdate: Bool
     ) -> String {
-        var key = "\(settings.iconDisplayMode.rawValue)_\(settings.iconStyleMode.rawValue)_\(settings.displayMode.rawValue)"
+        var key = "\(settings.iconDisplayMode.rawValue)_\(settings.iconStyleMode.rawValue)_\(settings.displayMode.rawValue)_\(settings.showRemainingMode)"
         if let codexUsageData {
             let activeTypes = settings.getActiveCodexDisplayTypes(codexUsageData: codexUsageData, forMenuBar: true)
                 .map(\.rawValue)

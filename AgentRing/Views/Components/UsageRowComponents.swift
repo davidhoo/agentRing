@@ -55,7 +55,7 @@ enum UsageRingDisplay {
 struct DetailUsageRingCenterText: View {
     let usedPercentage: Double
     let showRemainingMode: Bool
-    var fontSize: CGFloat = 28
+    var fontSize: CGFloat = 22
 
     var body: some View {
         Text(
@@ -313,20 +313,6 @@ struct UnifiedLimitRow: View {
     }
 
     private func detailCompactResetTime(_ limitData: UsageLimitData) -> String {
-        guard let resetsAt = limitData.resetsAt else {
-            return "-"
-        }
-
-        var calendar = Calendar.current
-        calendar.locale = UserSettings.shared.appLocale
-        let timeString = TimeFormatHelper.formatTimeOnly(resetsAt)
-
-        if calendar.isDateInToday(resetsAt) {
-            return "\(L.DetailRow.today) \(timeString)"
-        }
-        if calendar.isDateInTomorrow(resetsAt) {
-            return "\(L.UsageData.tomorrow) \(timeString)"
-        }
-        return TimeFormatHelper.formatDateTime(resetsAt, dateTemplate: "Md")
+        limitData.formattedCompactResetDateWithMinutes
     }
 }

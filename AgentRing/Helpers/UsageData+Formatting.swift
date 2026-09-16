@@ -40,6 +40,16 @@ extension UsageLimitData {
 
     var formattedCompactResetDateWithMinutes: String {
         guard let resetsAt else { return "-" }
+        var calendar = Calendar.current
+        calendar.locale = UserSettings.shared.appLocale
+        let timeString = TimeFormatHelper.formatTimeOnly(resetsAt)
+
+        if calendar.isDateInToday(resetsAt) {
+            return "\(L.DetailRow.today) \(timeString)"
+        }
+        if calendar.isDateInTomorrow(resetsAt) {
+            return "\(L.UsageData.tomorrow) \(timeString)"
+        }
         return TimeFormatHelper.formatDateMinute(resetsAt, dateTemplate: "MMMd")
     }
 
