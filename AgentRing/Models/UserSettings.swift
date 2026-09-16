@@ -1002,13 +1002,11 @@ final class UserSettings: ObservableObject {
             if antigravityUsageData.geminiSecondary != nil {
                 types.append(.antigravitySecondary)
             }
-            if !forMenuBar {
-                if antigravityUsageData.thirdPartyPrimary != nil {
-                    types.append(.antigravityThirdPartyPrimary)
-                }
-                if antigravityUsageData.thirdPartySecondary != nil {
-                    types.append(.antigravityThirdPartySecondary)
-                }
+            if antigravityUsageData.thirdPartyPrimary != nil {
+                types.append(.antigravityThirdPartyPrimary)
+            }
+            if antigravityUsageData.thirdPartySecondary != nil {
+                types.append(.antigravityThirdPartySecondary)
             }
             return types
 
