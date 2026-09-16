@@ -1,6 +1,6 @@
 //
 //  GitHubUpdateManager.swift
-//  AgentRing
+//  Agent Ring
 //
 
 import AppKit
@@ -38,8 +38,8 @@ struct GitHubReleaseAsset: Codable {
 }
 
 /// GitHub 版本更新管理器
-/// 支持手动检测更新、每 1 小时自动后台定时检测、一键下载 DMG 安装包
-final class GitHubUpdateManager: ObservableObject {
+/// 手动检测 + 每小时自动检测；开启「自动更新」时发现新版本会下载安装包并通知。
+final class GitHubUpdateManager: NSObject, ObservableObject, UNUserNotificationCenterDelegate {
     static let shared = GitHubUpdateManager()
 
     @Published var isChecking = false
@@ -50,15 +50,19 @@ final class GitHubUpdateManager: ObservableObject {
 
     private let repoOwner = "haorui-lab"
     private let repoName = "agentRing"
+    private let notificationPrefix = "github_update_"
     private var autoCheckTimer: Timer?
     private var cancellables = Set<AnyCancellable>()
+    private var lastDownloadedPackageURL: URL?
 
     var currentVersion: String {
         Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "0.1.0"
     }
 
-    private init() {
+    private override init() {
+        super.init()
         NotificationCenter.default.publisher(for: .autoUpdateSettingChanged)
+            .receive(on: DispatchQueue.main)
             .sink { [weak self] _ in
                 self?.setupAutoUpdateTimer()
             }
@@ -67,6 +71,7 @@ final class GitHubUpdateManager: ObservableObject {
 
     /// 启动自动更新调度
     func start() {
+        UNUserNotificationCenter.current().delegate = self
         setupAutoUpdateTimer()
 
         // 启动后延时 5 秒进行初次静默检查（仅在勾选自动更新时）
@@ -84,9 +89,11 @@ final class GitHubUpdateManager: ObservableObject {
 
         guard UserSettings.shared.autoUpdateEnabled else { return }
 
-        autoCheckTimer = Timer.scheduledTimer(withTimeInterval: 3600, repeats: true) { [weak self] _ in
+        let timer = Timer(timeInterval: 3600, repeats: true) { [weak self] _ in
             self?.checkForUpdates(isUserInitiated: false)
         }
+        RunLoop.main.add(timer, forMode: .common)
+        autoCheckTimer = timer
     }
 
     /// 核心检查更新方法
@@ -162,7 +169,8 @@ final class GitHubUpdateManager: ObservableObject {
             if isUserInitiated {
                 showUpdateAlert(release: release)
             } else {
-                sendUpdateNotification(release: release)
+                // 自动更新：静默下载安装包，完成后通知用户打开
+                downloadAndInstall(release: release, silent: true)
             }
         } else {
             availableRelease = nil
@@ -218,7 +226,7 @@ final class GitHubUpdateManager: ObservableObject {
 
         let response = alert.runModal()
         if response == .alertFirstButtonReturn {
-            downloadAndInstall(release: release)
+            downloadAndInstall(release: release, silent: false)
         } else if response == .alertSecondButtonReturn {
             if let url = URL(string: release.htmlUrl) {
                 NSWorkspace.shared.open(url)
@@ -248,14 +256,21 @@ final class GitHubUpdateManager: ObservableObject {
         alert.runModal()
     }
 
-    private func sendUpdateNotification(release: GitHubRelease) {
+    private func sendUpdateNotification(release: GitHubRelease, downloaded: Bool) {
         let content = UNMutableNotificationContent()
         content.title = L.SettingsUpdate.alertTitle(release.tagName)
-        content.body = L.SettingsUpdate.notificationBody(release.tagName)
+        content.body = downloaded
+            ? L.SettingsUpdate.notificationDownloadedBody(release.tagName)
+            : L.SettingsUpdate.notificationBody(release.tagName)
         content.sound = .default
+        content.userInfo = [
+            "tag": release.tagName,
+            "html_url": release.htmlUrl,
+            "downloaded": downloaded
+        ]
 
         let request = UNNotificationRequest(
-            identifier: "github_update_\(release.tagName)",
+            identifier: "\(notificationPrefix)\(release.tagName)",
             content: content,
             trigger: nil
         )
@@ -264,21 +279,35 @@ final class GitHubUpdateManager: ObservableObject {
 
     // MARK: - Download and Install
 
-    func downloadAndInstall(release: GitHubRelease) {
-        let dmgAsset = release.assets.first(where: { $0.name.hasSuffix(".dmg") })
-        let zipAsset = release.assets.first(where: { $0.name.hasSuffix(".zip") })
+    /// 沙盒可写目录：Application Support/Agent Ring/Updates
+    private func updatesDirectory() throws -> URL {
+        let appSupport = try FileManager.default.url(
+            for: .applicationSupportDirectory,
+            in: .userDomainMask,
+            appropriateFor: nil,
+            create: true
+        )
+        let dir = appSupport.appendingPathComponent("Agent Ring/Updates", isDirectory: true)
+        try FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
+        return dir
+    }
+
+    func downloadAndInstall(release: GitHubRelease, silent: Bool = false) {
+        let dmgAsset = release.assets.first(where: { $0.name.lowercased().hasSuffix(".dmg") })
+        let zipAsset = release.assets.first(where: { $0.name.lowercased().hasSuffix(".zip") })
 
         guard let asset = dmgAsset ?? zipAsset,
               let downloadUrl = URL(string: asset.browserDownloadUrl) else {
-            if let url = URL(string: release.htmlUrl) {
+            if !silent, let url = URL(string: release.htmlUrl) {
                 NSWorkspace.shared.open(url)
+            } else if silent {
+                sendUpdateNotification(release: release, downloaded: false)
             }
             return
         }
 
+        guard !isDownloading else { return }
         isDownloading = true
-        let downloadsDir = FileManager.default.urls(for: .downloadsDirectory, in: .userDomainMask).first ?? FileManager.default.temporaryDirectory
-        let destinationUrl = downloadsDir.appendingPathComponent(asset.name)
 
         URLSession.shared.downloadTask(with: downloadUrl) { [weak self] tempUrl, response, error in
             DispatchQueue.main.async {
@@ -286,41 +315,100 @@ final class GitHubUpdateManager: ObservableObject {
                 self.isDownloading = false
 
                 if let error {
-                    let errAlert = NSAlert()
-                    errAlert.messageText = L.SettingsUpdate.downloadFailedTitle
-                    errAlert.informativeText = error.localizedDescription
-                    errAlert.alertStyle = .warning
-                    errAlert.addButton(withTitle: L.Update.okButton)
-                    errAlert.runModal()
+                    if silent {
+                        self.sendUpdateNotification(release: release, downloaded: false)
+                    } else {
+                        let errAlert = NSAlert()
+                        errAlert.messageText = L.SettingsUpdate.downloadFailedTitle
+                        errAlert.informativeText = error.localizedDescription
+                        errAlert.alertStyle = .warning
+                        errAlert.addButton(withTitle: L.Update.okButton)
+                        errAlert.runModal()
+                    }
                     return
                 }
 
                 guard let tempUrl else { return }
 
                 do {
+                    let destinationUrl = try self.updatesDirectory().appendingPathComponent(asset.name)
                     if FileManager.default.fileExists(atPath: destinationUrl.path) {
                         try FileManager.default.removeItem(at: destinationUrl)
                     }
                     try FileManager.default.moveItem(at: tempUrl, to: destinationUrl)
+                    self.lastDownloadedPackageURL = destinationUrl
 
-                    // 打开下载的 DMG / ZIP 安装包
-                    NSWorkspace.shared.open(destinationUrl)
-
-                    let successAlert = NSAlert()
-                    successAlert.messageText = L.SettingsUpdate.downloadSuccessTitle
-                    successAlert.informativeText = L.SettingsUpdate.downloadSuccessMessage(asset.name)
-                    successAlert.alertStyle = .informational
-                    successAlert.addButton(withTitle: L.Update.okButton)
-                    successAlert.runModal()
+                    if silent {
+                        self.sendUpdateNotification(release: release, downloaded: true)
+                    } else {
+                        NSWorkspace.shared.open(destinationUrl)
+                        let successAlert = NSAlert()
+                        successAlert.messageText = L.SettingsUpdate.downloadSuccessTitle
+                        successAlert.informativeText = L.SettingsUpdate.downloadSuccessMessage(asset.name)
+                        successAlert.alertStyle = .informational
+                        successAlert.addButton(withTitle: L.Update.okButton)
+                        successAlert.runModal()
+                    }
                 } catch {
-                    let errAlert = NSAlert()
-                    errAlert.messageText = L.SettingsUpdate.downloadFailedTitle
-                    errAlert.informativeText = error.localizedDescription
-                    errAlert.alertStyle = .warning
-                    errAlert.addButton(withTitle: L.Update.okButton)
-                    errAlert.runModal()
+                    if silent {
+                        self.sendUpdateNotification(release: release, downloaded: false)
+                    } else {
+                        let errAlert = NSAlert()
+                        errAlert.messageText = L.SettingsUpdate.downloadFailedTitle
+                        errAlert.informativeText = error.localizedDescription
+                        errAlert.alertStyle = .warning
+                        errAlert.addButton(withTitle: L.Update.okButton)
+                        errAlert.runModal()
+                    }
                 }
             }
         }.resume()
+    }
+
+    private func openDownloadedPackageOrReleasePage(for release: GitHubRelease) {
+        if let package = lastDownloadedPackageURL,
+           FileManager.default.fileExists(atPath: package.path) {
+            NSWorkspace.shared.open(package)
+            return
+        }
+        if let url = URL(string: release.htmlUrl) {
+            NSWorkspace.shared.open(url)
+        }
+    }
+
+    // MARK: - UNUserNotificationCenterDelegate
+
+    func userNotificationCenter(
+        _ center: UNUserNotificationCenter,
+        didReceive response: UNNotificationResponse,
+        withCompletionHandler completionHandler: @escaping () -> Void
+    ) {
+        let id = response.notification.request.identifier
+        guard id.hasPrefix(notificationPrefix) else {
+            completionHandler()
+            return
+        }
+
+        DispatchQueue.main.async {
+            if let release = self.availableRelease {
+                self.openDownloadedPackageOrReleasePage(for: release)
+            } else if let html = response.notification.request.content.userInfo["html_url"] as? String,
+                      let url = URL(string: html) {
+                NSWorkspace.shared.open(url)
+            }
+            completionHandler()
+        }
+    }
+
+    func userNotificationCenter(
+        _ center: UNUserNotificationCenter,
+        willPresent notification: UNNotification,
+        withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void
+    ) {
+        if notification.request.identifier.hasPrefix(notificationPrefix) {
+            completionHandler([.banner, .sound])
+        } else {
+            completionHandler([.banner, .sound])
+        }
     }
 }

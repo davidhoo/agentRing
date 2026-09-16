@@ -208,6 +208,9 @@ enum L {
         static func notificationBody(_ version: String) -> String {
             String(format: localized("settings.update.notification_body"), version)
         }
+        static func notificationDownloadedBody(_ version: String) -> String {
+            String(format: localized("settings.update.notification_downloaded_body"), version)
+        }
         static var downloading: String { localized("settings.update.downloading") }
         static var downloadSuccessTitle: String { localized("settings.update.download_success_title") }
         static func downloadSuccessMessage(_ file: String) -> String {

@@ -118,9 +118,9 @@
 
 // MARK: - Settings Update
 "settings.update.section" = "版本更新";
-"settings.update.hint" = "通过 GitHub Releases 检测与下载最新版本";
-"settings.update.auto_update" = "自动检查更新";
-"settings.update.auto_update_hint" = "开启后每 1 小时自动检测一次 GitHub Releases 新版本";
+"settings.update.hint" = "通过 GitHub Releases 检测并下载最新版本";
+"settings.update.auto_update" = "自动更新";
+"settings.update.auto_update_hint" = "开启后每 1 小时自动检测 GitHub Releases；发现新版本时下载安装包并通知你";
 "settings.update.check_now" = "检查更新";
 "settings.update.checking" = "正在检查更新...";
 "settings.update.check_failed" = "检查更新失败";
@@ -135,9 +135,10 @@
 "settings.update.up_to_date_title" = "已是最新版本";
 "settings.update.up_to_date_message" = "Agent Ring %@ 目前是最新版本。";
 "settings.update.notification_body" = "Agent Ring %@ 现已发布，点击前往更新。";
+"settings.update.notification_downloaded_body" = "Agent Ring %@ 安装包已下载，点击打开安装。";
 "settings.update.downloading" = "正在下载安装包...";
 "settings.update.download_success_title" = "下载完成";
-"settings.update.download_success_message" = "安装包已下载至下载文件夹并已打开：%@";
+"settings.update.download_success_message" = "安装包已保存并打开：%@";
 "settings.update.download_failed_title" = "下载失败";
 "settings.update.last_checked" = "上次检查：%@";
 

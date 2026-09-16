@@ -119,8 +119,8 @@
 // MARK: - Settings Update
 "settings.update.section" = "Software Update";
 "settings.update.hint" = "Check and download new versions from GitHub Releases";
-"settings.update.auto_update" = "Automatically check for updates";
-"settings.update.auto_update_hint" = "Check GitHub Releases every hour for new versions";
+"settings.update.auto_update" = "Automatic Updates";
+"settings.update.auto_update_hint" = "Every hour, check GitHub Releases and download the installer when a new version is available";
 "settings.update.check_now" = "Check for Updates";
 "settings.update.checking" = "Checking for updates...";
 "settings.update.check_failed" = "Failed to check for updates";
@@ -135,9 +135,10 @@
 "settings.update.up_to_date_title" = "You're Up to Date";
 "settings.update.up_to_date_message" = "Agent Ring %@ is currently the newest version.";
 "settings.update.notification_body" = "Agent Ring %@ is now available.";
+"settings.update.notification_downloaded_body" = "Agent Ring %@ installer downloaded. Click to open.";
 "settings.update.downloading" = "Downloading installer...";
 "settings.update.download_success_title" = "Download Complete";
-"settings.update.download_success_message" = "Installer downloaded to Downloads and opened: %@";
+"settings.update.download_success_message" = "Installer saved and opened: %@";
 "settings.update.download_failed_title" = "Download Failed";
 "settings.update.last_checked" = "Last checked: %@";
 
