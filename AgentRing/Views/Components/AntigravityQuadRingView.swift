@@ -11,7 +11,6 @@ struct AntigravityQuadRingView: View {
         let id: LimitType
         let percentage: Double
         let color: Color
-        let dashed: Bool
     }
 
     let layers: [Layer]

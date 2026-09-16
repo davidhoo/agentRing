@@ -30,8 +30,7 @@ struct AntigravityColumnView: View {
             return AntigravityQuadRingView.Layer(
                 id: type,
                 percentage: percentage,
-                color: color(for: type, percentage: percentage),
-                dashed: type.usesDashedStyle
+                color: color(for: type, percentage: percentage)
             )
         }
     }

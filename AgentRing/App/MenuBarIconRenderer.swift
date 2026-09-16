@@ -231,57 +231,119 @@ final class MenuBarIconRenderer {
     ) -> [NSImage] {
         let types = settings.getActiveAntigravityDisplayTypes(antigravityUsageData: antigravity, forMenuBar: true)
         let showPlaceholder = settings.displayMode == .custom
-        let hasGemini = types.contains(.antigravityPrimary) || types.contains(.antigravitySecondary)
-        let hasThirdParty = types.contains(.antigravityThirdPartyPrimary) || types.contains(.antigravityThirdPartySecondary)
-        guard hasGemini || hasThirdParty else { return [] }
+        var layers: [(percentage: Double, color: NSColor)] = []
 
-        var icons: [NSImage] = []
-
-        if hasGemini {
-            let outerPercentage = antigravity.geminiPrimary?.percentage ?? (showPlaceholder && types.contains(.antigravityPrimary) ? 0 : nil)
-            let resolvedOuter = outerPercentage ?? (types.contains(.antigravitySecondary) ? antigravity.geminiSecondary?.percentage : nil)
-            if let resolvedOuter {
-                let innerPercentage: Double? = {
-                    guard types.contains(.antigravityPrimary), types.contains(.antigravitySecondary) else { return nil }
-                    return antigravity.geminiSecondary?.percentage ?? (showPlaceholder ? 0 : nil)
-                }()
-
-                icons.append(createConcentricRingImage(
-                    outerPercentage: UsageRingDisplay.remainingPercentage(usedPercentage: resolvedOuter),
-                    innerPercentage: innerPercentage.map {
-                        UsageRingDisplay.remainingPercentage(usedPercentage: $0)
-                    },
-                    outerColor: .black,
-                    innerColor: NSColor.black.withAlphaComponent(0.78),
-                    isMonochrome: true,
-                    button: button
-                ))
-            }
+        func appendLayer(
+            type: LimitType,
+            usedPercentage: Double?,
+            color: NSColor
+        ) {
+            guard types.contains(type) else { return }
+            let resolved = usedPercentage ?? (showPlaceholder ? 0 : nil)
+            guard let resolved else { return }
+            layers.append((
+                UsageRingDisplay.remainingPercentage(usedPercentage: resolved),
+                color
+            ))
         }
 
-        if hasThirdParty {
-            let outerPercentage = antigravity.thirdPartyPrimary?.percentage ?? (showPlaceholder && types.contains(.antigravityThirdPartyPrimary) ? 0 : nil)
-            let resolvedOuter = outerPercentage ?? (types.contains(.antigravityThirdPartySecondary) ? antigravity.thirdPartySecondary?.percentage : nil)
-            if let resolvedOuter {
-                let innerPercentage: Double? = {
-                    guard types.contains(.antigravityThirdPartyPrimary), types.contains(.antigravityThirdPartySecondary) else { return nil }
-                    return antigravity.thirdPartySecondary?.percentage ?? (showPlaceholder ? 0 : nil)
-                }()
+        appendLayer(
+            type: .antigravityPrimary,
+            usedPercentage: antigravity.geminiPrimary?.percentage ?? antigravity.primary?.percentage,
+            color: UsageColorScheme.antigravityPrimaryColorAdaptive(antigravity.geminiPrimary?.percentage ?? 0, for: button)
+        )
+        appendLayer(
+            type: .antigravitySecondary,
+            usedPercentage: antigravity.geminiSecondary?.percentage ?? antigravity.secondary?.percentage,
+            color: UsageColorScheme.antigravitySecondaryColorAdaptive(antigravity.geminiSecondary?.percentage ?? 0, for: button)
+        )
+        appendLayer(
+            type: .antigravityThirdPartyPrimary,
+            usedPercentage: antigravity.thirdPartyPrimary?.percentage,
+            color: UsageColorScheme.antigravityThirdPartyPrimaryColorAdaptive(antigravity.thirdPartyPrimary?.percentage ?? 0, for: button)
+        )
+        appendLayer(
+            type: .antigravityThirdPartySecondary,
+            usedPercentage: antigravity.thirdPartySecondary?.percentage,
+            color: UsageColorScheme.antigravityThirdPartySecondaryColorAdaptive(antigravity.thirdPartySecondary?.percentage ?? 0, for: button)
+        )
 
-                icons.append(createConcentricRingImage(
-                    outerPercentage: UsageRingDisplay.remainingPercentage(usedPercentage: resolvedOuter),
-                    innerPercentage: innerPercentage.map {
-                        UsageRingDisplay.remainingPercentage(usedPercentage: $0)
-                    },
-                    outerColor: .black,
-                    innerColor: NSColor.black.withAlphaComponent(0.78),
-                    isMonochrome: true,
-                    button: button
-                ))
+        guard !layers.isEmpty else { return [] }
+        return [
+            createAntigravityQuadRingImage(
+                layers: layers,
+                isMonochrome: isMonochrome,
+                button: button
+            )
+        ]
+    }
+
+    /// 菜单栏 Antigravity 四配额同心圆（与 Dashboard 一致，实线、靠颜色区分）。
+    private func createAntigravityQuadRingImage(
+        layers: [(percentage: Double, color: NSColor)],
+        isMonochrome: Bool,
+        button: NSStatusBarButton?
+    ) -> NSImage {
+        let pointSize = NSSize(width: metricIconSize, height: metricIconSize)
+        let scale = max(NSScreen.main?.backingScaleFactor ?? 2.0, 2.0)
+        let pixels = NSSize(width: pointSize.width * scale, height: pointSize.height * scale)
+
+        guard let rep = NSBitmapImageRep(
+            bitmapDataPlanes: nil,
+            pixelsWide: Int(pixels.width),
+            pixelsHigh: Int(pixels.height),
+            bitsPerSample: 8,
+            samplesPerPixel: 4,
+            hasAlpha: true,
+            isPlanar: false,
+            colorSpaceName: .deviceRGB,
+            bytesPerRow: 0,
+            bitsPerPixel: 0
+        ) else {
+            return NSImage(size: pointSize)
+        }
+        rep.size = pointSize
+
+        NSGraphicsContext.saveGraphicsState()
+        guard let context = NSGraphicsContext(bitmapImageRep: rep) else {
+            NSGraphicsContext.restoreGraphicsState()
+            return NSImage(size: pointSize)
+        }
+        NSGraphicsContext.current = context
+        context.shouldAntialias = true
+        context.imageInterpolation = .high
+
+        let center = NSPoint(x: pointSize.width / 2, y: pointSize.height / 2)
+        let lineWidth: CGFloat = 1.7
+        let ringGap: CGFloat = 0.65
+        var radius = (pointSize.width / 2) - lineWidth / 2 - 0.55
+        let monochromeOpacities: [CGFloat] = [1.0, 0.82, 0.64, 0.46]
+
+        for (index, layer) in layers.enumerated() {
+            let strokeColor: NSColor
+            if isMonochrome {
+                let opacity = monochromeOpacities[min(index, monochromeOpacities.count - 1)]
+                strokeColor = NSColor.black.withAlphaComponent(opacity)
+            } else {
+                strokeColor = layer.color
             }
+
+            drawActivityRing(
+                percentage: layer.percentage,
+                center: center,
+                radius: radius,
+                lineWidth: lineWidth,
+                color: strokeColor
+            )
+            radius -= lineWidth + ringGap
         }
 
-        return icons
+        NSGraphicsContext.restoreGraphicsState()
+
+        let image = NSImage(size: pointSize)
+        image.addRepresentation(rep)
+        image.isTemplate = isMonochrome
+        return image
     }
 
     private func createConcentricRingImage(
