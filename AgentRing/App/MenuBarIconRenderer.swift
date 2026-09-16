@@ -371,7 +371,9 @@ final class MenuBarIconRenderer {
             center: center,
             radius: outerRadius,
             lineWidth: outerLineWidth,
-            color: isMonochrome ? NSColor.black : outerColor
+            color: isMonochrome ? NSColor.black : outerColor,
+            isInner: false,
+            isMonochrome: isMonochrome
         )
 
         if let innerPercentage {
@@ -380,7 +382,9 @@ final class MenuBarIconRenderer {
                 center: center,
                 radius: innerRadius,
                 lineWidth: innerLineWidth,
-                color: isMonochrome ? NSColor.black.withAlphaComponent(0.78) : innerColor
+                color: isMonochrome ? NSColor.black.withAlphaComponent(0.78) : innerColor,
+                isInner: true,
+                isMonochrome: isMonochrome
             )
         }
 
@@ -393,14 +397,28 @@ final class MenuBarIconRenderer {
         return image
     }
 
-    /// 健身环：只画已用进度弧，未用区间不展示底轨
+    /// 健身环：绘制进度弧，并在剩余模式下以圆点虚线呈现已消耗配额底轨
     private func drawActivityRing(
         percentage: Double,
         center: NSPoint,
         radius: CGFloat,
         lineWidth: CGFloat,
-        color: NSColor
+        color: NSColor,
+        isInner: Bool,
+        isMonochrome: Bool
     ) {
+        if settings.showRemainingMode {
+            drawDottedUsedTrack(
+                remainingPercentage: percentage,
+                center: center,
+                radius: radius,
+                lineWidth: lineWidth,
+                color: color,
+                isInner: isInner,
+                isMonochrome: isMonochrome
+            )
+        }
+
         drawRingProgress(
             percentage: percentage,
             center: center,
@@ -408,6 +426,62 @@ final class MenuBarIconRenderer {
             lineWidth: lineWidth,
             color: color
         )
+    }
+
+    /// 菜单栏圆点虚线底轨：在剩余模式下，将「已使用部分」以精致的同心圆点标尺展示
+    private func drawDottedUsedTrack(
+        remainingPercentage: Double,
+        center: NSPoint,
+        radius: CGFloat,
+        lineWidth: CGFloat,
+        color: NSColor,
+        isInner: Bool,
+        isMonochrome: Bool
+    ) {
+        let clamped = min(100, max(0, remainingPercentage))
+        guard clamped < 99.5 else { return }
+
+        let circumference = 2 * CGFloat.pi * radius
+        let capAngle = (lineWidth / circumference) * 360.0
+        let solidSpan = (CGFloat(clamped) / 100.0) * 360.0
+        let clearance = capAngle * 0.65
+
+        let slotCount = isInner ? 13 : 20
+        let dotDiameter: CGFloat = isInner ? 1.15 : 1.35
+        let dotRadius = dotDiameter / 2.0
+
+        let dotColor: NSColor
+        if isMonochrome {
+            dotColor = NSColor.black.withAlphaComponent(isInner ? 0.30 : 0.38)
+        } else {
+            dotColor = color.withAlphaComponent(isInner ? 0.40 : 0.46)
+        }
+        dotColor.setFill()
+
+        for i in 0..<slotCount {
+            let slotAngle = CGFloat(i) * (360.0 / CGFloat(slotCount))
+            let inSolid: Bool
+            if clamped <= 0.5 {
+                inSolid = false
+            } else {
+                inSolid = (slotAngle <= solidSpan + clearance) || (slotAngle >= 360.0 - clearance)
+            }
+
+            if !inSolid {
+                let mathAngle = (90.0 - slotAngle) * CGFloat.pi / 180.0
+                let dotCenter = NSPoint(
+                    x: center.x + radius * cos(mathAngle),
+                    y: center.y + radius * sin(mathAngle)
+                )
+                let dotRect = NSRect(
+                    x: dotCenter.x - dotRadius,
+                    y: dotCenter.y - dotRadius,
+                    width: dotDiameter,
+                    height: dotDiameter
+                )
+                NSBezierPath(ovalIn: dotRect).fill()
+            }
+        }
     }
 
     private func drawRingProgress(
