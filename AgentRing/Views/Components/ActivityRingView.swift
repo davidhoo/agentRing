@@ -59,27 +59,46 @@ struct ActivityRingView: View {
         .frame(width: diameter, height: diameter)
     }
 
+    private let usedPortionOpacity: Double = 0.18
+
     @ViewBuilder
     private func ring(diameter: CGFloat, percentage: Double, color: Color, isInner: Bool) -> some View {
         let range = UsageRingDisplay.displayedTrimRange(
             usedPercentage: percentage,
             showRemainingMode: showRemainingMode
         )
+        let usedRange = UsageRingDisplay.usedPortionTrimRange(
+            usedPercentage: percentage,
+            showRemainingMode: showRemainingMode
+        )
 
         if isRefreshing {
             loadingStroke(diameter: diameter, color: color, reverse: isInner)
-        } else if abs(range.to - range.from) >= 0.002 {
-            // 0% 不描边，避免 round lineCap 在 12 点方向留下假圆点；未用区间也不画灰轨。
-            Circle()
-                .trim(from: range.from, to: range.to)
-                .stroke(color, style: StrokeStyle(lineWidth: lineWidth, lineCap: .round))
-                .frame(width: diameter, height: diameter)
-                .rotationEffect(.degrees(-90))
-                .animation(
-                    .spring(response: 0.42, dampingFraction: 0.78, blendDuration: 0.05),
-                    value: range
+        } else {
+            if let usedRange, abs(usedRange.to - usedRange.from) >= 0.002 {
+                ringStroke(
+                    diameter: diameter,
+                    range: usedRange,
+                    color: color.opacity(usedPortionOpacity)
                 )
+            }
+
+            if abs(range.to - range.from) >= 0.002 {
+                ringStroke(diameter: diameter, range: range, color: color)
+            }
         }
+    }
+
+    private func ringStroke(diameter: CGFloat, range: UsageRingTrimRange, color: Color) -> some View {
+        Circle()
+            .trim(from: range.from, to: range.to)
+            .stroke(color, style: StrokeStyle(lineWidth: lineWidth, lineCap: .round))
+            .frame(width: diameter, height: diameter)
+            .rotationEffect(.degrees(-90))
+            .animation(
+                .spring(response: 0.42, dampingFraction: 0.78, blendDuration: 0.05),
+                value: range
+            )
     }
 
     @ViewBuilder

@@ -49,6 +49,14 @@ enum UsageRingDisplay {
 
         return UsageRingTrimRange(from: 0, to: used)
     }
+
+    /// 剩余模式下，已使用区间的弧线范围（用于 Dashboard 半透明底轨）。
+    static func usedPortionTrimRange(usedPercentage: Double, showRemainingMode: Bool) -> UsageRingTrimRange? {
+        guard showRemainingMode else { return nil }
+        let used = usedFraction(usedPercentage)
+        guard used >= 0.002 else { return nil }
+        return UsageRingTrimRange(from: 1 - used, to: 1)
+    }
 }
 
 /// 大圆环中心百分比。
