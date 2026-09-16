@@ -134,12 +134,34 @@ struct CodexCoreUsageResponse: Codable, Sendable {
             return nil
         }
 
-        let primary = rate_limit?.primary_window.map {
+        let primaryWindow: Window?
+        let secondaryWindow: Window?
+
+        if let pw = rate_limit?.primary_window, let sw = rate_limit?.secondary_window {
+            primaryWindow = pw
+            secondaryWindow = sw
+        } else if let pw = rate_limit?.primary_window {
+            if let seconds = pw.limit_window_seconds, seconds > 86400 {
+                primaryWindow = nil
+                secondaryWindow = pw
+            } else {
+                primaryWindow = pw
+                secondaryWindow = nil
+            }
+        } else if let sw = rate_limit?.secondary_window {
+            primaryWindow = nil
+            secondaryWindow = sw
+        } else {
+            primaryWindow = nil
+            secondaryWindow = nil
+        }
+
+        let primary = primaryWindow.map {
             CodexCoreUsageData.LimitData(percentage: $0.used_percent, resetsAt: resetDate(for: $0))
         }
 
         let secondary: CodexCoreUsageData.LimitData? = {
-            guard let window = rate_limit?.secondary_window else { return nil }
+            guard let window = secondaryWindow else { return nil }
             if window.used_percent == 0 && window.reset_at == nil && window.reset_after_seconds == nil {
                 return nil
             }
