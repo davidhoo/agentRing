@@ -16,7 +16,7 @@ class TimerManager {
     private var timers: [String: Timer] = [:]
 
     /// 线程安全队列
-    private let queue = DispatchQueue(label: "com.codexrings.timer", attributes: .concurrent)
+    private let queue = DispatchQueue(label: "app.agentring.timer", attributes: .concurrent)
 
     // MARK: - Public Methods
 

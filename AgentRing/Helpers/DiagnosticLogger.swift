@@ -29,7 +29,7 @@ class DiagnosticLogger {
     private var logFileURL: URL?
 
     /// 日志队列（用于异步写入）
-    private let logQueue = DispatchQueue(label: "com.codexrings.CodexRings.logging", qos: .utility)
+    private let logQueue = DispatchQueue(label: "app.agentring.AgentRing.logging", qos: .utility)
 
     /// 最大日志文件大小（5MB）
     private let maxLogFileSize: UInt64 = 5 * 1024 * 1024
@@ -38,7 +38,7 @@ class DiagnosticLogger {
     private var isEnabled: Bool = true
 
     /// 系统日志器
-    private let osLogger = Logger(subsystem: "com.codexrings.CodexRings", category: "Diagnostics")
+    private let osLogger = Logger(subsystem: "app.agentring.AgentRing", category: "Diagnostics")
 
     // MARK: - Initialization
 
