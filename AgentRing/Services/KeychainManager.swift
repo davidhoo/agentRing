@@ -277,21 +277,24 @@ class KeychainManager {
         guard let data = value.data(using: .utf8) else {
             return false
         }
-        
-        // 构建查询字典
+
+        // 先按 identity 删除旧项（不要带 value，否则改密时删不掉）
+        _ = delete(key: key, service: service)
+
+        // Data Protection Keychain + AfterFirstUnlock：
+        // 避免 file-based keychain 把 ACL 绑死在 ad-hoc 签名上，
+        // 每次重装/更新都弹「要访问钥匙串，请输入密码」。
         let query: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,
             kSecAttrService as String: service,
             kSecAttrAccount as String: key,
-            kSecValueData as String: data
+            kSecValueData as String: data,
+            kSecAttrAccessible as String: kSecAttrAccessibleAfterFirstUnlock,
+            kSecUseDataProtectionKeychain as String: true
         ]
-        
-        // 先尝试删除已存在的项
-        SecItemDelete(query as CFDictionary)
-        
-        // 添加新项
+
         let status = SecItemAdd(query as CFDictionary, nil)
-        
+
         if status == errSecSuccess {
             return true
         } else {
@@ -299,7 +302,7 @@ class KeychainManager {
             return false
         }
     }
-    
+
     /// 从 Keychain 读取数据
     /// - Parameter key: 键名
     /// - Returns: 读取的值，如果不存在返回 nil
@@ -308,28 +311,45 @@ class KeychainManager {
     }
 
     private func load(key: String, service: String) -> String? {
-        let query: [String: Any] = [
+        // 先读 DP keychain；没有再回退旧 file keychain（兼容升级前写入的条目）
+        if let value = copyMatching(key: key, service: service, useDataProtection: true) {
+            return value
+        }
+        if let legacy = copyMatching(key: key, service: service, useDataProtection: false) {
+            // 读到旧条目后立刻用新属性重写，后续不再弹窗
+            _ = save(key: key, value: legacy, service: service)
+            return legacy
+        }
+        return nil
+    }
+
+    private func copyMatching(key: String, service: String, useDataProtection: Bool) -> String? {
+        var query: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,
             kSecAttrService as String: service,
             kSecAttrAccount as String: key,
             kSecReturnData as String: true,
             kSecMatchLimit as String: kSecMatchLimitOne
         ]
-        
+        if useDataProtection {
+            query[kSecUseDataProtectionKeychain as String] = true
+        }
+
         var result: AnyObject?
         let status = SecItemCopyMatching(query as CFDictionary, &result)
-        
+
         if status == errSecSuccess,
            let data = result as? Data,
            let value = String(data: data, encoding: .utf8) {
             return value
         } else if status != errSecItemNotFound {
-            Logger.keychain.error("Keychain 读取失败: \(key), 状态码: \(status)")
+            Logger.keychain.error(
+                "Keychain 读取失败: \(key), dp=\(useDataProtection), 状态码: \(status)"
+            )
         }
-
         return nil
     }
-    
+
     /// 从 Keychain 删除数据
     /// - Parameter key: 键名
     /// - Returns: 是否删除成功
@@ -338,20 +358,29 @@ class KeychainManager {
     }
 
     private func delete(key: String, service: String) -> Bool {
-        let query: [String: Any] = [
+        let dpDeleted = deleteMatching(key: key, service: service, useDataProtection: true)
+        let legacyDeleted = deleteMatching(key: key, service: service, useDataProtection: false)
+        return dpDeleted || legacyDeleted
+    }
+
+    private func deleteMatching(key: String, service: String, useDataProtection: Bool) -> Bool {
+        var query: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,
             kSecAttrService as String: service,
             kSecAttrAccount as String: key
         ]
-        
-        let status = SecItemDelete(query as CFDictionary)
+        if useDataProtection {
+            query[kSecUseDataProtectionKeychain as String] = true
+        }
 
+        let status = SecItemDelete(query as CFDictionary)
         if status == errSecSuccess || status == errSecItemNotFound {
             return true
-        } else {
-            Logger.keychain.error("Keychain 删除失败: \(key), 状态码: \(status)")
-            return false
         }
+        Logger.keychain.error(
+            "Keychain 删除失败: \(key), dp=\(useDataProtection), 状态码: \(status)"
+        )
+        return false
     }
     #endif
 }
