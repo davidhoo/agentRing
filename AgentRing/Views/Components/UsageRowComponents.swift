@@ -96,7 +96,7 @@ struct DetailUsageRingSweep: View {
                     gradient: Gradient(colors: [
                         color.opacity(0.0),
                         color.opacity(0.35),
-                        Color.white.opacity(0.95),
+                        color.opacity(0.9),
                         color.opacity(0.85),
                         color.opacity(0.0)
                     ]),

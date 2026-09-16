@@ -110,7 +110,8 @@ struct ActivityRingView: View {
                 .trim(from: 0, to: 0.7)
                 .stroke(
                     AngularGradient(
-                        gradient: Gradient(colors: [color, color.opacity(0.4), .white, color]),
+                        // 高光用环色自身提亮而非纯白，暗色模式毛玻璃底上不过曝
+                        gradient: Gradient(colors: [color, color.opacity(0.4), color.opacity(0.9), color]),
                         center: .center
                     ),
                     style: StrokeStyle(lineWidth: lineWidth, lineCap: .round)
