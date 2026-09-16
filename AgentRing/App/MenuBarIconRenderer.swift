@@ -20,18 +20,17 @@ final class MenuBarIconRenderer {
         codexUsageData: CodexUsageData?,
         cursorUsageData: CursorUsageData?,
         antigravityUsageData: AntigravityUsageData? = nil,
-        hasUpdate: Bool,
+        hasUpdate: Bool = false,
         button: NSStatusBarButton?
     ) -> NSImage {
         let isMonochrome = settings.iconStyleMode == .monochrome
-        let icon = buildIcon(
+        return buildIcon(
             codexUsageData: codexUsageData,
             cursorUsageData: cursorUsageData,
             antigravityUsageData: antigravityUsageData,
             isMonochrome: isMonochrome,
             button: button
         )
-        return hasUpdate ? addBadgeToImage(icon) : icon
     }
 
     private func buildIcon(
@@ -558,19 +557,6 @@ final class MenuBarIconRenderer {
         return image
     }
 
-    private func addBadgeToImage(_ baseImage: NSImage) -> NSImage {
-        let size = baseImage.size
-        let expandedSize = NSSize(width: size.width + 2.5, height: size.height + 2.5)
-        let badgedImage = NSImage(size: expandedSize)
-
-        badgedImage.lockFocus()
-        baseImage.draw(in: NSRect(origin: .zero, size: size))
-        NSColor.systemRed.setFill()
-        NSBezierPath(ovalIn: NSRect(x: expandedSize.width - 5.5, y: expandedSize.height - 5.5, width: 4, height: 4)).fill()
-        badgedImage.unlockFocus()
-        badgedImage.isTemplate = baseImage.isTemplate
-        return badgedImage
-    }
 
     private func combineIcons(_ icons: [NSImage], spacing: CGFloat, height: CGFloat) -> NSImage {
         let totalWidth = icons.reduce(0) { $0 + $1.size.width } + CGFloat(icons.count - 1) * spacing

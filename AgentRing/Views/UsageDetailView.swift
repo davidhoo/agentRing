@@ -56,7 +56,6 @@ struct UsageDetailView: View {
     @State private var showAnimationTypeHint = false
     @State private var animationTypeHintName = ""
     @State private var animationTypeHintDismissWorkItem: DispatchWorkItem?
-    @State private var showUpdateNotification = false
     @ObservedObject private var settings = UserSettings.shared
     private var showRemainingMode: Bool {
         settings.showRemainingMode
@@ -138,30 +137,6 @@ struct UsageDetailView: View {
 
     private var providerDividerHeight: CGFloat {
         max(160, contentHeight - (showsMultipleProviders ? 52 : 40))
-    }
-
-    private var updateNotificationView: some View {
-        Group {
-            if showUpdateNotification {
-                HStack(spacing: 6) {
-                    Image(systemName: "arrow.down.circle.fill")
-                        .font(.system(size: 14))
-                        .foregroundStyle(
-                            LinearGradient(
-                                colors: [.red, .orange, .yellow, .green, .blue, .purple, .red],
-                                startPoint: .leading,
-                                endPoint: .trailing
-                            )
-                        )
-                    rainbowText(L.Update.Notification.available)
-                        .font(.system(size: 14))
-                }
-                .padding(.horizontal, 12)
-                .padding(.top, -8)
-                .padding(.bottom, 6)
-                .transition(.opacity.combined(with: .scale))
-            }
-        }
     }
 
     private var dashboardTitleText: String {
@@ -246,7 +221,8 @@ struct UsageDetailView: View {
                     Circle()
                         .fill(Color.red)
                         .frame(width: 6, height: 6)
-                        .offset(x: 5, y: -5)
+                        .offset(x: 2, y: -2)
+                        .allowsHitTesting(false)
                 }
             }
         }
@@ -496,7 +472,6 @@ struct UsageDetailView: View {
             .offset(y: showAnimationTypeHint ? -18 : 0)
 
             animationHintView
-            updateNotificationView
             Spacer()
         }
         .frame(width: popoverWidth, height: contentHeight)
@@ -510,12 +485,6 @@ struct UsageDetailView: View {
             }
             if refreshState.isRefreshing {
                 startRotationAnimation()
-            }
-            if refreshState.notificationMessage != nil {
-                withAnimation { showUpdateNotification = true }
-                DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
-                    withAnimation { showUpdateNotification = false }
-                }
             }
         }
         .onChange(of: activeProviders) { newProviders in
@@ -535,16 +504,6 @@ struct UsageDetailView: View {
         }
         .onChange(of: refreshState.isRefreshing) { newValue in
             newValue ? startRotationAnimation() : stopRotationAnimation()
-        }
-        .onChange(of: refreshState.notificationMessage) { message in
-            withAnimation {
-                showUpdateNotification = message != nil
-            }
-            if message != nil {
-                DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
-                    withAnimation { showUpdateNotification = false }
-                }
-            }
         }
         .onDisappear {
             draggedProvider = nil
@@ -621,17 +580,6 @@ private extension UsageDetailView {
     func stopRotationAnimation() {
         animationTimer?.invalidate()
         animationTimer = nil
-    }
-
-    func rainbowText(_ text: String) -> some View {
-        Text(text)
-            .foregroundStyle(
-                LinearGradient(
-                    colors: [.red, .orange, .yellow, .green, .blue, .purple, .red],
-                    startPoint: .leading,
-                    endPoint: .trailing
-                )
-            )
     }
 }
 

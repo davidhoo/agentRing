@@ -69,8 +69,10 @@ final class MenuBarManager: ObservableObject {
     }
 
     var shouldShowUpdateBadge: Bool {
-        guard hasAvailableUpdate, let latestVersion else { return false }
-        return acknowledgedVersion != latestVersion
+        let releaseVersion = GitHubUpdateManager.shared.availableRelease?.tagName ?? latestVersion
+        guard hasAvailableUpdate || GitHubUpdateManager.shared.availableRelease != nil,
+              let version = releaseVersion else { return false }
+        return acknowledgedVersion != version
     }
 
     init() {
@@ -234,7 +236,6 @@ final class MenuBarManager: ObservableObject {
 
     private func openPopover(relativeTo button: NSStatusBarButton) {
         dataManager.refreshOnPopoverOpen()
-        showUpdateNotificationIfNeeded()
         ui.setPopoverContentSize(usageDetailContentSize())
 
         ui.setPopoverContent(UsageDetailHost(manager: self))
@@ -275,15 +276,6 @@ final class MenuBarManager: ObservableObject {
         return NSSize(width: width, height: baseHeight + rowsHeight)
     }
 
-    private func showUpdateNotificationIfNeeded() {
-        guard shouldShowUpdateBadge else { return }
-        dataManager.refreshState.notificationMessage = L.Update.Notification.available
-        dataManager.refreshState.notificationType = .updateAvailable
-        DispatchQueue.main.asyncAfter(deadline: .now() + 3) { [weak self] in
-            self?.dataManager.refreshState.notificationMessage = nil
-        }
-    }
-
     private func closePopover() {
         ui.closePopover()
         dataManager.stopPopoverRefreshTimer()
@@ -319,8 +311,9 @@ final class MenuBarManager: ObservableObject {
     }
 
     @objc func checkForUpdates() {
-        if let latestVersion {
-            acknowledgedVersion = latestVersion
+        let versionToAcknowledge = GitHubUpdateManager.shared.availableRelease?.tagName ?? latestVersion
+        if let versionToAcknowledge {
+            acknowledgedVersion = versionToAcknowledge
             objectWillChange.send()
             updateMenuBarIcon()
         }

@@ -243,16 +243,14 @@ final class MenuBarUI {
         codexUsageData: CodexUsageData?,
         cursorUsageData: CursorUsageData?,
         antigravityUsageData: AntigravityUsageData? = nil,
-        hasUpdate: Bool,
-        shouldShowBadge: Bool
+        hasUpdate: Bool = false,
+        shouldShowBadge: Bool = false
     ) {
         guard let button = statusItem.button else { return }
-        let showBadge = hasUpdate && shouldShowBadge
         let cacheKey = generateCacheKey(
             codexUsageData: codexUsageData,
             cursorUsageData: cursorUsageData,
-            antigravityUsageData: antigravityUsageData,
-            hasUpdate: showBadge
+            antigravityUsageData: antigravityUsageData
         )
 
         if let cachedImage = iconCache[cacheKey] {
@@ -264,7 +262,6 @@ final class MenuBarUI {
             codexUsageData: codexUsageData,
             cursorUsageData: cursorUsageData,
             antigravityUsageData: antigravityUsageData,
-            hasUpdate: showBadge,
             button: button
         )
         if iconCache.count >= maxCacheSize {
@@ -281,8 +278,7 @@ final class MenuBarUI {
     private func generateCacheKey(
         codexUsageData: CodexUsageData?,
         cursorUsageData: CursorUsageData?,
-        antigravityUsageData: AntigravityUsageData?,
-        hasUpdate: Bool
+        antigravityUsageData: AntigravityUsageData?
     ) -> String {
         var key = "\(settings.iconDisplayMode.rawValue)_\(settings.iconStyleMode.rawValue)_\(settings.displayMode.rawValue)_\(settings.showRemainingMode)"
         if let codexUsageData {
@@ -321,9 +317,6 @@ final class MenuBarUI {
             if let tpSecondary = antigravityUsageData.thirdPartySecondary { key += "_tps\(Int(tpSecondary.percentage))" }
         } else {
             key += "_no_antigravity"
-        }
-        if hasUpdate {
-            key += "_badge"
         }
         return key
     }
