@@ -57,8 +57,9 @@ struct UsageDetailView: View {
     @State private var animationTypeHintName = ""
     @State private var animationTypeHintDismissWorkItem: DispatchWorkItem?
     @State private var showUpdateNotification = false
-    @AppStorage("showRemainingMode") private var savedRemainingMode = true
-    @State private var showRemainingMode = true
+    private var showRemainingMode: Bool {
+        UserSettings.shared.showRemainingMode
+    }
     @State private var remainingModeAnimationTrigger = 0
     @State private var orderedProviders: [ProviderType] = []
     @State private var draggedProvider: ProviderType? = nil
@@ -77,6 +78,7 @@ struct UsageDetailView: View {
 
     private var providerColumnWidth: CGFloat {
         switch max(activeProviders.count, 1) {
+        case 4...: return 240
         case 3: return 272
         case 2: return 276
         default: return 290
@@ -89,6 +91,7 @@ struct UsageDetailView: View {
 
     private var popoverWidth: CGFloat {
         switch activeProviders.count {
+        case 4...: return 1020
         case 3: return 860
         case 2: return 580
         default: return 320
@@ -104,7 +107,8 @@ struct UsageDetailView: View {
             types.append(contentsOf: UserSettings.shared.getActiveCursorDisplayTypes(cursorUsageData: cursorUsageData))
         }
         if let antigravityUsageData {
-            types.append(contentsOf: UserSettings.shared.getActiveAntigravityDisplayTypes(antigravityUsageData: antigravityUsageData))
+            types.append(contentsOf: UserSettings.shared.getActiveAntigravityDisplayTypes(antigravityUsageData: antigravityUsageData, provider: .antigravity))
+            types.append(contentsOf: UserSettings.shared.getActiveAntigravityDisplayTypes(antigravityUsageData: antigravityUsageData, provider: .antigravityThird))
         }
         return types
     }
@@ -122,7 +126,8 @@ struct UsageDetailView: View {
         let maxRowsPerProvider = [
             UserSettings.shared.getActiveCodexDisplayTypes(codexUsageData: codexUsageData).count,
             UserSettings.shared.getActiveCursorDisplayTypes(cursorUsageData: cursorUsageData).count,
-            UserSettings.shared.getActiveAntigravityDisplayTypes(antigravityUsageData: antigravityUsageData).count
+            UserSettings.shared.getActiveAntigravityDisplayTypes(antigravityUsageData: antigravityUsageData, provider: .antigravity).count,
+            UserSettings.shared.getActiveAntigravityDisplayTypes(antigravityUsageData: antigravityUsageData, provider: .antigravityThird).count
         ].max() ?? 0
         let hasAnyData = codexUsageData != nil || cursorUsageData != nil || antigravityUsageData != nil
         let rowCount = max(maxRowsPerProvider, hasAnyData || !activeProviders.isEmpty ? 1 : 0)
@@ -165,13 +170,13 @@ struct UsageDetailView: View {
                     .font(.headline)
             } else if let provider = activeProviders.first {
                 switch provider {
-                case .antigravity:
+                case .antigravity, .antigravityThird:
                     if let icon = ImageHelper.createAntigravityIcon(size: 18, isTemplate: false) {
                         Image(nsImage: icon)
                             .resizable()
                             .frame(width: 18, height: 18)
                     }
-                    Text(L.Usage.antigravityTitle)
+                    Text(providerTitle(for: provider))
                         .font(.headline)
                 case .cursor:
                     Image(systemName: "cursorarrow.click")
@@ -322,6 +327,7 @@ struct UsageDetailView: View {
         case .codex: return L.Usage.codexTitle
         case .cursor: return L.Usage.cursorTitle
         case .antigravity: return L.Usage.antigravityTitle
+        case .antigravityThird: return "Antigravity Third"
         }
     }
 
@@ -332,14 +338,13 @@ struct UsageDetailView: View {
             if let codexUsageData {
                 CodexColumnView(
                     codexUsageData: codexUsageData,
-                    showRemainingMode: $showRemainingMode,
+                    showRemainingMode: showRemainingMode,
                     refreshState: refreshState,
                     animationType: $codexAnimationType,
                     rotationAngle: $rotationAngle,
                     remainingModeAnimationTrigger: remainingModeAnimationTrigger,
                     onRefresh: { onMenuAction?(.refresh) },
-                    onAnimationHint: { showAnimationHint($0) },
-                    onToggleRemainingMode: toggleRemainingMode
+                    onAnimationHint: { showAnimationHint($0) }
                 )
                 .frame(maxWidth: .infinity)
             } else {
@@ -354,14 +359,13 @@ struct UsageDetailView: View {
             if let cursorUsageData {
                 CursorColumnView(
                     cursorUsageData: cursorUsageData,
-                    showRemainingMode: $showRemainingMode,
+                    showRemainingMode: showRemainingMode,
                     refreshState: refreshState,
                     animationType: $cursorAnimationType,
                     rotationAngle: $rotationAngle,
                     remainingModeAnimationTrigger: remainingModeAnimationTrigger,
                     onRefresh: { onMenuAction?(.refresh) },
-                    onAnimationHint: { showAnimationHint($0) },
-                    onToggleRemainingMode: toggleRemainingMode
+                    onAnimationHint: { showAnimationHint($0) }
                 )
                 .frame(maxWidth: .infinity)
             } else {
@@ -375,15 +379,37 @@ struct UsageDetailView: View {
         case .antigravity:
             if let antigravityUsageData {
                 AntigravityColumnView(
+                    provider: .antigravity,
                     antigravityUsageData: antigravityUsageData,
-                    showRemainingMode: $showRemainingMode,
+                    showRemainingMode: showRemainingMode,
                     refreshState: refreshState,
                     animationType: $antigravityAnimationType,
                     rotationAngle: $rotationAngle,
                     remainingModeAnimationTrigger: remainingModeAnimationTrigger,
                     onRefresh: { onMenuAction?(.refresh) },
-                    onAnimationHint: { showAnimationHint($0) },
-                    onToggleRemainingMode: toggleRemainingMode
+                    onAnimationHint: { showAnimationHint($0) }
+                )
+                .frame(maxWidth: .infinity)
+            } else {
+                errorState(
+                    message: antigravityNeedsRelogin ? L.Error.sessionExpired : (errorMessage ?? L.Usage.loading),
+                    needsRelogin: antigravityNeedsRelogin,
+                    reloginAction: .antigravityRelogin
+                )
+                .frame(maxWidth: .infinity)
+            }
+        case .antigravityThird:
+            if let antigravityUsageData {
+                AntigravityColumnView(
+                    provider: .antigravityThird,
+                    antigravityUsageData: antigravityUsageData,
+                    showRemainingMode: showRemainingMode,
+                    refreshState: refreshState,
+                    animationType: $antigravityAnimationType,
+                    rotationAngle: $rotationAngle,
+                    remainingModeAnimationTrigger: remainingModeAnimationTrigger,
+                    onRefresh: { onMenuAction?(.refresh) },
+                    onAnimationHint: { showAnimationHint($0) }
                 )
                 .frame(maxWidth: .infinity)
             } else {
@@ -468,17 +494,9 @@ struct UsageDetailView: View {
         .id(localization.updateTrigger)
         .onAppear {
             orderedProviders = activeProviders
-            var transaction = Transaction(animation: nil)
-            transaction.disablesAnimations = true
-            withTransaction(transaction) {
-                // 产品默认改为「剩余」；一次性迁移旧安装
-                if !UserDefaults.standard.bool(forKey: "ringShowsRemaining.defaultMigrated") {
-                    savedRemainingMode = true
-                    showRemainingMode = true
-                    UserDefaults.standard.set(true, forKey: "ringShowsRemaining.defaultMigrated")
-                } else {
-                    showRemainingMode = savedRemainingMode
-                }
+            if !UserDefaults.standard.bool(forKey: "ringShowsRemaining.defaultMigrated") {
+                UserSettings.shared.showRemainingMode = true
+                UserDefaults.standard.set(true, forKey: "ringShowsRemaining.defaultMigrated")
             }
             if refreshState.isRefreshing {
                 startRotationAnimation()
@@ -537,14 +555,6 @@ struct UsageDetailView: View {
         }
         animationTypeHintDismissWorkItem = dismissWorkItem
         DispatchQueue.main.asyncAfter(deadline: .now() + 2, execute: dismissWorkItem)
-    }
-
-    private func toggleRemainingMode() {
-        withAnimation(.spring(response: 0.42, dampingFraction: 0.78, blendDuration: 0.05)) {
-            showRemainingMode.toggle()
-            remainingModeAnimationTrigger += 1
-        }
-        savedRemainingMode = showRemainingMode
     }
 }
 

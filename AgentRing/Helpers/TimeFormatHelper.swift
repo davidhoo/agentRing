@@ -145,13 +145,7 @@ enum TimeFormatHelper {
         let dateFormatter = DateFormatter()
         dateFormatter.locale = UserSettings.shared.appLocale
         dateFormatter.timeZone = TimeZone.current
-        if langCode.hasPrefix("zh") || langCode.hasPrefix("ja") {
-            dateFormatter.dateFormat = "M月d日"
-        } else if langCode.hasPrefix("ko") {
-            dateFormatter.dateFormat = "M월d일"
-        } else {
-            dateFormatter.dateFormat = "MMM d"
-        }
+        dateFormatter.dateFormat = "M/d"
         let dateString = dateFormatter.string(from: date)
 
         let timeFormatter = DateFormatter()

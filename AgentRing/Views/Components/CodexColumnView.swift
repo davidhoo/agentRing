@@ -8,14 +8,13 @@ import SwiftUI
 /// Codex 用量列视图（双 Provider 模式右列）
 struct CodexColumnView: View {
     let codexUsageData: CodexUsageData
-    @Binding var showRemainingMode: Bool
+    let showRemainingMode: Bool
     let refreshState: RefreshState
     @Binding var animationType: UsageDetailView.LoadingAnimationType
     @Binding var rotationAngle: Double
     let remainingModeAnimationTrigger: Int
     var onRefresh: (() -> Void)?
     var onAnimationHint: ((String) -> Void)?
-    var onToggleRemainingMode: (() -> Void)?
 
     private var activeCodexTypes: [LimitType] {
         UserSettings.shared.getActiveDisplayTypes(codexUsageData: codexUsageData)
@@ -100,10 +99,6 @@ struct CodexColumnView: View {
                         showRemainingMode: showRemainingMode
                     )
                 }
-            }
-            .contentShape(Rectangle())
-            .onTapGesture {
-                onToggleRemainingMode?()
             }
             .padding(.horizontal, 14)
         }

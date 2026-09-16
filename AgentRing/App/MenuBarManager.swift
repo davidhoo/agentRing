@@ -22,7 +22,10 @@ final class RefreshState: ObservableObject {
     }
 
     func isRefreshingProvider(_ provider: ProviderType) -> Bool {
-        isRefreshing && (refreshingProvider == nil || refreshingProvider == provider)
+        if provider == .antigravityThird {
+            return isRefreshing && (refreshingProvider == nil || refreshingProvider == .antigravity || refreshingProvider == .antigravityThird)
+        }
+        return isRefreshing && (refreshingProvider == nil || refreshingProvider == provider)
     }
 }
 
@@ -253,11 +256,19 @@ final class MenuBarManager: ObservableObject {
         let rowHeight: CGFloat = 26
         let spacing: CGFloat = 5
 
-        let width: CGFloat = activeProvidersCount >= 3 ? 860 : (activeProvidersCount == 2 ? 580 : 320)
+        let width: CGFloat = {
+            switch activeProvidersCount {
+            case 4...: return 1020
+            case 3: return 860
+            case 2: return 580
+            default: return 320
+            }
+        }()
         let maxRowsPerProvider = [
             settings.getActiveCodexDisplayTypes(codexUsageData: codexUsageData).count,
             settings.getActiveCursorDisplayTypes(cursorUsageData: cursorUsageData).count,
-            settings.getActiveAntigravityDisplayTypes(antigravityUsageData: antigravityUsageData).count
+            settings.getActiveAntigravityDisplayTypes(antigravityUsageData: antigravityUsageData, provider: .antigravity).count,
+            settings.getActiveAntigravityDisplayTypes(antigravityUsageData: antigravityUsageData, provider: .antigravityThird).count
         ].max() ?? 0
         let hasAnyData = codexUsageData != nil || cursorUsageData != nil || antigravityUsageData != nil
         let rowCount = max(maxRowsPerProvider, hasAnyData || activeProvidersCount > 0 ? 1 : 0)

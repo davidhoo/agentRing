@@ -113,6 +113,9 @@ enum L {
         static var languageSection: String { localized("settings.general.language_section") }
         static var interfaceLanguage: String { localized("settings.general.interface_language") }
         static var languageHint: String { localized("settings.general.language_hint") }
+        static var usageDisplaySection: String { localized("settings.general.usage_display_section") }
+        static var usageDisplayRemainingHint: String { localized("settings.general.usage_display_hint_remaining") }
+        static var usageDisplayUsedHint: String { localized("settings.general.usage_display_hint_used") }
         static var resetButton: String { localized("settings.general.reset_button") }
         static var resetSection: String { localized("settings.general.reset_section") }
         static var resetHint: String { localized("settings.general.reset_hint") }

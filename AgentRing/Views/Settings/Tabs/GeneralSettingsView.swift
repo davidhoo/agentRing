@@ -14,6 +14,7 @@ struct GeneralSettingsView: View {
     var body: some View {
         SettingsPaneScroll {
             VStack(spacing: 16) {
+                usageDisplayCard
                 refreshCard
                 notificationCard
                 launchCard
@@ -30,6 +31,20 @@ struct GeneralSettingsView: View {
             Button(L.Update.okButton, role: .cancel) {}
         } message: {
             Text(errorMessage)
+        }
+    }
+
+    private var usageDisplayCard: some View {
+        SettingCard(
+            icon: "chart.bar.xaxis",
+            iconColor: .secondary,
+            title: L.SettingsGeneral.usageDisplaySection,
+            hint: settings.showRemainingMode ? L.SettingsGeneral.usageDisplayRemainingHint : L.SettingsGeneral.usageDisplayUsedHint
+        ) {
+            radioGroup(
+                selection: $settings.usageDisplayValueMode,
+                values: UsageDisplayValueMode.allCases
+            ) { $0.localizedName }
         }
     }
 

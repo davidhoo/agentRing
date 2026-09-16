@@ -18,18 +18,24 @@ extension UsageLimitData {
 
         let totalMinutes = Int(ceil(resetsIn / 60))
         if totalMinutes < 60 {
-            return L.UsageData.compactRemainingMinutes(totalMinutes)
+            return "\(totalMinutes)m"
         }
 
         let totalHours = totalMinutes / 60
         let remainingMinutes = totalMinutes % 60
         if totalHours < 24 {
-            return L.UsageData.compactRemainingHours(totalHours, remainingMinutes)
+            if remainingMinutes == 0 {
+                return "\(totalHours)h"
+            }
+            return "\(totalHours)h \(remainingMinutes)m"
         }
 
         let days = totalHours / 24
         let hours = totalHours % 24
-        return L.UsageData.compactRemainingDays(days, hours)
+        if hours == 0 {
+            return "\(days)d"
+        }
+        return "\(days)d \(hours)h"
     }
 
     var formattedCompactResetDateWithMinutes: String {
@@ -37,25 +43,8 @@ extension UsageLimitData {
         return TimeFormatHelper.formatDateMinute(resetsAt, dateTemplate: "MMMd")
     }
 
-    /// 剩余时间展示：不足 1 天保留分；≥1 天只保留天+小时，避免挤扁左侧标签
+    /// 剩余时间展示：短格式形式
     var formattedCompactRemainingWithMinutes: String {
-        guard let resetsAt else { return "-" }
-        let resetsIn = resetsAt.timeIntervalSinceNow
-        guard resetsIn > 0 else { return L.UsageData.compactResettingSoon }
-
-        let totalMinutes = Int(ceil(resetsIn / 60))
-        if totalMinutes < 60 {
-            return L.UsageData.compactRemainingMinutes(totalMinutes)
-        }
-
-        let totalHours = totalMinutes / 60
-        let remainingMinutes = totalMinutes % 60
-        if totalHours < 24 {
-            return L.UsageData.compactRemainingHours(totalHours, remainingMinutes)
-        }
-
-        let days = totalHours / 24
-        let hours = totalHours % 24
-        return L.UsageData.compactRemainingDays(days, hours)
+        formattedCompactRemaining
     }
 }

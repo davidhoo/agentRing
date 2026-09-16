@@ -67,6 +67,9 @@
 "settings.general.language_section" = "语言设置";
 "settings.general.interface_language" = "界面语言";
 "settings.general.language_hint" = "更改界面显示语言";
+"settings.general.usage_display_section" = "用量展示模式";
+"settings.general.usage_display_hint_remaining" = "优先展示可用剩余额度及剩余时间";
+"settings.general.usage_display_hint_used" = "优先展示已用额度及重置时间";
 "settings.general.reset_button" = "恢复默认设置";
 "icon_style.color_translucent" = "彩色通透";
 "icon_style.color_with_background" = "彩色背景";

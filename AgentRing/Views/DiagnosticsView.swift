@@ -101,7 +101,7 @@ private struct ProviderResultCard: View {
         switch result.providerType {
         case .codex: return "sparkle"
         case .cursor: return "cursorarrow.rays"
-        case .antigravity: return "atom"
+        case .antigravity, .antigravityThird: return "atom"
         }
     }
 

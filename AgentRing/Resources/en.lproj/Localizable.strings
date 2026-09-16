@@ -67,6 +67,9 @@
 "settings.general.language_section" = "Language Settings";
 "settings.general.interface_language" = "Interface Language";
 "settings.general.language_hint" = "Change the interface display language";
+"settings.general.usage_display_section" = "Usage Display Mode";
+"settings.general.usage_display_hint_remaining" = "Display remaining quota and remaining time";
+"settings.general.usage_display_hint_used" = "Display used quota and reset time";
 "settings.general.reset_button" = "Reset to Defaults";
 "icon_style.color_translucent" = "Color Translucent";
 "icon_style.color_with_background" = "Color with Background";

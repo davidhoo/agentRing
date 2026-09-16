@@ -310,7 +310,7 @@ final class MenuBarUI {
             key += "_no_cursor"
         }
         if let antigravityUsageData {
-            let activeTypes = settings.getActiveAntigravityDisplayTypes(antigravityUsageData: antigravityUsageData, forMenuBar: true)
+            let activeTypes = (settings.getActiveAntigravityDisplayTypes(antigravityUsageData: antigravityUsageData, forMenuBar: true, provider: .antigravity) + settings.getActiveAntigravityDisplayTypes(antigravityUsageData: antigravityUsageData, forMenuBar: true, provider: .antigravityThird))
                 .map(\.rawValue)
                 .sorted()
                 .joined(separator: ",")

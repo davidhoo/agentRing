@@ -112,7 +112,8 @@ enum LimitType: String, CaseIterable, Codable {
         switch self {
         case .codexPrimary, .codexSecondary, .codexExtraUsage: return .codex
         case .cursorIncluded, .cursorOnDemand: return .cursor
-        case .antigravityPrimary, .antigravitySecondary, .antigravityThirdPartyPrimary, .antigravityThirdPartySecondary: return .antigravity
+        case .antigravityPrimary, .antigravitySecondary: return .antigravity
+        case .antigravityThirdPartyPrimary, .antigravityThirdPartySecondary: return .antigravityThird
         }
     }
 
@@ -223,6 +224,18 @@ enum AppLanguage: String, CaseIterable, Codable {
         switch self {
         case .english: return Locale(identifier: "en_US")
         case .chinese: return Locale(identifier: "zh_CN")
+        }
+    }
+}
+
+enum UsageDisplayValueMode: String, CaseIterable, Codable {
+    case remaining = "remaining"
+    case used = "used"
+
+    var localizedName: String {
+        switch self {
+        case .remaining: return L.Usage.available
+        case .used: return L.Usage.used
         }
     }
 }
@@ -405,6 +418,19 @@ final class UserSettings: ObservableObject {
         }
     }
 
+    @Published var usageDisplayValueMode: UsageDisplayValueMode {
+        didSet {
+            defaults.set(usageDisplayValueMode.rawValue, forKey: "usageDisplayValueMode")
+            defaults.set(usageDisplayValueMode == .remaining, forKey: "showRemainingMode")
+            NotificationCenter.default.post(name: .settingsChanged, object: nil)
+        }
+    }
+
+    var showRemainingMode: Bool {
+        get { usageDisplayValueMode == .remaining }
+        set { usageDisplayValueMode = newValue ? .remaining : .used }
+    }
+
     @Published var providerOrder: [ProviderType] {
         didSet {
             defaults.set(providerOrder.map(\.rawValue), forKey: "providerOrder")
@@ -580,6 +606,13 @@ final class UserSettings: ObservableObject {
         customDisplayMenuBarOnly = false
         defaults.set(false, forKey: "customDisplayMenuBarOnly")
 
+        let savedRemaining = defaults.object(forKey: "showRemainingMode") as? Bool ?? true
+        if let raw = defaults.string(forKey: "usageDisplayValueMode"), let mode = UsageDisplayValueMode(rawValue: raw) {
+            usageDisplayValueMode = mode
+        } else {
+            usageDisplayValueMode = savedRemaining ? .remaining : .used
+        }
+
         if let rawValues = defaults.array(forKey: "customDisplayTypes") as? [String] {
             let migrated = rawValues.compactMap(LimitType.init(rawValue:))
             customDisplayTypes = migrated.isEmpty ? [.codexPrimary, .codexSecondary] : Set(migrated)
@@ -670,6 +703,7 @@ final class UserSettings: ObservableObject {
         language = Self.detectSystemLanguage()
         timeFormatPreference = .system
         displayMode = .smart
+        usageDisplayValueMode = .remaining
         providerOrder = ProviderType.allCases
         customDisplayTypes = [.codexPrimary, .codexSecondary]
         customDisplayMenuBarOnly = false
@@ -703,6 +737,9 @@ final class UserSettings: ObservableObject {
         }
         if hasValidAntigravityCredentials || antigravityUsageData != nil {
             active.insert(.antigravity)
+            if antigravityUsageData?.thirdPartyPrimary != nil || antigravityUsageData?.thirdPartySecondary != nil || antigravityEnabled {
+                active.insert(.antigravityThird)
+            }
         }
         return providerOrder.filter { active.contains($0) }
     }
@@ -989,29 +1026,36 @@ final class UserSettings: ObservableObject {
         }
     }
 
-    func getActiveAntigravityDisplayTypes(antigravityUsageData: AntigravityUsageData? = nil, forMenuBar: Bool = false) -> [LimitType] {
+    func getActiveAntigravityDisplayTypes(
+        antigravityUsageData: AntigravityUsageData? = nil,
+        forMenuBar: Bool = false,
+        provider: ProviderType = .antigravity
+    ) -> [LimitType] {
         let effectiveMode: DisplayMode = displayMode == .custom && customDisplayMenuBarOnly && !forMenuBar ? .smart : displayMode
 
         switch effectiveMode {
         case .smart:
             guard let antigravityUsageData else { return [] }
             var types: [LimitType] = []
-            if antigravityUsageData.geminiPrimary != nil {
-                types.append(.antigravityPrimary)
-            }
-            if antigravityUsageData.geminiSecondary != nil {
-                types.append(.antigravitySecondary)
-            }
-            if antigravityUsageData.thirdPartyPrimary != nil {
-                types.append(.antigravityThirdPartyPrimary)
-            }
-            if antigravityUsageData.thirdPartySecondary != nil {
-                types.append(.antigravityThirdPartySecondary)
+            if provider == .antigravity {
+                if antigravityUsageData.geminiPrimary != nil {
+                    types.append(.antigravityPrimary)
+                }
+                if antigravityUsageData.geminiSecondary != nil {
+                    types.append(.antigravitySecondary)
+                }
+            } else if provider == .antigravityThird {
+                if antigravityUsageData.thirdPartyPrimary != nil {
+                    types.append(.antigravityThirdPartyPrimary)
+                }
+                if antigravityUsageData.thirdPartySecondary != nil {
+                    types.append(.antigravityThirdPartySecondary)
+                }
             }
             return types
 
         case .custom:
-            return LimitType.allCases.filter { customDisplayTypes.contains($0) && $0.provider == .antigravity }
+            return LimitType.allCases.filter { customDisplayTypes.contains($0) && $0.provider == provider }
         }
     }
 

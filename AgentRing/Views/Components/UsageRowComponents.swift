@@ -51,29 +51,20 @@ enum UsageRingDisplay {
     }
 }
 
-/// 大圆环中心百分比与语义标签。
+/// 大圆环中心百分比。
 struct DetailUsageRingCenterText: View {
     let usedPercentage: Double
     let showRemainingMode: Bool
     var fontSize: CGFloat = 28
 
-    private var modeLabel: String {
-        showRemainingMode ? L.Usage.available : L.Usage.used
-    }
-
     var body: some View {
-        VStack(spacing: 2) {
-            Text(
-                UsageRingDisplay.percentLabel(
-                    usedPercentage: usedPercentage,
-                    showRemainingMode: showRemainingMode
-                )
+        Text(
+            UsageRingDisplay.percentLabel(
+                usedPercentage: usedPercentage,
+                showRemainingMode: showRemainingMode
             )
-                .font(.system(size: fontSize, weight: .bold))
-            Text(modeLabel)
-                .font(.caption)
-                .foregroundColor(.secondary)
-        }
+        )
+        .font(.system(size: fontSize, weight: .bold))
         .id(showRemainingMode ? "remaining" : "used")
         .transition(.scale(scale: 0.92).combined(with: .opacity))
     }

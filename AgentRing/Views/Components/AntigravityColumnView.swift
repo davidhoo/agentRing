@@ -6,56 +6,73 @@
 import SwiftUI
 
 struct AntigravityColumnView: View {
+    let provider: ProviderType
     let antigravityUsageData: AntigravityUsageData
-    @Binding var showRemainingMode: Bool
+    let showRemainingMode: Bool
     let refreshState: RefreshState
     @Binding var animationType: UsageDetailView.LoadingAnimationType
     @Binding var rotationAngle: Double
     let remainingModeAnimationTrigger: Int
     var onRefresh: (() -> Void)?
     var onAnimationHint: ((String) -> Void)?
-    var onToggleRemainingMode: (() -> Void)?
 
     private var activeTypes: [LimitType] {
-        UserSettings.shared.getActiveAntigravityDisplayTypes(antigravityUsageData: antigravityUsageData)
+        UserSettings.shared.getActiveAntigravityDisplayTypes(
+            antigravityUsageData: antigravityUsageData,
+            provider: provider
+        )
     }
 
     private var isRefreshing: Bool {
         refreshState.isRefreshingProvider(.antigravity)
     }
 
-    private var ringLayers: [AntigravityQuadRingView.Layer] {
-        activeTypes.compactMap { type in
-            guard let percentage = percentage(for: type) else { return nil }
-            return AntigravityQuadRingView.Layer(
-                id: type,
-                percentage: percentage,
-                color: color(for: type, percentage: percentage)
-            )
+    private var outerPercentage: Double {
+        if provider == .antigravity {
+            return antigravityUsageData.geminiPrimary?.percentage ?? antigravityUsageData.primary?.percentage ?? 0
+        } else {
+            return antigravityUsageData.thirdPartyPrimary?.percentage ?? 0
         }
     }
 
-    private var centerUsedPercentage: Double {
-        if let primary = antigravityUsageData.geminiPrimary?.percentage ?? antigravityUsageData.primary?.percentage {
-            return primary
+    private var innerPercentage: Double? {
+        if provider == .antigravity {
+            return antigravityUsageData.geminiSecondary?.percentage ?? antigravityUsageData.secondary?.percentage
+        } else {
+            return antigravityUsageData.thirdPartySecondary?.percentage
         }
-        return ringLayers.first?.percentage ?? 0
+    }
+
+    private var outerColor: Color {
+        if provider == .antigravity {
+            return UsageColorScheme.antigravityPrimaryColorSwiftUI(outerPercentage)
+        } else {
+            return UsageColorScheme.antigravityThirdPartyPrimaryColorSwiftUI(outerPercentage)
+        }
+    }
+
+    private var innerColor: Color {
+        if provider == .antigravity {
+            return UsageColorScheme.antigravitySecondaryColorSwiftUI(innerPercentage ?? 0)
+        } else {
+            return UsageColorScheme.antigravityThirdPartySecondaryColorSwiftUI(innerPercentage ?? 0)
+        }
     }
 
     var body: some View {
         VStack(spacing: 15) {
             ZStack {
-                if !ringLayers.isEmpty {
-                    AntigravityQuadRingView(
-                        layers: ringLayers,
-                        centerUsedPercentage: centerUsedPercentage,
-                        isRefreshing: isRefreshing,
-                        rotationAngle: rotationAngle,
-                        showRemainingMode: showRemainingMode,
-                        remainingModeAnimationTrigger: remainingModeAnimationTrigger,
-                        animationType: animationType
-                    )
-                }
+                ActivityRingView(
+                    outerPercentage: outerPercentage,
+                    innerPercentage: innerPercentage,
+                    outerColor: outerColor,
+                    innerColor: innerColor,
+                    isRefreshing: isRefreshing,
+                    rotationAngle: rotationAngle,
+                    showRemainingMode: showRemainingMode,
+                    remainingModeAnimationTrigger: remainingModeAnimationTrigger,
+                    animationType: animationType
+                )
             }
             .frame(height: 114)
             .contentShape(Circle())
@@ -80,41 +97,7 @@ struct AntigravityColumnView: View {
                     )
                 }
             }
-            .contentShape(Rectangle())
-            .onTapGesture {
-                onToggleRemainingMode?()
-            }
             .padding(.horizontal, 14)
-        }
-    }
-
-    private func percentage(for type: LimitType) -> Double? {
-        switch type {
-        case .antigravityPrimary:
-            return antigravityUsageData.geminiPrimary?.percentage ?? antigravityUsageData.primary?.percentage
-        case .antigravitySecondary:
-            return antigravityUsageData.geminiSecondary?.percentage ?? antigravityUsageData.secondary?.percentage
-        case .antigravityThirdPartyPrimary:
-            return antigravityUsageData.thirdPartyPrimary?.percentage
-        case .antigravityThirdPartySecondary:
-            return antigravityUsageData.thirdPartySecondary?.percentage
-        default:
-            return nil
-        }
-    }
-
-    private func color(for type: LimitType, percentage: Double) -> Color {
-        switch type {
-        case .antigravityPrimary:
-            return UsageColorScheme.antigravityPrimaryColorSwiftUI(percentage)
-        case .antigravitySecondary:
-            return UsageColorScheme.antigravitySecondaryColorSwiftUI(percentage)
-        case .antigravityThirdPartyPrimary:
-            return UsageColorScheme.antigravityThirdPartyPrimaryColorSwiftUI(percentage)
-        case .antigravityThirdPartySecondary:
-            return UsageColorScheme.antigravityThirdPartySecondaryColorSwiftUI(percentage)
-        default:
-            return .secondary
         }
     }
 }

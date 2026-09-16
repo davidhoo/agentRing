@@ -107,6 +107,20 @@ final class MenuBarIconRenderer {
                     if let antigravityUsageData {
                         icons.append(contentsOf: buildAntigravityCluster(
                             antigravity: antigravityUsageData,
+                            provider: .antigravity,
+                            isMonochrome: true,
+                            button: button
+                        ))
+                    }
+                case .antigravityThird:
+                    if includeBrand, showingAntigravity,
+                       let brand = createProviderBrandIcon(provider: .antigravityThird, isMonochrome: isMonochrome, size: providerBrandIconSize) {
+                        icons.append(brand)
+                    }
+                    if let antigravityUsageData {
+                        icons.append(contentsOf: buildAntigravityCluster(
+                            antigravity: antigravityUsageData,
+                            provider: .antigravityThird,
                             isMonochrome: true,
                             button: button
                         ))
@@ -226,52 +240,59 @@ final class MenuBarIconRenderer {
 
     private func buildAntigravityCluster(
         antigravity: AntigravityUsageData,
+        provider: ProviderType,
         isMonochrome: Bool,
         button: NSStatusBarButton?
     ) -> [NSImage] {
-        let types = settings.getActiveAntigravityDisplayTypes(antigravityUsageData: antigravity, forMenuBar: true)
+        let types = settings.getActiveAntigravityDisplayTypes(
+            antigravityUsageData: antigravity,
+            forMenuBar: true,
+            provider: provider
+        )
         let showPlaceholder = settings.displayMode == .custom
-        var layers: [(percentage: Double, color: NSColor)] = []
 
-        func appendLayer(
-            type: LimitType,
-            usedPercentage: Double?,
-            color: NSColor
-        ) {
-            guard types.contains(type) else { return }
-            let resolved = usedPercentage ?? (showPlaceholder ? 0 : nil)
-            guard let resolved else { return }
-            layers.append((
-                UsageRingDisplay.remainingPercentage(usedPercentage: resolved),
-                color
-            ))
-        }
+        let primaryType = provider == .antigravity ? LimitType.antigravityPrimary : LimitType.antigravityThirdPartyPrimary
+        let secondaryType = provider == .antigravity ? LimitType.antigravitySecondary : LimitType.antigravityThirdPartySecondary
 
-        appendLayer(
-            type: .antigravityPrimary,
-            usedPercentage: antigravity.geminiPrimary?.percentage ?? antigravity.primary?.percentage,
-            color: UsageColorScheme.antigravityPrimaryColorAdaptive(antigravity.geminiPrimary?.percentage ?? 0, for: button)
+        guard types.contains(primaryType) || types.contains(secondaryType) else { return [] }
+
+        let outerPercentage: Double? = {
+            if provider == .antigravity {
+                return (antigravity.geminiPrimary?.percentage ?? antigravity.primary?.percentage) ?? (showPlaceholder && types.contains(primaryType) ? 0 : nil)
+            } else {
+                return antigravity.thirdPartyPrimary?.percentage ?? (showPlaceholder && types.contains(primaryType) ? 0 : nil)
+            }
+        }()
+        guard let outerPercentage else { return [] }
+
+        let innerPercentage: Double? = {
+            guard types.contains(secondaryType) else { return nil }
+            if provider == .antigravity {
+                return (antigravity.geminiSecondary?.percentage ?? antigravity.secondary?.percentage) ?? (showPlaceholder ? 0 : nil)
+            } else {
+                return antigravity.thirdPartySecondary?.percentage ?? (showPlaceholder ? 0 : nil)
+            }
+        }()
+
+        let outerColor: NSColor = isMonochrome ? .black : (
+            provider == .antigravity ?
+            UsageColorScheme.antigravityPrimaryColorAdaptive(outerPercentage, for: button) :
+            UsageColorScheme.antigravityThirdPartyPrimaryColorAdaptive(outerPercentage, for: button)
         )
-        appendLayer(
-            type: .antigravitySecondary,
-            usedPercentage: antigravity.geminiSecondary?.percentage ?? antigravity.secondary?.percentage,
-            color: UsageColorScheme.antigravitySecondaryColorAdaptive(antigravity.geminiSecondary?.percentage ?? 0, for: button)
-        )
-        appendLayer(
-            type: .antigravityThirdPartyPrimary,
-            usedPercentage: antigravity.thirdPartyPrimary?.percentage,
-            color: UsageColorScheme.antigravityThirdPartyPrimaryColorAdaptive(antigravity.thirdPartyPrimary?.percentage ?? 0, for: button)
-        )
-        appendLayer(
-            type: .antigravityThirdPartySecondary,
-            usedPercentage: antigravity.thirdPartySecondary?.percentage,
-            color: UsageColorScheme.antigravityThirdPartySecondaryColorAdaptive(antigravity.thirdPartySecondary?.percentage ?? 0, for: button)
+        let innerColor: NSColor = isMonochrome ? NSColor.black.withAlphaComponent(0.78) : (
+            provider == .antigravity ?
+            UsageColorScheme.antigravitySecondaryColorAdaptive(innerPercentage ?? 0, for: button) :
+            UsageColorScheme.antigravityThirdPartySecondaryColorAdaptive(innerPercentage ?? 0, for: button)
         )
 
-        guard !layers.isEmpty else { return [] }
         return [
-            createAntigravityQuadRingImage(
-                layers: layers,
+            createConcentricRingImage(
+                outerPercentage: UsageRingDisplay.remainingPercentage(usedPercentage: outerPercentage),
+                innerPercentage: innerPercentage.map {
+                    UsageRingDisplay.remainingPercentage(usedPercentage: $0)
+                },
+                outerColor: outerColor,
+                innerColor: innerColor,
                 isMonochrome: isMonochrome,
                 button: button
             )
@@ -481,7 +502,7 @@ final class MenuBarIconRenderer {
             return ImageHelper.createSquareIcon(named: iconName, size: size, isTemplate: isMonochrome, sourceInset: isMonochrome ? 0 : 2)
         case .cursor:
             return ImageHelper.createCursorIcon(size: size, isTemplate: isMonochrome)
-        case .antigravity:
+        case .antigravity, .antigravityThird:
             return ImageHelper.createAntigravityIcon(size: size, isTemplate: isMonochrome)
         }
     }

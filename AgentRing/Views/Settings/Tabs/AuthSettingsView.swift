@@ -50,7 +50,7 @@ struct AuthSettingsView: View {
                             onAdd: { WebLoginWindowManager.shared.showCursorLoginWindow() },
                             onUpdateAlias: { settings.updateCursorAccount($0, alias: $1) }
                         )
-                    case .antigravity:
+                    case .antigravity, .antigravityThird:
                         antigravityCard
                     }
                 }

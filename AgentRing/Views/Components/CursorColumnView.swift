@@ -7,14 +7,13 @@ import SwiftUI
 
 struct CursorColumnView: View {
     let cursorUsageData: CursorUsageData
-    @Binding var showRemainingMode: Bool
+    let showRemainingMode: Bool
     let refreshState: RefreshState
     @Binding var animationType: UsageDetailView.LoadingAnimationType
     @Binding var rotationAngle: Double
     let remainingModeAnimationTrigger: Int
     var onRefresh: (() -> Void)?
     var onAnimationHint: ((String) -> Void)?
-    var onToggleRemainingMode: (() -> Void)?
 
     private var activeTypes: [LimitType] {
         UserSettings.shared.getActiveCursorDisplayTypes(cursorUsageData: cursorUsageData)
@@ -69,10 +68,6 @@ struct CursorColumnView: View {
                         showRemainingMode: showRemainingMode
                     )
                 }
-            }
-            .contentShape(Rectangle())
-            .onTapGesture {
-                onToggleRemainingMode?()
             }
             .padding(.horizontal, 14)
         }
