@@ -60,11 +60,14 @@ struct CodexColumnView: View {
     var body: some View {
         VStack(spacing: 15) {
             ZStack {
-                if let primary = codexUsageData.primary {
+                if let ringData = primaryRingData {
+                    let outerColor = primaryRingType == .codexSecondary
+                        ? UsageColorScheme.codexSecondaryColorSwiftUI(ringData.percentage)
+                        : UsageColorScheme.codexPrimaryColorSwiftUI(ringData.percentage)
                     ActivityRingView(
-                        outerPercentage: primary.percentage,
+                        outerPercentage: ringData.percentage,
                         innerPercentage: showSecondaryRing ? secondaryData?.percentage : nil,
-                        outerColor: UsageColorScheme.codexPrimaryColorSwiftUI(primary.percentage),
+                        outerColor: outerColor,
                         innerColor: UsageColorScheme.codexSecondaryColorSwiftUI(secondaryData?.percentage ?? 0),
                         isRefreshing: isCodexRefreshing,
                         rotationAngle: rotationAngle,

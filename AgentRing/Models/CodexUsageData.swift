@@ -124,14 +124,37 @@ nonisolated struct CodexUsageResponse: Codable, Sendable {
             return nil
         }
 
+        let primaryWindow: Window?
+        let secondaryWindow: Window?
+
+        if let pw = rate_limit?.primary_window, let sw = rate_limit?.secondary_window {
+            primaryWindow = pw
+            secondaryWindow = sw
+        } else if let pw = rate_limit?.primary_window {
+            // 如果仅有一个窗口且时长大于1天（如 7天=604800秒），归为 secondary 周期限制
+            if let seconds = pw.limit_window_seconds, seconds > 86400 {
+                primaryWindow = nil
+                secondaryWindow = pw
+            } else {
+                primaryWindow = pw
+                secondaryWindow = nil
+            }
+        } else if let sw = rate_limit?.secondary_window {
+            primaryWindow = nil
+            secondaryWindow = sw
+        } else {
+            primaryWindow = nil
+            secondaryWindow = nil
+        }
+
         let primary: CodexUsageData.LimitData? = {
-            guard let w = rate_limit?.primary_window else { return nil }
+            guard let w = primaryWindow else { return nil }
             let resetsAt = resolvedResetDate(for: w)
             return .init(percentage: w.used_percent, resetsAt: resetsAt)
         }()
 
         let secondary: CodexUsageData.LimitData? = {
-            guard let w = rate_limit?.secondary_window else { return nil }
+            guard let w = secondaryWindow else { return nil }
             // 如果 used_percent 为 0 且无重置信息，视为无效数据
             if w.used_percent == 0 && w.reset_at == nil && w.reset_after_seconds == nil { return nil }
             let resetsAt = resolvedResetDate(for: w)

@@ -133,6 +133,8 @@ final class MenuBarIconRenderer {
         var icons: [NSImage] = []
 
         let outerType: LimitType? = {
+            if types.contains(.codexPrimary), codex.primary != nil { return .codexPrimary }
+            if types.contains(.codexSecondary), codex.secondary != nil { return .codexSecondary }
             if types.contains(.codexPrimary) { return .codexPrimary }
             if types.contains(.codexSecondary) { return .codexSecondary }
             return nil

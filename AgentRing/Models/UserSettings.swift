@@ -945,7 +945,10 @@ final class UserSettings: ObservableObject {
         switch effectiveMode {
         case .smart:
             guard let codexUsageData else { return [] }
-            var types: [LimitType] = [.codexPrimary]
+            var types: [LimitType] = []
+            if codexUsageData.primary != nil {
+                types.append(.codexPrimary)
+            }
             if codexUsageData.secondary != nil {
                 types.append(.codexSecondary)
             }
