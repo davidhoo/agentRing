@@ -7,7 +7,7 @@
 | 文件 | 触发 | 作用 |
 | --- | --- | --- |
 | [`.github/workflows/ci.yml`](../.github/workflows/ci.yml) | push / PR 到 `main` | 云端 Debug 编译，验证能否构建 |
-| [`.github/workflows/release.yml`](../.github/workflows/release.yml) | 推送 `v*` 标签 | Release 编译 → 打 zip → 上传到 GitHub Releases |
+| [`.github/workflows/release.yml`](../.github/workflows/release.yml) | 推送 `v*` 标签 | Release 编译 → 打 dmg 与 zip → 上传到 GitHub Releases |
 
 ## 发布新版本
 
@@ -20,7 +20,7 @@ git push origin v0.1.0
 ```
 
 3. 在 [Actions](https://github.com/haorui-lab/agentRing/actions) 查看 **Release** 工作流
-4. 完成后到 [Releases](https://github.com/haorui-lab/agentRing/releases) 下载 `AgentRing-*-macos.zip`
+4. 完成后到 [Releases](https://github.com/haorui-lab/agentRing/releases) 查看并下载 `AgentRing-*-macos.dmg`（或 `AgentRing-*-macos.zip`）
 
 ## 试打包（不创建 Release）
 

@@ -25,8 +25,8 @@
 ## 下载
 
 1. 打开 [Latest Release](https://github.com/haorui-lab/agentRing/releases/latest)
-2. 下载 `AgentRing-*-macos.zip`
-3. 解压，将 `AgentRing.app` 拖入「应用程序」
+2. 下载 `AgentRing-*-macos.dmg`（推荐）或 `AgentRing-*-macos.zip`
+3. 双击打开 DMG，将 `Agent Ring` 拖入「应用程序」（或解压 zip 使用）
 4. 若系统提示无法验证开发者：右键 App → **打开** → **仍要打开**
 
 > 当前公开发布包为 ad-hoc 签名，尚未 Apple 公证。接入 Developer ID 并完成公证后，此步骤将不再需要。

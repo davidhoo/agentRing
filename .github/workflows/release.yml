@@ -54,7 +54,7 @@ jobs:
             CODE_SIGNING_ALLOWED=YES \
             build
 
-      - name: Package zip
+      - name: Package DMG and Zip
         id: package
         run: |
           set -euo pipefail
@@ -65,29 +65,53 @@ jobs:
           else
             VERSION="dev-$(echo "${GITHUB_SHA}" | cut -c1-7)"
           fi
+
+          # 1. Package DMG (contains AgentRing.app + /Applications symlink)
+          DMG_STAGING="$RUNNER_TEMP/dmg-staging"
+          rm -rf "$DMG_STAGING"
+          mkdir -p "$DMG_STAGING"
+          cp -R "$APP" "$DMG_STAGING/"
+          ln -s /Applications "$DMG_STAGING/Applications"
+
+          DMG="AgentRing-${VERSION}-macos.dmg"
+          hdiutil create \
+            -volname "Agent Ring" \
+            -srcfolder "$DMG_STAGING" \
+            -ov \
+            -format UDZO \
+            "$DMG"
+
+          # 2. Package Zip
           ZIP="AgentRing-${VERSION}-macos.zip"
           ditto -c -k --sequesterRsrc --keepParent "$APP" "$ZIP"
-          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
-          echo "zip=${ZIP}" >> "$GITHUB_OUTPUT"
-          ls -lh "$ZIP"
 
-      - name: Upload build artifact
+          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
+          echo "dmg=${DMG}" >> "$GITHUB_OUTPUT"
+          echo "zip=${ZIP}" >> "$GITHUB_OUTPUT"
+          ls -lh "$DMG" "$ZIP"
+
+      - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         with:
           name: AgentRing-${{ steps.package.outputs.version }}
-          path: ${{ steps.package.outputs.zip }}
+          path: |
+            ${{ steps.package.outputs.dmg }}
+            ${{ steps.package.outputs.zip }}
           if-no-files-found: error
 
       - name: Create GitHub Release
         if: github.ref_type == 'tag' && (github.event_name != 'workflow_dispatch' || inputs.dry_run != 'true')
         uses: softprops/action-gh-release@v2
         with:
-          files: ${{ steps.package.outputs.zip }}
+          files: |
+            ${{ steps.package.outputs.dmg }}
+            ${{ steps.package.outputs.zip }}
           generate_release_notes: true
           fail_on_unmatched_files: true
           body: |
             ## Agent Ring ${{ steps.package.outputs.version }}
 
-            下载 `AgentRing-*-macos.zip`，解压后把 `Agent Ring` / `AgentRing.app` 拖到「应用程序」。
+            推荐下载 `AgentRing-*-macos.dmg`：双击打开后，将 `Agent Ring` 拖入「应用程序」即可完成安装。
+            亦可下载 `AgentRing-*-macos.zip` 解压使用。
 
             > 当前构建为 ad-hoc 签名，未经 Apple 公证。若系统提示无法打开：右键 App → 打开 → 仍要打开。

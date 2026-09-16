@@ -25,8 +25,8 @@
 ## Download
 
 1. Open [Latest Release](https://github.com/haorui-lab/agentRing/releases/latest)
-2. Download `AgentRing-*-macos.zip`
-3. Unzip and drag `AgentRing.app` into Applications
+2. Download `AgentRing-*-macos.dmg` (recommended) or `AgentRing-*-macos.zip`
+3. Open the DMG and drag `Agent Ring` into Applications (or extract the zip)
 4. If macOS blocks it: right-click → **Open** → **Open Anyway**
 
 > Public builds are ad-hoc signed and not Apple-notarized yet. Developer ID + notarization can be added later.
