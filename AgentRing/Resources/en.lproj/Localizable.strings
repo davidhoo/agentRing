@@ -242,8 +242,8 @@
 "detail_row.opus_weekly_limit" = "7D Opus Limit";
 "detail_row.sonnet_weekly_limit" = "7D Sonnet Limit";
 "detail_row.extra_usage" = "Extra Usage";
-"detail_row.cursor_included" = "Models";
-"detail_row.cursor_ondemand" = "Other";
+"detail_row.cursor_included" = "Cursor Models";
+"detail_row.cursor_ondemand" = "Other Models";
 
 // MARK: - Display Options (v2.0.0)
 "display_options" = "Display Options";
