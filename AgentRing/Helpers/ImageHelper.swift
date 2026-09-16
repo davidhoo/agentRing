@@ -1,6 +1,6 @@
 //
 //  ImageHelper.swift
-//  CodexRings
+//  Agent Ring
 //
 
 import AppKit

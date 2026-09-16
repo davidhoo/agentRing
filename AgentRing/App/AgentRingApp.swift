@@ -1,6 +1,6 @@
 //
-//  CodexRingsApp.swift
-//  CodexRings
+//  AgentRingApp.swift
+//  Agent Ring
 //
 
 import SwiftUI

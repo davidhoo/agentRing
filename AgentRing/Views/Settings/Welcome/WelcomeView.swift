@@ -1,6 +1,6 @@
 //
 //  WelcomeView.swift
-//  agentsRing
+//  Agent Ring
 //
 
 import SwiftUI

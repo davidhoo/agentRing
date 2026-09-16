@@ -1,6 +1,6 @@
 //
 //  CursorWebLoginView.swift
-//  agentsRing
+//  Agent Ring
 //
 
 import SwiftUI

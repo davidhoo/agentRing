@@ -1,6 +1,6 @@
 //
 //  CursorWebLoginCoordinator.swift
-//  agentsRing
+//  Agent Ring
 //
 
 import Combine

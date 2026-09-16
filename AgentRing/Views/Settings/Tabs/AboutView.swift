@@ -1,6 +1,6 @@
 //
 //  AboutView.swift
-//  CodexRings
+//  Agent Ring
 //
 
 import SwiftUI

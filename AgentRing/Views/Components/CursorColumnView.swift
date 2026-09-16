@@ -1,6 +1,6 @@
 //
 //  CursorColumnView.swift
-//  agentsRing
+//  Agent Ring
 //
 
 import SwiftUI

@@ -1,6 +1,6 @@
 //
 //  WebLoginWindowManager.swift
-//  CodexRings
+//  Agent Ring
 //
 
 import AppKit

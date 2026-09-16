@@ -1,6 +1,6 @@
 //
 //  CursorUsageData.swift
-//  agentsRing
+//  Agent Ring
 //
 
 import Foundation

@@ -1,6 +1,6 @@
 //
 //  ShapeIconRenderer.swift
-//  CodexRings
+//  Agent Ring
 //
 
 import AppKit

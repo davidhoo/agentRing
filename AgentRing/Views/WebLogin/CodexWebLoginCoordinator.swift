@@ -1,6 +1,6 @@
 //
 //  CodexWebLoginCoordinator.swift
-//  CodexRings
+//  Agent Ring
 //
 
 import Combine

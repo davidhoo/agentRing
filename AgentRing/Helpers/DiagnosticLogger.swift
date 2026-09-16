@@ -1,6 +1,6 @@
 //
 //  DiagnosticLogger.swift
-//  CodexRings
+//  Agent Ring
 //
 
 import Foundation
@@ -117,7 +117,7 @@ class DiagnosticLogger {
             return
         }
 
-        let logDirectory = appSupport.appendingPathComponent("CodexRings/logs")
+        let logDirectory = appSupport.appendingPathComponent("Agent Ring/logs")
 
         // 创建日志目录
         do {
@@ -131,7 +131,7 @@ class DiagnosticLogger {
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "yyyy-MM-dd"
         let dateString = dateFormatter.string(from: Date())
-        logFileURL = logDirectory.appendingPathComponent("codexrings_\(dateString).log")
+        logFileURL = logDirectory.appendingPathComponent("agentring_\(dateString).log")
 
         // 检查并轮转日志
         checkAndRotateLogIfNeeded()
@@ -229,7 +229,7 @@ class DiagnosticLogger {
         let timestamp = dateFormatter.string(from: Date())
 
         let archiveURL = logFileURL.deletingLastPathComponent()
-            .appendingPathComponent("codexrings_\(timestamp).log.old")
+            .appendingPathComponent("agentring_\(timestamp).log.old")
 
         do {
             // 重命名当前日志文件

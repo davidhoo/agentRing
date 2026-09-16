@@ -1,6 +1,6 @@
 //
 //  ProviderType.swift
-//  agentsRing
+//  Agent Ring
 //
 
 import Foundation

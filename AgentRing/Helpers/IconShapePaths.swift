@@ -1,6 +1,6 @@
 //
 //  IconShapePaths.swift
-//  CodexRings
+//  Agent Ring
 //
 
 import SwiftUI

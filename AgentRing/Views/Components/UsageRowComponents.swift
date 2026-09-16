@@ -1,6 +1,6 @@
 //
 //  UsageRowComponents.swift
-//  CodexRings
+//  Agent Ring
 //
 
 import SwiftUI

@@ -1,6 +1,6 @@
 //
 //  LoggerExtension.swift
-//  CodexRings
+//  Agent Ring
 //
 
 
@@ -52,6 +52,6 @@ extension Logger {
 
  查看日志：
  1. Xcode Console (开发时)
- 2. Console.app (搜索 subsystem:app.codexrings.CodexRings)
- 3. 命令行: log show --predicate 'subsystem == "app.codexrings.CodexRings"' --last 1h
+ 2. Console.app (搜索 subsystem:app.agentring.AgentRing)
+ 3. 命令行: log show --predicate 'subsystem == "app.agentring.AgentRing"' --last 1h
  */

@@ -1,6 +1,6 @@
 //
 //  CodexTokenRefreshCoordinator.swift
-//  CodexRings
+//  Agent Ring
 //
 
 import Foundation
