@@ -28,6 +28,9 @@
 "usage.go_to_settings" = "去设置认证信息";
 "usage.reset_time" = "重置时间";
 "usage.used" = "已使用";
+"usage.dashboard_mode_remaining" = "剩余";
+"usage.dashboard_mode_used" = "已使用";
+"usage.dashboard_title" = "%@ - %@";
 "usage.five_hour_limit" = "5小时限制";
 "usage.seven_day_limit" = "7天限制";
 "usage.five_hour_limit_short" = "5h";

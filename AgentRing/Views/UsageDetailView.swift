@@ -164,11 +164,18 @@ struct UsageDetailView: View {
         }
     }
 
+    private var dashboardTitleText: String {
+        let mode = showRemainingMode ? L.Usage.dashboardModeRemaining : L.Usage.dashboardModeUsed
+        return L.Usage.dashboardTitle(appName: L.App.name, mode: mode)
+    }
+
     private var headerView: some View {
         HStack {
             if showsMultipleProviders {
-                Text(L.App.name)
+                Text(dashboardTitleText)
                     .font(.headline)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.85)
             } else if let provider = activeProviders.first {
                 switch provider {
                 case .antigravity, .antigravityThird:
@@ -194,8 +201,10 @@ struct UsageDetailView: View {
                         .font(.headline)
                 }
             } else {
-                Text(L.App.name)
+                Text(dashboardTitleText)
                     .font(.headline)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.85)
             }
 
             Spacer()

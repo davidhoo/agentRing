@@ -28,6 +28,9 @@
 "usage.go_to_settings" = "Go to Settings";
 "usage.reset_time" = "Reset Time";
 "usage.used" = "Used";
+"usage.dashboard_mode_remaining" = "Remaining";
+"usage.dashboard_mode_used" = "Used";
+"usage.dashboard_title" = "%@ - %@";
 "usage.five_hour_limit" = "5-Hour Limit";
 "usage.seven_day_limit" = "7-Day Limit";
 "usage.five_hour_limit_short" = "5h";

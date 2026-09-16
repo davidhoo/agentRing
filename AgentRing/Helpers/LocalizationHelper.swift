@@ -74,6 +74,11 @@ enum L {
         static var goToSettings: String { localized("usage.go_to_settings") }
         static var resetTime: String { localized("usage.reset_time") }
         static var used: String { localized("usage.used") }
+        static var dashboardModeRemaining: String { localized("usage.dashboard_mode_remaining") }
+        static var dashboardModeUsed: String { localized("usage.dashboard_mode_used") }
+        static func dashboardTitle(appName: String, mode: String) -> String {
+            String(format: localized("usage.dashboard_title"), appName, mode)
+        }
         static var resetDate: String { localized("usage.reset_date") }
         static var refresh: String { localized("usage.refresh") }
         static var refreshCooldown: String { localized("usage.refresh_cooldown") }
