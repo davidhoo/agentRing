@@ -178,17 +178,17 @@ struct UnifiedLimitRow: View {
 
     var body: some View {
         HStack(spacing: 6) {
-            Text(percentageLabel)
-                .font(.system(size: 12, weight: .semibold).monospacedDigit())
-                .foregroundColor(iconColor)
-                .frame(width: 36, alignment: .trailing)
-
             Text(limitName)
                 .font(.system(size: 12))
                 .foregroundColor(.secondary)
                 .lineLimit(1)
                 .minimumScaleFactor(0.8)
                 .layoutPriority(0)
+
+            Text(percentageLabel)
+                .font(.system(size: 12, weight: .semibold).monospacedDigit())
+                .foregroundColor(iconColor)
+                .fixedSize(horizontal: true, vertical: false)
 
             Spacer(minLength: 4)
 
