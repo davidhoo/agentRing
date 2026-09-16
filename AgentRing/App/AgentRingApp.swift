@@ -5,7 +5,6 @@
 
 import SwiftUI
 import Combine
-import Sparkle
 
 /// Agent Ring 应用主入口
 @main
@@ -25,9 +24,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     // MARK: - Properties
 
     /// 应用代理共享实例
-    /// SwiftUI 的 NSApplicationDelegateAdaptor 包装了 delegate，导致
-    /// `NSApp.delegate as? AppDelegate` 不能可靠地拿到本类型；MenuBarManager
-    /// 需要通过这个静态引用调用 `updaterController.checkForUpdates(_:)`。
     static weak var shared: AppDelegate?
 
     private var statusItem: NSStatusItem!
@@ -42,18 +38,9 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     /// 用户设置实例
     private let settings = UserSettings.shared
 
-    /// Sparkle 更新控制器
-    /// 暴露为 internal，让 MenuBarManager 通过 `AppDelegate.shared` 调用
-    private(set) var updaterController: SPUStandardUpdaterController!
-
     override init() {
         super.init()
         AppDelegate.shared = self
-        updaterController = SPUStandardUpdaterController(
-            startingUpdater: false,
-            updaterDelegate: self,
-            userDriverDelegate: nil
-        )
     }
 
     /// Combine 订阅集合，用于自动管理观察者生命周期
@@ -151,20 +138,5 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         welcomeWindow?.close()
         welcomeWindow = nil
         cancellables.removeAll()
-    }
-}
-
-// MARK: - SPUUpdaterDelegate
-
-extension AppDelegate: SPUUpdaterDelegate {
-    /// Sparkle 在后台或手动检查中发现可用更新时回调：点亮菜单栏徽章 /
-    /// 彩虹文字状态机，与 Sparkle 自己的“有可用更新”模态对话框并存。
-    func updater(_ updater: SPUUpdater, didFindValidUpdate item: SUAppcastItem) {
-        menuBarManager?.applyUpdateAvailable(version: item.displayVersionString)
-    }
-
-    /// Sparkle 检查后未发现更新时回调：清除可能残留的徽章状态。
-    func updaterDidNotFindUpdate(_ updater: SPUUpdater) {
-        menuBarManager?.applyUpdateNotFound()
     }
 }

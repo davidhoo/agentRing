@@ -7,7 +7,6 @@ import SwiftUI
 import AppKit
 import Combine
 import OSLog
-import Sparkle
 
 final class RefreshState: ObservableObject {
     @Published var isRefreshing = false

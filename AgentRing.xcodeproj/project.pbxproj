@@ -7,7 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		5A8B7E5032F0099000ACFF5C /* Sparkle in Frameworks */ = {isa = PBXBuildFile; productRef = 5A8B7E5022F0099000ACFF5C /* Sparkle */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -27,7 +26,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				5A8B7E5032F0099000ACFF5C /* Sparkle in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -69,9 +67,6 @@
 				8873E4D12E9F61C700ACFF5C /* AgentRing */,
 			);
 			name = AgentRing;
-			packageProductDependencies = (
-				5A8B7E5022F0099000ACFF5C /* Sparkle */,
-			);
 			productName = AgentRing;
 			productReference = 8873E4CF2E9F61C700ACFF5C /* AgentRing.app */;
 			productType = "com.apple.product-type.application";
@@ -102,9 +97,6 @@
 			);
 			mainGroup = 8873E4C62E9F61C700ACFF5C;
 			minimizedProjectReferenceProxies = 1;
-			packageReferences = (
-				5A8B7E5012F0099000ACFF5C /* XCRemoteSwiftPackageReference "Sparkle" */,
-			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 8873E4D02E9F61C700ACFF5C /* Products */;
 			projectDirPath = "";
@@ -376,25 +368,6 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
-
-/* Begin XCRemoteSwiftPackageReference section */
-		5A8B7E5012F0099000ACFF5C /* XCRemoteSwiftPackageReference "Sparkle" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/sparkle-project/Sparkle";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 2.9.1;
-			};
-		};
-/* End XCRemoteSwiftPackageReference section */
-
-/* Begin XCSwiftPackageProductDependency section */
-		5A8B7E5022F0099000ACFF5C /* Sparkle */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 5A8B7E5012F0099000ACFF5C /* XCRemoteSwiftPackageReference "Sparkle" */;
-			productName = Sparkle;
-		};
-/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 8873E4C72E9F61C700ACFF5C /* Project object */;
 }

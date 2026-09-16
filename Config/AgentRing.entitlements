@@ -13,19 +13,6 @@
 	-->
 	<key>com.apple.security.network.server</key>
 	<true/>
-	<!--
-	  Sparkle 2.x under App Sandbox: lets the main app reach Sparkle's
-	  Installer (-spki) and Status (-spks) XPC services bundled inside
-	  the Sparkle framework. Without these the one-click install fails
-	  under the sandbox. See https://sparkle-project.org/documentation/sandboxing/
-	  (SUEnableDownloaderService is intentionally omitted — the app has
-	  network.client, so Sparkle downloads in-process.)
-	-->
-	<key>com.apple.security.temporary-exception.mach-lookup.global-name</key>
-	<array>
-		<string>$(PRODUCT_BUNDLE_IDENTIFIER)-spks</string>
-		<string>$(PRODUCT_BUNDLE_IDENTIFIER)-spki</string>
-	</array>
 	<key>com.apple.security.temporary-exception.files.home-relative-path.read-only</key>
 	<array>
 		<string>/Library/Containers/app.agentsring.AgentsRing/</string>
