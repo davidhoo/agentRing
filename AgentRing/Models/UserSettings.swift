@@ -450,6 +450,35 @@ final class UserSettings: ObservableObject {
         didSet { defaults.set(notificationsEnabled, forKey: "notificationsEnabled") }
     }
 
+    /// 蓝牙副屏同步开关（默认关闭；开启后向已配对的 agentRing-Android 副屏推送用量）
+    @Published var bluetoothSyncEnabled: Bool {
+        didSet {
+            defaults.set(bluetoothSyncEnabled, forKey: "bluetoothSyncEnabled")
+            if bluetoothSyncEnabled {
+                BluetoothSyncService.shared.start()
+                // 开启即推：不等下一次轮询，把当前已有数据立即发一帧
+                postBluetoothImmediatePush()
+            } else {
+                BluetoothSyncService.shared.stop()
+            }
+        }
+    }
+
+    private func postBluetoothImmediatePush() {
+        let dataManager = (NSApp.delegate as? AppDelegate)?.menuBarManager?.dataManagerForBluetooth
+        let codex = dataManager?.codexData
+        let cursor = dataManager?.cursorData
+        let antigravity = dataManager?.antigravityData
+        // pushPayload 是 MainActor，从设置页切换开关必然在主线程，直接 hop
+        Task { @MainActor in
+            BluetoothSyncService.shared.pushPayload(
+                codexUsageData: codex,
+                cursorUsageData: cursor,
+                antigravityUsageData: antigravity
+            )
+        }
+    }
+
     /// 自动检查更新开关（默认开启，开启后每 1 小时自动检测一次 GitHub Releases）
     @Published var autoUpdateEnabled: Bool {
         didSet {
@@ -649,6 +678,7 @@ final class UserSettings: ObservableObject {
         }
 
         notificationsEnabled = defaults.object(forKey: "notificationsEnabled") as? Bool ?? true
+        bluetoothSyncEnabled = defaults.bool(forKey: "bluetoothSyncEnabled")
         autoUpdateEnabled = defaults.object(forKey: "autoUpdateEnabled") as? Bool ?? true
         launchAtLogin = defaults.bool(forKey: "launchAtLogin")
         // 缺省开启：只要本机有 Antigravity 凭证就自动当一等公民监控
@@ -717,6 +747,7 @@ final class UserSettings: ObservableObject {
         customDisplayTypes = [.codexPrimary, .codexSecondary]
         customDisplayMenuBarOnly = false
         notificationsEnabled = true
+        bluetoothSyncEnabled = false
         autoUpdateEnabled = true
         resetSmartMonitoringState()
     }

@@ -428,6 +428,12 @@
 "notification.hint" = "用量达到阈值或重置时发送通知";
 "notification.enable" = "启用用量通知";
 "notification.description" = "当任意限制达到 90%，或用量重置时，发送系统通知。";
+
+// MARK: - Bluetooth Sync
+"bluetooth.section" = "蓝牙副屏";
+"bluetooth.hint" = "向已配对的 Android 副屏实时推送用量";
+"bluetooth.enable" = "启用蓝牙副屏同步";
+"bluetooth.description" = "通过蓝牙将各供应商额度推送到 agentRing-Android 副屏。请先在系统设置中将手机与 Mac 配对，并保持副屏应用运行。";
 "notification.warning_title" = "用量警告";
 "notification.warning_body" = "%@ 已达到 %d%% 用量";
 "notification.reset_title" = "用量已重置";

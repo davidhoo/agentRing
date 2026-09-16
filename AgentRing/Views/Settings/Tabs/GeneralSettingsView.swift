@@ -18,6 +18,7 @@ struct GeneralSettingsView: View {
                 usageDisplayCard
                 refreshCard
                 notificationCard
+                bluetoothCard
                 launchCard
                 updateCard
                 resetCard
@@ -94,6 +95,29 @@ struct GeneralSettingsView: View {
                 .focusable(false)
 
                 Text(L.SettingsNotification.description)
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .padding(.leading, 20)
+            }
+        }
+    }
+
+    private var bluetoothCard: some View {
+        SettingCard(
+            icon: "antenna.radiowaves.left.and.right",
+            iconColor: .secondary,
+            title: L.SettingsBluetooth.section,
+            hint: L.SettingsBluetooth.hint
+        ) {
+            VStack(alignment: .leading, spacing: 8) {
+                Toggle(isOn: $settings.bluetoothSyncEnabled) {
+                    Text(L.SettingsBluetooth.enable)
+                }
+                .toggleStyle(.checkbox)
+                .focusable(false)
+
+                Text(L.SettingsBluetooth.description)
                     .font(.caption)
                     .foregroundColor(.secondary)
                     .fixedSize(horizontal: false, vertical: true)

@@ -211,6 +211,8 @@ final class DataRefreshManager: ObservableObject {
         }
 
         lastCursorResetsAt = data.included?.resetsAt
+
+        pushBluetoothSync()
     }
 
     private func processAntigravitySuccess(_ data: AntigravityUsageData) {
@@ -222,6 +224,24 @@ final class DataRefreshManager: ObservableObject {
 
         publishSmartMonitoringUtilizations()
         lastAntigravityResetsAt = data.primary?.resetsAt
+
+        pushBluetoothSync()
+    }
+
+    /// 蓝牙副屏：任一供应商数据更新后推送最新报文
+    /// processXxxSuccess 都在主线程回调，这里同步捕获数据后 hop 到 MainActor 构造
+    private func pushBluetoothSync() {
+        guard settings.bluetoothSyncEnabled else { return }
+        let codex = codexUsageData
+        let cursor = cursorUsageData
+        let antigravity = antigravityUsageData
+        Task { @MainActor in
+            BluetoothSyncService.shared.pushPayload(
+                codexUsageData: codex,
+                cursorUsageData: cursor,
+                antigravityUsageData: antigravity
+            )
+        }
     }
 
     private func publishSmartMonitoringUtilizations() {
@@ -467,6 +487,8 @@ final class DataRefreshManager: ObservableObject {
             scheduleCodexResetVerification(resetsAt: resetsAt)
         }
         lastCodexResetsAt = newCodexResetsAt
+
+        pushBluetoothSync()
     }
 
     private func attemptTokenRefreshAndRetry() {

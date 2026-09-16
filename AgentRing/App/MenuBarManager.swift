@@ -68,6 +68,11 @@ final class MenuBarManager: ObservableObject {
         dataManager.refreshState
     }
 
+    /// 蓝牙副屏：读取当前各 provider 数据（开关开启时立即推送用）
+    var dataManagerForBluetooth: (codexData: CodexUsageData?, cursorData: CursorUsageData?, antigravityData: AntigravityUsageData?) {
+        (codexUsageData, cursorUsageData, antigravityUsageData)
+    }
+
     var shouldShowUpdateBadge: Bool {
         let releaseVersion = GitHubUpdateManager.shared.availableRelease?.tagName ?? latestVersion
         guard hasAvailableUpdate || GitHubUpdateManager.shared.availableRelease != nil,

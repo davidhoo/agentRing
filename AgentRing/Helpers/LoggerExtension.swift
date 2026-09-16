@@ -29,6 +29,10 @@ extension Logger {
     /// 本地化管理日志
     /// 用于记录语言切换和本地化相关操作
     static let localization = Logger(subsystem: subsystem, category: "Localization")
+
+    /// 蓝牙同步日志
+    /// 用于记录副屏连接、SDP 查询、RFCOMM 写入等操作
+    static let bluetooth = Logger(subsystem: subsystem, category: "Bluetooth")
 }
 
 // MARK: - 日志级别说明

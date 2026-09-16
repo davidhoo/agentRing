@@ -59,6 +59,11 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         menuBarManager = MenuBarManager()
         GitHubUpdateManager.shared.start()
 
+        // 蓝牙副屏：跟随设置开关启动（连接周期性重连由服务内部管理）
+        if settings.bluetoothSyncEnabled {
+            BluetoothSyncService.shared.start()
+        }
+
         if settings.isFirstLaunch || !settings.hasAnyValidCredentials {
             showWelcomeWindow()
         } else {
@@ -134,6 +139,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     /// 清理定时器和窗口资源
     /// 注意：Combine 订阅会在 cancellables 被释放时自动清理
     func applicationWillTerminate(_ notification: Notification) {
+        BluetoothSyncService.shared.stop()
         menuBarManager?.cleanup()
         welcomeWindow?.close()
         welcomeWindow = nil

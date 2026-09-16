@@ -542,6 +542,14 @@ enum L {
         static var description: String { localized("notification.description") }
     }
 
+    // MARK: - Settings Bluetooth Sync
+    enum SettingsBluetooth {
+        static var section: String { localized("bluetooth.section") }
+        static var hint: String { localized("bluetooth.hint") }
+        static var enable: String { localized("bluetooth.enable") }
+        static var description: String { localized("bluetooth.description") }
+    }
+
     // MARK: - Usage Notification
     enum UsageNotification {
         static var warningTitle: String { localized("notification.warning_title") }
