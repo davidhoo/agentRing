@@ -51,7 +51,7 @@ final class MenuBarUI {
     func openPopover(relativeTo button: NSStatusBarButton) {
         NSApp.activate(ignoringOtherApps: true)
 
-        // 跟随系统时不强制指定外观，由 popover 继承系统外观
+        // 毛玻璃仍应遵循应用的外观设置。
         switch settings.appearance {
         case .system:
             popover.appearance = nil
@@ -77,12 +77,15 @@ final class MenuBarUI {
             popoverWindow.backgroundColor = .white
             popoverWindow.isOpaque = true
             popover.contentViewController?.view.layer?.backgroundColor = NSColor.white.cgColor
-        } else {
-            popoverWindow.backgroundColor = .clear
-            popoverWindow.isOpaque = false
-            popover.contentViewController?.view.layer?.backgroundColor = NSColor.clear.cgColor
+            return
         }
         #endif
+
+        // Release / 正常路径：透明窗口，露出 NSPopover 系统毛玻璃
+        popoverWindow.backgroundColor = .clear
+        popoverWindow.isOpaque = false
+        popover.contentViewController?.view.wantsLayer = true
+        popover.contentViewController?.view.layer?.backgroundColor = NSColor.clear.cgColor
     }
 
     func closePopover() {

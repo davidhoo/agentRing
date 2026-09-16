@@ -53,9 +53,9 @@ struct AntigravityColumnView: View {
 
     private var innerColor: Color {
         if provider == .antigravity {
-            return UsageColorScheme.antigravitySecondaryColorSwiftUI(innerPercentage ?? 0)
+            return UsageColorScheme.antigravityPairedInnerColorSwiftUI(innerPercentage ?? 0)
         } else {
-            return UsageColorScheme.antigravityThirdPartySecondaryColorSwiftUI(innerPercentage ?? 0)
+            return UsageColorScheme.antigravityThirdPartyPairedInnerColorSwiftUI(innerPercentage ?? 0)
         }
     }
 

@@ -33,7 +33,7 @@ struct CursorColumnView: View {
                             ? (cursorUsageData.apiModels?.percentage ?? cursorUsageData.onDemand?.percentage)
                             : nil,
                         outerColor: UsageColorScheme.cursorIncludedColorSwiftUI(included.percentage),
-                        innerColor: UsageColorScheme.cursorOnDemandColorSwiftUI(
+                        innerColor: UsageColorScheme.cursorPairedInnerColorSwiftUI(
                             cursorUsageData.apiModels?.percentage
                                 ?? cursorUsageData.onDemand?.percentage
                                 ?? 0

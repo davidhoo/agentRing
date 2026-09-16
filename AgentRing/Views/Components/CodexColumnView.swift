@@ -67,7 +67,7 @@ struct CodexColumnView: View {
                         outerPercentage: ringData.percentage,
                         innerPercentage: showSecondaryRing ? secondaryData?.percentage : nil,
                         outerColor: outerColor,
-                        innerColor: UsageColorScheme.codexSecondaryColorSwiftUI(secondaryData?.percentage ?? 0),
+                        innerColor: UsageColorScheme.codexPairedInnerColorSwiftUI(secondaryData?.percentage ?? 0),
                         isRefreshing: isCodexRefreshing,
                         rotationAngle: rotationAngle,
                         showRemainingMode: showRemainingMode,

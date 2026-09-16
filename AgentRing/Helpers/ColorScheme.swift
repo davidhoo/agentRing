@@ -49,6 +49,11 @@ enum UsageColorScheme {
         color(codexSecondaryColor(percentage), opacity: opacity)
     }
 
+    /// Dashboard 双环内环：外环绿的压暗版
+    static func codexPairedInnerColorSwiftUI(_ percentage: Double, opacity: Double = 1.0) -> Color {
+        color(darkened(codexPrimaryColor(percentage), by: 0.82), opacity: opacity)
+    }
+
     static func codexSecondaryColorAdaptive(_ percentage: Double, for statusButton: NSStatusBarButton? = nil) -> NSColor {
         adaptive(codexSecondaryColor(percentage), for: statusButton)
     }
@@ -88,6 +93,11 @@ enum UsageColorScheme {
         color(cursorOnDemandColor(percentage), opacity: opacity)
     }
 
+    /// Dashboard 双环内环：外环红粉的压暗版
+    static func cursorPairedInnerColorSwiftUI(_ percentage: Double, opacity: Double = 1.0) -> Color {
+        color(darkened(cursorIncludedColor(percentage), by: 0.82), opacity: opacity)
+    }
+
     static func cursorOnDemandColorAdaptive(_ percentage: Double, for statusButton: NSStatusBarButton? = nil) -> NSColor {
         adaptive(cursorOnDemandColor(percentage), for: statusButton)
     }
@@ -121,6 +131,11 @@ enum UsageColorScheme {
         color(antigravitySecondaryColor(percentage), opacity: opacity)
     }
 
+    /// Dashboard 双环内环：外环蓝的压暗版
+    static func antigravityPairedInnerColorSwiftUI(_ percentage: Double, opacity: Double = 1.0) -> Color {
+        color(darkened(antigravityPrimaryColor(percentage), by: 0.82), opacity: opacity)
+    }
+
     static func antigravitySecondaryColorAdaptive(_ percentage: Double, for statusButton: NSStatusBarButton? = nil) -> NSColor {
         adaptive(antigravitySecondaryColor(percentage), for: statusButton)
     }
@@ -143,6 +158,11 @@ enum UsageColorScheme {
 
     static func antigravityThirdPartySecondaryColorSwiftUI(_ percentage: Double, opacity: Double = 1.0) -> Color {
         color(antigravityThirdPartySecondaryColor(percentage), opacity: opacity)
+    }
+
+    /// Dashboard 双环内环：外环珊瑚橙的压暗版
+    static func antigravityThirdPartyPairedInnerColorSwiftUI(_ percentage: Double, opacity: Double = 1.0) -> Color {
+        color(darkened(antigravityThirdPartyPrimaryColor(percentage), by: 0.82), opacity: opacity)
     }
 
     static func antigravityThirdPartySecondaryColorAdaptive(_ percentage: Double, for statusButton: NSStatusBarButton? = nil) -> NSColor {
@@ -168,6 +188,22 @@ enum UsageColorScheme {
             hue: hue,
             saturation: min(1, max(0.88, saturation * 1.05)),
             brightness: min(1, max(0.78, brightness)),
+            alpha: alpha
+        )
+    }
+
+    /// 同一色相压暗亮度，让内外环接近而不跳色
+    private static func darkened(_ base: NSColor, by factor: CGFloat) -> NSColor {
+        guard let rgb = base.usingColorSpace(.deviceRGB) else { return base }
+        var hue: CGFloat = 0
+        var saturation: CGFloat = 0
+        var brightness: CGFloat = 0
+        var alpha: CGFloat = 0
+        rgb.getHue(&hue, saturation: &saturation, brightness: &brightness, alpha: &alpha)
+        return NSColor(
+            hue: hue,
+            saturation: saturation,
+            brightness: max(0, min(1, brightness * factor)),
             alpha: alpha
         )
     }

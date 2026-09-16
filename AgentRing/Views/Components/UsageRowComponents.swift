@@ -194,8 +194,8 @@ struct UnifiedLimitRow: View {
                 .layoutPriority(0)
 
             Text(percentageLabel)
-                .font(.system(size: 12, weight: .semibold).monospacedDigit())
-                .foregroundColor(iconColor)
+                .font(.system(size: 12, weight: .bold).monospacedDigit())
+                .foregroundColor(.black)
                 .fixedSize(horizontal: true, vertical: false)
 
             Spacer(minLength: 4)
@@ -232,29 +232,6 @@ struct UnifiedLimitRow: View {
             usedPercentage: percentageValue,
             showRemainingMode: showRemainingMode
         )
-    }
-
-    private var iconColor: Color {
-        switch type {
-        case .codexPrimary:
-            return UsageColorScheme.codexPrimaryColorSwiftUI(percentageValue ?? 0)
-        case .codexSecondary:
-            return UsageColorScheme.codexSecondaryColorSwiftUI(percentageValue ?? 0)
-        case .codexExtraUsage:
-            return UsageColorScheme.codexExtraUsageColorSwiftUI(percentageValue ?? 0)
-        case .cursorIncluded:
-            return UsageColorScheme.cursorIncludedColorSwiftUI(percentageValue ?? 0)
-        case .cursorOnDemand:
-            return UsageColorScheme.cursorOnDemandColorSwiftUI(percentageValue ?? 0)
-        case .antigravityPrimary:
-            return UsageColorScheme.antigravityPrimaryColorSwiftUI(percentageValue ?? 0)
-        case .antigravitySecondary:
-            return UsageColorScheme.antigravitySecondaryColorSwiftUI(percentageValue ?? 0)
-        case .antigravityThirdPartyPrimary:
-            return UsageColorScheme.antigravityThirdPartyPrimaryColorSwiftUI(percentageValue ?? 0)
-        case .antigravityThirdPartySecondary:
-            return UsageColorScheme.antigravityThirdPartySecondaryColorSwiftUI(percentageValue ?? 0)
-        }
     }
 
     private var percentageValue: Double? {
