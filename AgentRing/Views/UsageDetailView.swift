@@ -77,9 +77,9 @@ struct UsageDetailView: View {
 
     private var providerColumnWidth: CGFloat {
         switch max(activeProviders.count, 1) {
-        case 3: return 240
-        case 2: return 248
-        default: return 270
+        case 3: return 272
+        case 2: return 276
+        default: return 290
         }
     }
 
@@ -89,9 +89,9 @@ struct UsageDetailView: View {
 
     private var popoverWidth: CGFloat {
         switch activeProviders.count {
-        case 3: return 760
-        case 2: return 520
-        default: return 290
+        case 3: return 860
+        case 2: return 580
+        default: return 320
         }
     }
 

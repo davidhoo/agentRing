@@ -253,7 +253,7 @@ final class MenuBarManager: ObservableObject {
         let rowHeight: CGFloat = 26
         let spacing: CGFloat = 5
 
-        let width: CGFloat = activeProvidersCount >= 3 ? 760 : (activeProvidersCount == 2 ? 520 : 290)
+        let width: CGFloat = activeProvidersCount >= 3 ? 860 : (activeProvidersCount == 2 ? 580 : 320)
         let maxRowsPerProvider = [
             settings.getActiveCodexDisplayTypes(codexUsageData: codexUsageData).count,
             settings.getActiveCursorDisplayTypes(cursorUsageData: cursorUsageData).count,

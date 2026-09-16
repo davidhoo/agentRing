@@ -84,7 +84,7 @@ struct AntigravityColumnView: View {
             .onTapGesture {
                 onToggleRemainingMode?()
             }
-            .padding(.horizontal, 8)
+            .padding(.horizontal, 14)
         }
     }
 
