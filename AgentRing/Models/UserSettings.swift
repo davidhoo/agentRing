@@ -105,17 +105,19 @@ enum LimitType: String, CaseIterable, Codable {
     case cursorOnDemand = "cursor_ondemand"
     case antigravityPrimary = "antigravity_primary"
     case antigravitySecondary = "antigravity_secondary"
+    case antigravityThirdPartyPrimary = "antigravity_third_party_primary"
+    case antigravityThirdPartySecondary = "antigravity_third_party_secondary"
 
     var provider: ProviderType {
         switch self {
         case .codexPrimary, .codexSecondary, .codexExtraUsage: return .codex
         case .cursorIncluded, .cursorOnDemand: return .cursor
-        case .antigravityPrimary, .antigravitySecondary: return .antigravity
+        case .antigravityPrimary, .antigravitySecondary, .antigravityThirdPartyPrimary, .antigravityThirdPartySecondary: return .antigravity
         }
     }
 
     var isCircular: Bool {
-        self == .codexPrimary || self == .codexSecondary || self == .cursorIncluded || self == .cursorOnDemand || self == .antigravityPrimary || self == .antigravitySecondary
+        self == .codexPrimary || self == .codexSecondary || self == .cursorIncluded || self == .cursorOnDemand || self == .antigravityPrimary || self == .antigravitySecondary || self == .antigravityThirdPartyPrimary || self == .antigravityThirdPartySecondary
     }
 
     var isRectangular: Bool { false }
@@ -125,7 +127,7 @@ enum LimitType: String, CaseIterable, Codable {
     }
 
     var usesDashedStyle: Bool {
-        self == .codexSecondary || self == .antigravitySecondary
+        self == .codexSecondary || self == .antigravitySecondary || self == .antigravityThirdPartySecondary
     }
 
     var displayName: String {
@@ -137,6 +139,8 @@ enum LimitType: String, CaseIterable, Codable {
         case .cursorOnDemand: return L.LimitTypes.cursorOnDemand
         case .antigravityPrimary: return L.LimitTypes.antigravityPrimary
         case .antigravitySecondary: return L.LimitTypes.antigravitySecondary
+        case .antigravityThirdPartyPrimary: return L.LimitTypes.antigravityThirdPartyPrimary
+        case .antigravityThirdPartySecondary: return L.LimitTypes.antigravityThirdPartySecondary
         }
     }
 
@@ -148,8 +152,10 @@ enum LimitType: String, CaseIterable, Codable {
         case .codexExtraUsage: return L.DetailRow.extraUsage
         case .cursorIncluded: return L.DetailRow.cursorIncluded
         case .cursorOnDemand: return L.DetailRow.cursorOnDemand
-        case .antigravityPrimary: return L.DetailRow.fiveHour
-        case .antigravitySecondary: return L.DetailRow.sevenDay
+        case .antigravityPrimary: return L.DetailRow.antigravityGeminiPrimary
+        case .antigravitySecondary: return L.DetailRow.antigravityGeminiSecondary
+        case .antigravityThirdPartyPrimary: return L.DetailRow.antigravityThirdPartyPrimary
+        case .antigravityThirdPartySecondary: return L.DetailRow.antigravityThirdPartySecondary
         }
     }
 }
@@ -930,7 +936,7 @@ final class UserSettings: ObservableObject {
 
     private func ensureDefaultAntigravityDisplayTypesForCustomMode() {
         guard displayMode == .custom else { return }
-        let agyTypes: Set<LimitType> = [.antigravityPrimary, .antigravitySecondary]
+        let agyTypes: Set<LimitType> = [.antigravityPrimary, .antigravitySecondary, .antigravityThirdPartyPrimary, .antigravityThirdPartySecondary]
         guard customDisplayTypes.isDisjoint(with: agyTypes) else { return }
         customDisplayTypes.formUnion([.antigravityPrimary, .antigravitySecondary])
     }
@@ -990,11 +996,19 @@ final class UserSettings: ObservableObject {
         case .smart:
             guard let antigravityUsageData else { return [] }
             var types: [LimitType] = []
-            if antigravityUsageData.primary != nil {
+            if antigravityUsageData.geminiPrimary != nil {
                 types.append(.antigravityPrimary)
             }
-            if antigravityUsageData.secondary != nil {
+            if antigravityUsageData.geminiSecondary != nil {
                 types.append(.antigravitySecondary)
+            }
+            if !forMenuBar {
+                if antigravityUsageData.thirdPartyPrimary != nil {
+                    types.append(.antigravityThirdPartyPrimary)
+                }
+                if antigravityUsageData.thirdPartySecondary != nil {
+                    types.append(.antigravityThirdPartySecondary)
+                }
             }
             return types
 

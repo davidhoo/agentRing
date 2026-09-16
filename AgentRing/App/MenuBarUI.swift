@@ -315,8 +315,10 @@ final class MenuBarUI {
                 .sorted()
                 .joined(separator: ",")
             key += "_ag\(activeTypes)"
-            if let primary = antigravityUsageData.primary { key += "_p\(Int(primary.percentage))" }
-            if let secondary = antigravityUsageData.secondary { key += "_s\(Int(secondary.percentage))" }
+            if let primary = antigravityUsageData.geminiPrimary ?? antigravityUsageData.primary { key += "_p\(Int(primary.percentage))" }
+            if let secondary = antigravityUsageData.geminiSecondary ?? antigravityUsageData.secondary { key += "_s\(Int(secondary.percentage))" }
+            if let tpPrimary = antigravityUsageData.thirdPartyPrimary { key += "_tpp\(Int(tpPrimary.percentage))" }
+            if let tpSecondary = antigravityUsageData.thirdPartySecondary { key += "_tps\(Int(tpSecondary.percentage))" }
         } else {
             key += "_no_antigravity"
         }

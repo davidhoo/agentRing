@@ -233,8 +233,10 @@
 "codex_extra_usage" = "Codex Extra Usage";
 "cursor_included_limit" = "Cursor Models";
 "cursor_ondemand_limit" = "Other Models";
-"antigravity_primary_limit" = "Antigravity 5-Hour Limit";
-"antigravity_secondary_limit" = "Antigravity 7-Day Limit";
+"antigravity_primary_limit" = "Antigravity Gemini 5-Hour Limit";
+"antigravity_secondary_limit" = "Antigravity Gemini 7-Day Limit";
+"antigravity_third_party_primary_limit" = "Antigravity Claude/GPT 5-Hour Limit";
+"antigravity_third_party_secondary_limit" = "Antigravity Claude/GPT 7-Day Limit";
 
 // MARK: - Detail Row Labels
 "detail_row.five_hour_limit" = "5h";
@@ -244,6 +246,10 @@
 "detail_row.extra_usage" = "Extra Usage";
 "detail_row.cursor_included" = "Cursor Models";
 "detail_row.cursor_ondemand" = "Other Models";
+"detail_row.antigravity_gemini_5h" = "Gemini 5h";
+"detail_row.antigravity_gemini_weekly" = "Gemini 7d";
+"detail_row.antigravity_third_party_5h" = "Claude/GPT 5h";
+"detail_row.antigravity_third_party_weekly" = "Claude/GPT 7d";
 
 // MARK: - Display Options (v2.0.0)
 "display_options" = "Display Options";

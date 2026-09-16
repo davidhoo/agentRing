@@ -233,8 +233,10 @@
 "codex_extra_usage" = "Codex 额外用量";
 "cursor_included_limit" = "Cursor 模型";
 "cursor_ondemand_limit" = "其他模型";
-"antigravity_primary_limit" = "Antigravity 5小时限制";
-"antigravity_secondary_limit" = "Antigravity 7天限制";
+"antigravity_primary_limit" = "Antigravity Gemini 5小时限制";
+"antigravity_secondary_limit" = "Antigravity Gemini 7天限制";
+"antigravity_third_party_primary_limit" = "Antigravity Claude/GPT 5小时限制";
+"antigravity_third_party_secondary_limit" = "Antigravity Claude/GPT 7天限制";
 
 // MARK: - Detail Row Labels
 "detail_row.five_hour_limit" = "5小时";
@@ -244,6 +246,10 @@
 "detail_row.extra_usage" = "额外用量";
 "detail_row.cursor_included" = "Cursor 模型";
 "detail_row.cursor_ondemand" = "其他模型";
+"detail_row.antigravity_gemini_5h" = "Gemini 5小时";
+"detail_row.antigravity_gemini_weekly" = "Gemini 7天";
+"detail_row.antigravity_third_party_5h" = "Claude/GPT 5小时";
+"detail_row.antigravity_third_party_weekly" = "Claude/GPT 7天";
 
 // MARK: - Display Options (v2.0.0)
 "display_options" = "显示选项";

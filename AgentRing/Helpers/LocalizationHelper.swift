@@ -231,6 +231,10 @@ enum L {
         static var extraUsage: String { localized("detail_row.extra_usage") }
         static var cursorIncluded: String { localized("detail_row.cursor_included") }
         static var cursorOnDemand: String { localized("detail_row.cursor_ondemand") }
+        static var antigravityGeminiPrimary: String { localized("detail_row.antigravity_gemini_5h") }
+        static var antigravityGeminiSecondary: String { localized("detail_row.antigravity_gemini_weekly") }
+        static var antigravityThirdPartyPrimary: String { localized("detail_row.antigravity_third_party_5h") }
+        static var antigravityThirdPartySecondary: String { localized("detail_row.antigravity_third_party_weekly") }
         static var today: String { localized("usage_data.detail_today") }
 
         static func creditsBalance(_ balance: Double) -> String {
@@ -354,6 +358,8 @@ enum L {
         static var cursorOnDemand: String { localized("cursor_ondemand_limit") }
         static var antigravityPrimary: String { localized("antigravity_primary_limit") }
         static var antigravitySecondary: String { localized("antigravity_secondary_limit") }
+        static var antigravityThirdPartyPrimary: String { localized("antigravity_third_party_primary_limit") }
+        static var antigravityThirdPartySecondary: String { localized("antigravity_third_party_secondary_limit") }
     }
 
     // MARK: - Display Options (v2.0.0)

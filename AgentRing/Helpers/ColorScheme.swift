@@ -96,6 +96,10 @@ enum UsageColorScheme {
     private static let activityAntigravityBlue = NSColor(red: 26/255.0, green: 115/255.0, blue: 232/255.0, alpha: 1.0)
     /// Antigravity 7 天：亮紫
     private static let activityAntigravityPurple = NSColor(red: 168/255.0, green: 85/255.0, blue: 247/255.0, alpha: 1.0)
+    /// Antigravity Claude/GPT 5 小时：暖珊瑚橙 (Claude 标识色)
+    private static let activityAntigravityThirdPartyCoral = NSColor(red: 217/255.0, green: 119/255.0, blue: 70/255.0, alpha: 1.0)
+    /// Antigravity Claude/GPT 7 天：青碧绿 (OpenAI / GPT 标识色)
+    private static let activityAntigravityThirdPartyTeal = NSColor(red: 16/255.0, green: 163/255.0, blue: 127/255.0, alpha: 1.0)
 
     static func antigravityPrimaryColor(_ percentage: Double) -> NSColor {
         warningTint(activityAntigravityBlue, percentage: percentage)
@@ -119,6 +123,30 @@ enum UsageColorScheme {
 
     static func antigravitySecondaryColorAdaptive(_ percentage: Double, for statusButton: NSStatusBarButton? = nil) -> NSColor {
         adaptive(antigravitySecondaryColor(percentage), for: statusButton)
+    }
+
+    static func antigravityThirdPartyPrimaryColor(_ percentage: Double) -> NSColor {
+        warningTint(activityAntigravityThirdPartyCoral, percentage: percentage)
+    }
+
+    static func antigravityThirdPartyPrimaryColorSwiftUI(_ percentage: Double, opacity: Double = 1.0) -> Color {
+        color(antigravityThirdPartyPrimaryColor(percentage), opacity: opacity)
+    }
+
+    static func antigravityThirdPartyPrimaryColorAdaptive(_ percentage: Double, for statusButton: NSStatusBarButton? = nil) -> NSColor {
+        adaptive(antigravityThirdPartyPrimaryColor(percentage), for: statusButton)
+    }
+
+    static func antigravityThirdPartySecondaryColor(_ percentage: Double) -> NSColor {
+        warningTint(activityAntigravityThirdPartyTeal, percentage: percentage)
+    }
+
+    static func antigravityThirdPartySecondaryColorSwiftUI(_ percentage: Double, opacity: Double = 1.0) -> Color {
+        color(antigravityThirdPartySecondaryColor(percentage), opacity: opacity)
+    }
+
+    static func antigravityThirdPartySecondaryColorAdaptive(_ percentage: Double, for statusButton: NSStatusBarButton? = nil) -> NSColor {
+        adaptive(antigravityThirdPartySecondaryColor(percentage), for: statusButton)
     }
 
     private static func adaptive(_ baseColor: NSColor, for statusButton: NSStatusBarButton?) -> NSColor {

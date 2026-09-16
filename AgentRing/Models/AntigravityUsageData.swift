@@ -36,13 +36,24 @@ struct AntigravityUsageData: Sendable {
 
     /// 便捷访问 Gemini 核心模型组
     var geminiGroup: ModelGroup? {
-        groups.first { $0.displayName.localizedCaseInsensitiveContains("gemini") }
+        groups.first { $0.displayName.localizedCaseInsensitiveContains("gemini") } ?? groups.first
     }
 
     /// 便捷访问 Claude 与 GPT 第三方模型组
     var thirdPartyGroup: ModelGroup? {
         groups.first { $0.displayName.localizedCaseInsensitiveContains("claude") || $0.displayName.localizedCaseInsensitiveContains("gpt") }
+            ?? (groups.count > 1 ? groups[1] : nil)
     }
+
+    /// Gemini 5小时主窗口额度
+    var geminiPrimary: LimitData? { geminiGroup?.fiveHourLimit ?? primary }
+    /// Gemini 周级额度
+    var geminiSecondary: LimitData? { geminiGroup?.weeklyLimit ?? secondary }
+
+    /// Claude / GPT 5小时主窗口额度
+    var thirdPartyPrimary: LimitData? { thirdPartyGroup?.fiveHourLimit }
+    /// Claude / GPT 周级额度
+    var thirdPartySecondary: LimitData? { thirdPartyGroup?.weeklyLimit }
 }
 
 extension AntigravityUsageData.LimitData {

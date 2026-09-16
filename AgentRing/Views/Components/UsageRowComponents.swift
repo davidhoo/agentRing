@@ -250,6 +250,10 @@ struct UnifiedLimitRow: View {
             return UsageColorScheme.antigravityPrimaryColorSwiftUI(percentageValue ?? 0)
         case .antigravitySecondary:
             return UsageColorScheme.antigravitySecondaryColorSwiftUI(percentageValue ?? 0)
+        case .antigravityThirdPartyPrimary:
+            return UsageColorScheme.antigravityThirdPartyPrimaryColorSwiftUI(percentageValue ?? 0)
+        case .antigravityThirdPartySecondary:
+            return UsageColorScheme.antigravityThirdPartySecondaryColorSwiftUI(percentageValue ?? 0)
         }
     }
 
@@ -260,8 +264,10 @@ struct UnifiedLimitRow: View {
         case .codexExtraUsage: return codexData?.extraUsage?.percentage
         case .cursorIncluded: return cursorData?.included?.percentage
         case .cursorOnDemand: return cursorData?.apiModels?.percentage ?? cursorData?.onDemand?.percentage
-        case .antigravityPrimary: return antigravityData?.primary?.percentage
-        case .antigravitySecondary: return antigravityData?.secondary?.percentage
+        case .antigravityPrimary: return antigravityData?.geminiPrimary?.percentage ?? antigravityData?.primary?.percentage
+        case .antigravitySecondary: return antigravityData?.geminiSecondary?.percentage ?? antigravityData?.secondary?.percentage
+        case .antigravityThirdPartyPrimary: return antigravityData?.thirdPartyPrimary?.percentage
+        case .antigravityThirdPartySecondary: return antigravityData?.thirdPartySecondary?.percentage
         }
     }
 
@@ -297,11 +303,19 @@ struct UnifiedLimitRow: View {
             return L.ExtraUsage.usageAmount(onDemand.usedDollars, onDemand.limitDollars)
 
         case .antigravityPrimary:
-            guard let limitData = antigravityData?.primary?.asUsageLimitData() else { return "-" }
+            guard let limitData = (antigravityData?.geminiPrimary ?? antigravityData?.primary)?.asUsageLimitData() else { return "-" }
             return showRemainingMode ? limitData.formattedCompactRemaining : detailCompactResetTime(limitData)
 
         case .antigravitySecondary:
-            guard let limitData = antigravityData?.secondary?.asUsageLimitData() else { return "-" }
+            guard let limitData = (antigravityData?.geminiSecondary ?? antigravityData?.secondary)?.asUsageLimitData() else { return "-" }
+            return showRemainingMode ? limitData.formattedCompactRemainingWithMinutes : limitData.formattedCompactResetDateWithMinutes
+
+        case .antigravityThirdPartyPrimary:
+            guard let limitData = antigravityData?.thirdPartyPrimary?.asUsageLimitData() else { return "-" }
+            return showRemainingMode ? limitData.formattedCompactRemaining : detailCompactResetTime(limitData)
+
+        case .antigravityThirdPartySecondary:
+            guard let limitData = antigravityData?.thirdPartySecondary?.asUsageLimitData() else { return "-" }
             return showRemainingMode ? limitData.formattedCompactRemainingWithMinutes : limitData.formattedCompactResetDateWithMinutes
         }
     }

@@ -231,29 +231,57 @@ final class MenuBarIconRenderer {
     ) -> [NSImage] {
         let types = settings.getActiveAntigravityDisplayTypes(antigravityUsageData: antigravity, forMenuBar: true)
         let showPlaceholder = settings.displayMode == .custom
-        guard types.contains(.antigravityPrimary) || types.contains(.antigravitySecondary) else { return [] }
+        let hasGemini = types.contains(.antigravityPrimary) || types.contains(.antigravitySecondary)
+        let hasThirdParty = types.contains(.antigravityThirdPartyPrimary) || types.contains(.antigravityThirdPartySecondary)
+        guard hasGemini || hasThirdParty else { return [] }
 
-        let outerPercentage = antigravity.primary?.percentage ?? (showPlaceholder && types.contains(.antigravityPrimary) ? 0 : nil)
-        let resolvedOuter = outerPercentage ?? (types.contains(.antigravitySecondary) ? antigravity.secondary?.percentage : nil)
-        guard let resolvedOuter else { return [] }
+        var icons: [NSImage] = []
 
-        let innerPercentage: Double? = {
-            guard types.contains(.antigravityPrimary), types.contains(.antigravitySecondary) else { return nil }
-            return antigravity.secondary?.percentage ?? (showPlaceholder ? 0 : nil)
-        }()
+        if hasGemini {
+            let outerPercentage = antigravity.geminiPrimary?.percentage ?? (showPlaceholder && types.contains(.antigravityPrimary) ? 0 : nil)
+            let resolvedOuter = outerPercentage ?? (types.contains(.antigravitySecondary) ? antigravity.geminiSecondary?.percentage : nil)
+            if let resolvedOuter {
+                let innerPercentage: Double? = {
+                    guard types.contains(.antigravityPrimary), types.contains(.antigravitySecondary) else { return nil }
+                    return antigravity.geminiSecondary?.percentage ?? (showPlaceholder ? 0 : nil)
+                }()
 
-        return [
-            createConcentricRingImage(
-                outerPercentage: UsageRingDisplay.remainingPercentage(usedPercentage: resolvedOuter),
-                innerPercentage: innerPercentage.map {
-                    UsageRingDisplay.remainingPercentage(usedPercentage: $0)
-                },
-                outerColor: .black,
-                innerColor: NSColor.black.withAlphaComponent(0.78),
-                isMonochrome: true,
-                button: button
-            )
-        ]
+                icons.append(createConcentricRingImage(
+                    outerPercentage: UsageRingDisplay.remainingPercentage(usedPercentage: resolvedOuter),
+                    innerPercentage: innerPercentage.map {
+                        UsageRingDisplay.remainingPercentage(usedPercentage: $0)
+                    },
+                    outerColor: .black,
+                    innerColor: NSColor.black.withAlphaComponent(0.78),
+                    isMonochrome: true,
+                    button: button
+                ))
+            }
+        }
+
+        if hasThirdParty {
+            let outerPercentage = antigravity.thirdPartyPrimary?.percentage ?? (showPlaceholder && types.contains(.antigravityThirdPartyPrimary) ? 0 : nil)
+            let resolvedOuter = outerPercentage ?? (types.contains(.antigravityThirdPartySecondary) ? antigravity.thirdPartySecondary?.percentage : nil)
+            if let resolvedOuter {
+                let innerPercentage: Double? = {
+                    guard types.contains(.antigravityThirdPartyPrimary), types.contains(.antigravityThirdPartySecondary) else { return nil }
+                    return antigravity.thirdPartySecondary?.percentage ?? (showPlaceholder ? 0 : nil)
+                }()
+
+                icons.append(createConcentricRingImage(
+                    outerPercentage: UsageRingDisplay.remainingPercentage(usedPercentage: resolvedOuter),
+                    innerPercentage: innerPercentage.map {
+                        UsageRingDisplay.remainingPercentage(usedPercentage: $0)
+                    },
+                    outerColor: .black,
+                    innerColor: NSColor.black.withAlphaComponent(0.78),
+                    isMonochrome: true,
+                    button: button
+                ))
+            }
+        }
+
+        return icons
     }
 
     private func createConcentricRingImage(

@@ -27,12 +27,31 @@ struct AntigravityColumnView: View {
     var body: some View {
         VStack(spacing: 15) {
             ZStack {
-                if let primary = antigravityUsageData.primary {
+                let primaryRingData: AntigravityUsageData.LimitData? = {
+                    if activeTypes.contains(.antigravityPrimary) {
+                        return antigravityUsageData.geminiPrimary ?? antigravityUsageData.primary
+                    }
+                    if activeTypes.contains(.antigravitySecondary) {
+                        return antigravityUsageData.geminiSecondary ?? antigravityUsageData.secondary
+                    }
+                    return antigravityUsageData.geminiPrimary ?? antigravityUsageData.primary ?? antigravityUsageData.geminiSecondary ?? antigravityUsageData.secondary
+                }()
+
+                if let primary = primaryRingData {
+                    let isSecondaryOnly = !activeTypes.contains(.antigravityPrimary) && activeTypes.contains(.antigravitySecondary)
+                    let outerColor = isSecondaryOnly
+                        ? UsageColorScheme.antigravitySecondaryColorSwiftUI(primary.percentage)
+                        : UsageColorScheme.antigravityPrimaryColorSwiftUI(primary.percentage)
+                    let secondaryData = antigravityUsageData.geminiSecondary ?? antigravityUsageData.secondary
+                    let innerPercentage = !isSecondaryOnly && activeTypes.contains(.antigravitySecondary)
+                        ? secondaryData?.percentage
+                        : nil
+
                     ActivityRingView(
                         outerPercentage: primary.percentage,
-                        innerPercentage: activeTypes.contains(.antigravitySecondary) ? antigravityUsageData.secondary?.percentage : nil,
-                        outerColor: UsageColorScheme.antigravityPrimaryColorSwiftUI(primary.percentage),
-                        innerColor: UsageColorScheme.antigravitySecondaryColorSwiftUI(antigravityUsageData.secondary?.percentage ?? 0),
+                        innerPercentage: innerPercentage,
+                        outerColor: outerColor,
+                        innerColor: UsageColorScheme.antigravitySecondaryColorSwiftUI(secondaryData?.percentage ?? 0),
                         isRefreshing: isRefreshing,
                         rotationAngle: rotationAngle,
                         showRemainingMode: showRemainingMode,

@@ -143,14 +143,16 @@ final class AntigravityDiagnosticRunner: DiagnosticRunner {
                 let decoded = try JSONDecoder().decode(AntigravityQuotaResponse.self, from: data)
                 let usage = decoded.toUsageData()
                 let groupCount = usage.groups.count
-                let primaryPct = usage.primary.map { String(format: "%.1f%%", $0.percentage) } ?? "n/a"
-                let secondaryPct = usage.secondary.map { String(format: "%.1f%%", $0.percentage) } ?? "n/a"
+                let gemini5hPct = usage.geminiPrimary.map { String(format: "%.1f%%", $0.percentage) } ?? "n/a"
+                let geminiWkPct = usage.geminiSecondary.map { String(format: "%.1f%%", $0.percentage) } ?? "n/a"
+                let tp5hPct = usage.thirdPartyPrimary.map { String(format: "%.1f%%", $0.percentage) } ?? "n/a"
+                let tpWkPct = usage.thirdPartySecondary.map { String(format: "%.1f%%", $0.percentage) } ?? "n/a"
                 return DiagnosticStep(
                     name: stepName, success: true,
                     httpStatusCode: http.statusCode, responseTime: responseTime,
                     responseType: .json, errorType: nil, errorDescription: nil,
                     responseHeaders: headers,
-                    responseBodyPreview: "Quota OK — groups=\(groupCount), primary=\(primaryPct), secondary=\(secondaryPct)",
+                    responseBodyPreview: "Quota OK — groups=\(groupCount), gemini=\(gemini5hPct)/\(geminiWkPct), thirdParty=\(tp5hPct)/\(tpWkPct)",
                     cloudflareChallenge: false, cfMitigated: false,
                     notes: groupCount == 0 ? "Response parsed but contained no groups" : nil
                 )
