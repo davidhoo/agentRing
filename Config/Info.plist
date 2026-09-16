@@ -3,12 +3,15 @@
     Static Info.plist for the Agent Ring app target.
 
     Switched from Xcode's auto-generated Info.plist (GENERATE_INFOPLIST_FILE = YES)
-    to this static file because third-party keys like SUFeedURL, SUPublicEDKey,
-    and SUEnableAutomaticChecks are silently dropped by the INFOPLIST_KEY_*
-    code path (only Apple-known keys survive). Adding new keys → edit here.
+    to this static file so custom keys are not silently dropped by the
+    INFOPLIST_KEY_* code path (only Apple-known keys survive there).
+    Adding new keys → edit here.
 
     Build settings still interpolate via $(VARIABLE_NAME), so version bumps in
     project.pbxproj's MARKETING_VERSION / CURRENT_PROJECT_VERSION flow through.
+
+    App updates are handled by GitHubUpdateManager via GitHub Releases
+    (haorui-lab/agentRing), not Sparkle.
 -->
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
