@@ -88,14 +88,12 @@ struct AntigravityColumnView: View {
                 onAnimationHint?(animationType.name)
             }
 
-            VStack(spacing: 5) {
-                ForEach(activeTypes, id: \.self) { type in
-                    UnifiedLimitRow(
-                        type: type,
-                        antigravityData: antigravityUsageData,
-                        showRemainingMode: showRemainingMode
-                    )
-                }
+            limitRows(for: activeTypes) { type in
+                UnifiedLimitRow(
+                    type: type,
+                    antigravityData: antigravityUsageData,
+                    showRemainingMode: showRemainingMode
+                )
             }
             .padding(.horizontal, 14)
         }

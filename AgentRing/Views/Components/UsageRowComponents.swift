@@ -174,9 +174,44 @@ struct ProviderDivider: View {
     }
 }
 
+// MARK: - Limit Row List
+
+/// 明细行列表：行间用系统原生 Divider，分隔线属于列表排版职责，不下放到单行组件
+@ViewBuilder
+func limitRows<Row: View>(for types: [LimitType], @ViewBuilder row: @escaping (LimitType) -> Row) -> some View {
+    VStack(spacing: 0) {
+        ForEach(Array(types.enumerated()), id: \.element) { index, type in
+            if index > 0 {
+                Divider()
+                    .padding(.horizontal, 2)
+            }
+            row(type)
+        }
+    }
+}
+
 // MARK: - Unified Limit Row Component
 
-/// 统一的 Codex 限制行组件
+/// 行布局常量：行组件与弹窗高度公式共用一份，防止两边各自维护漂移
+enum UnifiedLimitRowMetrics {
+    static let verticalPadding: CGFloat = 4
+    /// 12pt 字体的实际行高
+    static let textLineHeight: CGFloat = 15
+    /// 行间 Divider 的渲染厚度
+    static let interRowDividerHeight: CGFloat = 1
+
+    static var rowHeight: CGFloat {
+        textLineHeight + verticalPadding * 2
+    }
+
+    /// rowCount 行（含行间分隔线）的总高度
+    static func textHeight(rowCount: Int) -> CGFloat {
+        guard rowCount > 0 else { return 0 }
+        return CGFloat(rowCount) * rowHeight + CGFloat(rowCount - 1) * interRowDividerHeight
+    }
+}
+
+/// 统一的额度明细行组件：列表式布局，靠排版而不是胶囊卡片表达层级（HIG 列表密度规范）
 struct UnifiedLimitRow: View {
     let type: LimitType
     var codexData: CodexUsageData? = nil
@@ -186,6 +221,11 @@ struct UnifiedLimitRow: View {
 
     var body: some View {
         HStack(spacing: 6) {
+            // 左侧彩色小圆点：与圆环同色系的语义标识，不是纯装饰
+            Circle()
+                .fill(rowColor)
+                .frame(width: 5, height: 5)
+
             Text(limitName)
                 .font(.system(size: 12))
                 .foregroundColor(.secondary)
@@ -194,8 +234,8 @@ struct UnifiedLimitRow: View {
                 .layoutPriority(0)
 
             Text(percentageLabel)
-                .font(.system(size: 12, weight: .bold).monospacedDigit())
-                .foregroundColor(.black)
+                .font(.system(size: 12, weight: .semibold).monospacedDigit())
+                .foregroundColor(.primary)
                 .fixedSize(horizontal: true, vertical: false)
 
             Spacer(minLength: 4)
@@ -203,7 +243,6 @@ struct UnifiedLimitRow: View {
             // 日期/额度优先完整显示，避免被左侧名称挤成省略号
             Text(displayValue)
                 .font(.system(size: 12).monospacedDigit())
-                .fontWeight(.medium)
                 .foregroundColor(.secondary)
                 .lineLimit(1)
                 .fixedSize(horizontal: true, vertical: false)
@@ -214,16 +253,29 @@ struct UnifiedLimitRow: View {
                     removal: .move(edge: .bottom).combined(with: .opacity)
                 ))
         }
-        .padding(.vertical, 2)
-        .padding(.horizontal, 10)
-        .background(Color.gray.opacity(0.1))
-        .cornerRadius(8)
+        .padding(.vertical, UnifiedLimitRowMetrics.verticalPadding)
+        .padding(.horizontal, 2)
     }
 
     // MARK: - Computed Properties
 
     private var limitName: String {
         type.detailDisplayName
+    }
+
+    /// 左侧圆点颜色：与各额度对应的大圆环颜色保持同一语义来源
+    private var rowColor: Color {
+        switch type {
+        case .codexPrimary: return UsageColorScheme.codexPrimaryColorSwiftUI(percentageValue ?? 0)
+        case .codexSecondary: return UsageColorScheme.codexSecondaryColorSwiftUI(percentageValue ?? 0)
+        case .codexExtraUsage: return UsageColorScheme.codexExtraUsageColorSwiftUI(percentageValue ?? 0)
+        case .cursorIncluded: return UsageColorScheme.cursorIncludedColorSwiftUI(percentageValue ?? 0)
+        case .cursorOnDemand: return UsageColorScheme.cursorOnDemandColorSwiftUI(percentageValue ?? 0)
+        case .antigravityPrimary: return UsageColorScheme.antigravityPrimaryColorSwiftUI(percentageValue ?? 0)
+        case .antigravitySecondary: return UsageColorScheme.antigravitySecondaryColorSwiftUI(percentageValue ?? 0)
+        case .antigravityThirdPartyPrimary: return UsageColorScheme.antigravityThirdPartyPrimaryColorSwiftUI(percentageValue ?? 0)
+        case .antigravityThirdPartySecondary: return UsageColorScheme.antigravityThirdPartySecondaryColorSwiftUI(percentageValue ?? 0)
+        }
     }
 
     private var percentageLabel: String {

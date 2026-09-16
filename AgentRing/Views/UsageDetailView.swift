@@ -120,8 +120,6 @@ struct UsageDetailView: View {
     private var contentHeight: CGFloat {
         // 多厂商时圆环上方多一行标题，底座加高，保证呼吸感与间距
         let baseHeight: CGFloat = showsMultipleProviders ? 222 : 190
-        let rowHeight: CGFloat = 26
-        let spacing: CGFloat = 5
         // 多列并排时高度应按「最高那一列」算，不能把各 provider 行数加总（会撑出大片空白）
         let maxRowsPerProvider = [
             UserSettings.shared.getActiveCodexDisplayTypes(codexUsageData: codexUsageData).count,
@@ -131,8 +129,8 @@ struct UsageDetailView: View {
         ].max() ?? 0
         let hasAnyData = codexUsageData != nil || cursorUsageData != nil || antigravityUsageData != nil
         let rowCount = max(maxRowsPerProvider, hasAnyData || !activeProviders.isEmpty ? 1 : 0)
-        let textHeight = CGFloat(rowCount) * rowHeight + CGFloat(max(0, rowCount - 1)) * spacing
-        return baseHeight + textHeight
+        // 明细行高度与 UnifiedLimitRow 共用同一份 metrics，避免两边漂移
+        return baseHeight + UnifiedLimitRowMetrics.textHeight(rowCount: rowCount)
     }
 
     private var providerDividerHeight: CGFloat {
@@ -422,23 +420,15 @@ struct UsageDetailView: View {
             if needsRelogin {
                 Button(action: { onMenuAction?(reloginAction) }) {
                     Label(reloginButtonTitle(for: reloginAction), systemImage: "arrow.counterclockwise.circle.fill")
-                        .padding(.horizontal, 16)
-                        .padding(.vertical, 8)
-                        .background(Color.blue)
-                        .foregroundColor(.white)
-                        .cornerRadius(8)
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(.borderedProminent)
+                .controlSize(.regular)
             } else {
                 Button(action: { onMenuAction?(.authSettings) }) {
                     Label(L.Usage.goToSettings, systemImage: "key.fill")
-                        .padding(.horizontal, 16)
-                        .padding(.vertical, 8)
-                        .background(Color.blue)
-                        .foregroundColor(.white)
-                        .cornerRadius(8)
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(.borderedProminent)
+                .controlSize(.regular)
             }
         }
         .padding()
