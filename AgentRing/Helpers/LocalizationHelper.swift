@@ -199,6 +199,13 @@ enum L {
         }
         static var releaseNotesTitle: String { localized("settings.update.release_notes") }
         static var downloadAndInstall: String { localized("settings.update.download_and_install") }
+        static var restartAndInstall: String { localized("settings.update.restart_and_install") }
+        static func readyToInstallTitle(_ version: String) -> String {
+            String(format: localized("settings.update.ready_to_install_title"), version)
+        }
+        static var readyToInstallMessage: String { localized("settings.update.ready_to_install_message") }
+        static var installFallbackTitle: String { localized("settings.update.install_fallback_title") }
+        static var installFallbackMessage: String { localized("settings.update.install_fallback_message") }
         static var viewOnGitHub: String { localized("settings.update.view_on_github") }
         static var later: String { localized("settings.update.later") }
         static var upToDateTitle: String { localized("settings.update.up_to_date_title") }

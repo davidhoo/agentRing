@@ -130,15 +130,20 @@
 "settings.update.alert_current_and_latest" = "Current version: %@, Latest version: %@";
 "settings.update.release_notes" = "Release Notes:";
 "settings.update.download_and_install" = "Download and Open Installer";
+"settings.update.restart_and_install" = "Restart and Install";
+"settings.update.ready_to_install_title" = "%@ is ready";
+"settings.update.ready_to_install_message" = "Agent Ring will quit, replace itself, and reopen automatically.";
+"settings.update.install_fallback_title" = "Could not replace automatically";
+"settings.update.install_fallback_message" = "Opened the new app. If macOS blocks it, move the app into Applications, or right-click → Open.";
 "settings.update.view_on_github" = "View on GitHub";
 "settings.update.later" = "Later";
 "settings.update.up_to_date_title" = "You're Up to Date";
 "settings.update.up_to_date_message" = "Agent Ring %@ is currently the newest version.";
 "settings.update.notification_body" = "Agent Ring %@ is now available.";
-"settings.update.notification_downloaded_body" = "Agent Ring %@ installer downloaded. Click to open.";
+"settings.update.notification_downloaded_body" = "Agent Ring %@ downloaded. Click to restart and install.";
 "settings.update.downloading" = "Downloading installer...";
 "settings.update.download_success_title" = "Download Complete";
-"settings.update.download_success_message" = "Installer saved and opened: %@";
+"settings.update.download_success_message" = "Installer saved and opened: %@\nIf macOS blocks it, right-click the app → Open.";
 "settings.update.download_failed_title" = "Download Failed";
 "settings.update.last_checked" = "Last checked: %@";
 

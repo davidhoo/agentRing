@@ -13,6 +13,14 @@
 	-->
 	<key>com.apple.security.network.server</key>
 	<true/>
+	<!--
+	  自更新：退出后用 helper 脚本把新版 .app ditto 到 /Applications。
+	  非 Mac App Store 分发；沙盒下写绝对路径需要临时例外。
+	-->
+	<key>com.apple.security.temporary-exception.files.absolute-path.read-write</key>
+	<array>
+		<string>/Applications/</string>
+	</array>
 	<key>com.apple.security.temporary-exception.files.home-relative-path.read-only</key>
 	<array>
 		<string>/Library/Containers/app.agentsring.AgentsRing/</string>

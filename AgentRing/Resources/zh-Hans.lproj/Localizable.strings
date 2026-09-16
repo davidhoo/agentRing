@@ -130,15 +130,20 @@
 "settings.update.alert_current_and_latest" = "当前版本：%@，最新版本：%@";
 "settings.update.release_notes" = "更新日志：";
 "settings.update.download_and_install" = "下载并打开安装包";
+"settings.update.restart_and_install" = "重启并安装";
+"settings.update.ready_to_install_title" = "%@ 已就绪";
+"settings.update.ready_to_install_message" = "将退出当前应用，自动替换安装包并重新打开。";
+"settings.update.install_fallback_title" = "无法自动替换安装";
+"settings.update.install_fallback_message" = "已打开新版本应用。若仍提示无法打开：请将 App 放在「应用程序」文件夹，或右键 → 打开。";
 "settings.update.view_on_github" = "在 GitHub 中查看";
 "settings.update.later" = "稍后";
 "settings.update.up_to_date_title" = "已是最新版本";
 "settings.update.up_to_date_message" = "Agent Ring %@ 目前是最新版本。";
 "settings.update.notification_body" = "Agent Ring %@ 现已发布，点击前往更新。";
-"settings.update.notification_downloaded_body" = "Agent Ring %@ 安装包已下载，点击打开安装。";
+"settings.update.notification_downloaded_body" = "Agent Ring %@ 已下载完成，点击即可重启并安装。";
 "settings.update.downloading" = "正在下载安装包...";
 "settings.update.download_success_title" = "下载完成";
-"settings.update.download_success_message" = "安装包已保存并打开：%@";
+"settings.update.download_success_message" = "安装包已保存并打开：%@\n若提示无法打开，请右键 App → 打开。";
 "settings.update.download_failed_title" = "下载失败";
 "settings.update.last_checked" = "上次检查：%@";
 

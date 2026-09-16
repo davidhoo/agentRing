@@ -54,6 +54,7 @@ final class GitHubUpdateManager: NSObject, ObservableObject, UNUserNotificationC
     private var autoCheckTimer: Timer?
     private var cancellables = Set<AnyCancellable>()
     private var lastDownloadedPackageURL: URL?
+    private var lastPreparedAppURL: URL?
 
     var currentVersion: String {
         Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "0.1.0"
@@ -220,7 +221,7 @@ final class GitHubUpdateManager: NSObject, ObservableObject, UNUserNotificationC
         }
         alert.informativeText = info
         alert.alertStyle = .informational
-        alert.addButton(withTitle: L.SettingsUpdate.downloadAndInstall)
+        alert.addButton(withTitle: L.SettingsUpdate.restartAndInstall)
         alert.addButton(withTitle: L.SettingsUpdate.viewOnGitHub)
         alert.addButton(withTitle: L.SettingsUpdate.later)
 
@@ -293,10 +294,14 @@ final class GitHubUpdateManager: NSObject, ObservableObject, UNUserNotificationC
     }
 
     func downloadAndInstall(release: GitHubRelease, silent: Bool = false) {
+        // 优先 ZIP：便于解压后原地替换并自动重启（Buddy quitAndInstall 同思路）。
+        // DMG 仅作兜底，打开后仍需用户手动拖入「应用程序」。
+        let zipAsset = release.assets.first(where: {
+            $0.name.lowercased().hasSuffix(".zip") && $0.name.lowercased().contains("macos")
+        }) ?? release.assets.first(where: { $0.name.lowercased().hasSuffix(".zip") })
         let dmgAsset = release.assets.first(where: { $0.name.lowercased().hasSuffix(".dmg") })
-        let zipAsset = release.assets.first(where: { $0.name.lowercased().hasSuffix(".zip") })
 
-        guard let asset = dmgAsset ?? zipAsset,
+        guard let asset = zipAsset ?? dmgAsset,
               let downloadUrl = URL(string: asset.browserDownloadUrl) else {
             if !silent, let url = URL(string: release.htmlUrl) {
                 NSWorkspace.shared.open(url)
@@ -315,16 +320,7 @@ final class GitHubUpdateManager: NSObject, ObservableObject, UNUserNotificationC
                 self.isDownloading = false
 
                 if let error {
-                    if silent {
-                        self.sendUpdateNotification(release: release, downloaded: false)
-                    } else {
-                        let errAlert = NSAlert()
-                        errAlert.messageText = L.SettingsUpdate.downloadFailedTitle
-                        errAlert.informativeText = error.localizedDescription
-                        errAlert.alertStyle = .warning
-                        errAlert.addButton(withTitle: L.Update.okButton)
-                        errAlert.runModal()
-                    }
+                    self.handleDownloadFailure(error.localizedDescription, release: release, silent: silent)
                     return
                 }
 
@@ -337,37 +333,108 @@ final class GitHubUpdateManager: NSObject, ObservableObject, UNUserNotificationC
                     }
                     try FileManager.default.moveItem(at: tempUrl, to: destinationUrl)
                     self.lastDownloadedPackageURL = destinationUrl
+                    AppUpdateInstaller.clearQuarantine(at: destinationUrl)
 
-                    if silent {
-                        self.sendUpdateNotification(release: release, downloaded: true)
+                    if asset.name.lowercased().hasSuffix(".zip") {
+                        let appURL = try AppUpdateInstaller.extractApp(
+                            fromZip: destinationUrl,
+                            to: try self.updatesDirectory()
+                        )
+                        self.lastPreparedAppURL = appURL
+
+                        if silent {
+                            self.sendUpdateNotification(release: release, downloaded: true)
+                        } else {
+                            self.promptRestartAndInstall(release: release, appURL: appURL)
+                        }
                     } else {
-                        NSWorkspace.shared.open(destinationUrl)
-                        let successAlert = NSAlert()
-                        successAlert.messageText = L.SettingsUpdate.downloadSuccessTitle
-                        successAlert.informativeText = L.SettingsUpdate.downloadSuccessMessage(asset.name)
-                        successAlert.alertStyle = .informational
-                        successAlert.addButton(withTitle: L.Update.okButton)
-                        successAlert.runModal()
+                        // DMG 兜底：清隔离后打开，无法做到静默替换重启
+                        if silent {
+                            self.sendUpdateNotification(release: release, downloaded: true)
+                        } else {
+                            NSWorkspace.shared.open(destinationUrl)
+                            let successAlert = NSAlert()
+                            successAlert.messageText = L.SettingsUpdate.downloadSuccessTitle
+                            successAlert.informativeText = L.SettingsUpdate.downloadSuccessMessage(asset.name)
+                            successAlert.alertStyle = .informational
+                            successAlert.addButton(withTitle: L.Update.okButton)
+                            successAlert.runModal()
+                        }
                     }
                 } catch {
-                    if silent {
-                        self.sendUpdateNotification(release: release, downloaded: false)
-                    } else {
-                        let errAlert = NSAlert()
-                        errAlert.messageText = L.SettingsUpdate.downloadFailedTitle
-                        errAlert.informativeText = error.localizedDescription
-                        errAlert.alertStyle = .warning
-                        errAlert.addButton(withTitle: L.Update.okButton)
-                        errAlert.runModal()
-                    }
+                    self.handleDownloadFailure(error.localizedDescription, release: release, silent: silent)
                 }
             }
         }.resume()
     }
 
+    private func promptRestartAndInstall(release: GitHubRelease, appURL: URL) {
+        NSApp.activate(ignoringOtherApps: true)
+
+        let alert = NSAlert()
+        alert.messageText = L.SettingsUpdate.readyToInstallTitle(release.tagName)
+        alert.informativeText = L.SettingsUpdate.readyToInstallMessage
+        alert.alertStyle = .informational
+        alert.addButton(withTitle: L.SettingsUpdate.restartAndInstall)
+        alert.addButton(withTitle: L.SettingsUpdate.later)
+
+        let response = alert.runModal()
+        if response == .alertFirstButtonReturn {
+            performInstall(appURL: appURL)
+        }
+    }
+
+    private func performInstall(appURL: URL) {
+        do {
+            try AppUpdateInstaller.quitAndInstall(fromNewApp: appURL)
+        } catch {
+            // 无法原地替换时：清隔离并打开新包，同时提示用户
+            AppUpdateInstaller.openPreparedApp(appURL)
+            let errAlert = NSAlert()
+            errAlert.messageText = L.SettingsUpdate.installFallbackTitle
+            errAlert.informativeText = error.localizedDescription + "\n\n" + L.SettingsUpdate.installFallbackMessage
+            errAlert.alertStyle = .warning
+            errAlert.addButton(withTitle: L.Update.okButton)
+            errAlert.runModal()
+        }
+    }
+
+    private func handleDownloadFailure(_ message: String, release: GitHubRelease, silent: Bool) {
+        if silent {
+            sendUpdateNotification(release: release, downloaded: false)
+        } else {
+            let errAlert = NSAlert()
+            errAlert.messageText = L.SettingsUpdate.downloadFailedTitle
+            errAlert.informativeText = message
+            errAlert.alertStyle = .warning
+            errAlert.addButton(withTitle: L.Update.okButton)
+            errAlert.runModal()
+        }
+    }
+
     private func openDownloadedPackageOrReleasePage(for release: GitHubRelease) {
+        if let appURL = lastPreparedAppURL,
+           FileManager.default.fileExists(atPath: appURL.path) {
+            performInstall(appURL: appURL)
+            return
+        }
         if let package = lastDownloadedPackageURL,
            FileManager.default.fileExists(atPath: package.path) {
+            if package.pathExtension.lowercased() == "zip" {
+                do {
+                    let appURL = try AppUpdateInstaller.extractApp(
+                        fromZip: package,
+                        to: try updatesDirectory()
+                    )
+                    lastPreparedAppURL = appURL
+                    performInstall(appURL: appURL)
+                    return
+                } catch {
+                    handleDownloadFailure(error.localizedDescription, release: release, silent: false)
+                    return
+                }
+            }
+            AppUpdateInstaller.clearQuarantine(at: package)
             NSWorkspace.shared.open(package)
             return
         }

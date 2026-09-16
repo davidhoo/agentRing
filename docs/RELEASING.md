@@ -30,7 +30,13 @@ git push origin v0.1.0
 
 当前 Release 构建使用 ad-hoc 签名（与本地 `CODE_SIGN_IDENTITY="-"` 一致），**未做 Apple 公证**。
 
-用户首次打开可能需要：右键 App → **打开** → **仍要打开**。
+应用内更新（`GitHubUpdateManager` + `AppUpdateInstaller`）会：
+
+1. 优先下载 `*-macos.zip`
+2. 清除 `com.apple.quarantine` 隔离属性（避免「无法打开」）
+3. 退出当前进程，用 helper 脚本 `ditto` 替换 `/Applications` 中的 App 并自动重新打开
+
+若用户从浏览器手动下载 DMG/ZIP 后仍提示无法打开：右键 App → **打开** → **仍要打开**。
 
 若要无警告安装，需后续接入 Developer ID 证书并完成 notarization，并更新 `release.yml` 中的签名步骤。
 
