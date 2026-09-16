@@ -450,6 +450,14 @@ final class UserSettings: ObservableObject {
         didSet { defaults.set(notificationsEnabled, forKey: "notificationsEnabled") }
     }
 
+    /// 自动检查更新开关（默认开启，开启后每 1 小时自动检测一次 GitHub Releases）
+    @Published var autoUpdateEnabled: Bool {
+        didSet {
+            defaults.set(autoUpdateEnabled, forKey: "autoUpdateEnabled")
+            NotificationCenter.default.post(name: .autoUpdateSettingChanged, object: nil)
+        }
+    }
+
     @Published var launchAtLogin: Bool {
         didSet {
             guard !isSyncingLaunchStatus else { return }
@@ -641,6 +649,7 @@ final class UserSettings: ObservableObject {
         }
 
         notificationsEnabled = defaults.object(forKey: "notificationsEnabled") as? Bool ?? true
+        autoUpdateEnabled = defaults.object(forKey: "autoUpdateEnabled") as? Bool ?? true
         launchAtLogin = defaults.bool(forKey: "launchAtLogin")
         // 缺省开启：只要本机有 Antigravity 凭证就自动当一等公民监控
         if defaults.object(forKey: "antigravityEnabled") == nil {
@@ -708,6 +717,7 @@ final class UserSettings: ObservableObject {
         customDisplayTypes = [.codexPrimary, .codexSecondary]
         customDisplayMenuBarOnly = false
         notificationsEnabled = true
+        autoUpdateEnabled = true
         resetSmartMonitoringState()
     }
 

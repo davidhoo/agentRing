@@ -116,6 +116,31 @@
 "update.notification.badge_menu" = "🎉 New Version Available!";
 "update.notification.badge_short" = "🎉 New!";
 
+// MARK: - Settings Update
+"settings.update.section" = "Software Update";
+"settings.update.hint" = "Check and download new versions from GitHub Releases";
+"settings.update.auto_update" = "Automatically check for updates";
+"settings.update.auto_update_hint" = "Check GitHub Releases every hour for new versions";
+"settings.update.check_now" = "Check for Updates";
+"settings.update.checking" = "Checking for updates...";
+"settings.update.check_failed" = "Failed to check for updates";
+"settings.update.available" = "New version available: %@";
+"settings.update.already_latest" = "Agent Ring is up to date (%@)";
+"settings.update.alert_title" = "New Version Available: %@";
+"settings.update.alert_current_and_latest" = "Current version: %@, Latest version: %@";
+"settings.update.release_notes" = "Release Notes:";
+"settings.update.download_and_install" = "Download and Open Installer";
+"settings.update.view_on_github" = "View on GitHub";
+"settings.update.later" = "Later";
+"settings.update.up_to_date_title" = "You're Up to Date";
+"settings.update.up_to_date_message" = "Agent Ring %@ is currently the newest version.";
+"settings.update.notification_body" = "Agent Ring %@ is now available.";
+"settings.update.downloading" = "Downloading installer...";
+"settings.update.download_success_title" = "Download Complete";
+"settings.update.download_success_message" = "Installer downloaded to Downloads and opened: %@";
+"settings.update.download_failed_title" = "Download Failed";
+"settings.update.last_checked" = "Last checked: %@";
+
 // MARK: - Icon Display Mode
 "display.percentage_only" = "Percentage Only";
 "display.icon_only" = "Icon Only";

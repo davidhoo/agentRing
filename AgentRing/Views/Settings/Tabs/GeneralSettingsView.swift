@@ -8,6 +8,7 @@ import ServiceManagement
 
 struct GeneralSettingsView: View {
     @ObservedObject private var settings = UserSettings.shared
+    @ObservedObject private var updateManager = GitHubUpdateManager.shared
     @State private var showErrorAlert = false
     @State private var errorMessage = ""
 
@@ -18,6 +19,7 @@ struct GeneralSettingsView: View {
                 refreshCard
                 notificationCard
                 launchCard
+                updateCard
                 resetCard
             }
         }
@@ -124,6 +126,71 @@ struct GeneralSettingsView: View {
                         .foregroundColor(.secondary)
                 }
                 .padding(.leading, 20)
+            }
+        }
+    }
+
+    private var updateCard: some View {
+        SettingCard(
+            icon: "arrow.triangle.2.circlepath.circle",
+            iconColor: .secondary,
+            title: L.SettingsUpdate.sectionTitle,
+            hint: L.SettingsUpdate.hint
+        ) {
+            VStack(alignment: .leading, spacing: 10) {
+                Toggle(isOn: $settings.autoUpdateEnabled) {
+                    Text(L.SettingsUpdate.autoUpdate)
+                }
+                .toggleStyle(.checkbox)
+                .focusable(false)
+
+                Text(L.SettingsUpdate.autoUpdateHint)
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .padding(.leading, 20)
+
+                HStack(spacing: 12) {
+                    Button(action: {
+                        updateManager.checkForUpdates(isUserInitiated: true)
+                    }) {
+                        if updateManager.isChecking {
+                            HStack(spacing: 6) {
+                                ProgressView()
+                                    .scaleEffect(0.7)
+                                    .frame(width: 14, height: 14)
+                                Text(L.SettingsUpdate.checking)
+                            }
+                        } else {
+                            Text(L.SettingsUpdate.checkNow)
+                        }
+                    }
+                    .buttonStyle(.bordered)
+                    .disabled(updateManager.isChecking || updateManager.isDownloading)
+
+                    if let message = updateManager.lastCheckMessage {
+                        Text(message)
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    } else if let lastTime = updateManager.lastCheckTime {
+                        Text(L.SettingsUpdate.lastChecked(TimeFormatHelper.formatTimeOnly(lastTime)))
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    }
+                }
+                .padding(.top, 4)
+
+                if updateManager.isDownloading {
+                    HStack(spacing: 8) {
+                        ProgressView()
+                            .scaleEffect(0.7)
+                            .frame(width: 14, height: 14)
+                        Text(L.SettingsUpdate.downloading)
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    }
+                    .padding(.top, 2)
+                }
             }
         }
     }

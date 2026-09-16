@@ -175,6 +175,49 @@ enum L {
             static var badgeShort: String { localized("update.notification.badge_short") }
         }
     }
+
+    // MARK: - Settings Update
+    enum SettingsUpdate {
+        static var sectionTitle: String { localized("settings.update.section") }
+        static var hint: String { localized("settings.update.hint") }
+        static var autoUpdate: String { localized("settings.update.auto_update") }
+        static var autoUpdateHint: String { localized("settings.update.auto_update_hint") }
+        static var checkNow: String { localized("settings.update.check_now") }
+        static var checking: String { localized("settings.update.checking") }
+        static var checkFailed: String { localized("settings.update.check_failed") }
+        static func updateAvailable(_ version: String) -> String {
+            String(format: localized("settings.update.available"), version)
+        }
+        static func alreadyLatest(_ version: String) -> String {
+            String(format: localized("settings.update.already_latest"), version)
+        }
+        static func alertTitle(_ version: String) -> String {
+            String(format: localized("settings.update.alert_title"), version)
+        }
+        static func alertCurrentAndLatest(current: String, latest: String) -> String {
+            String(format: localized("settings.update.alert_current_and_latest"), current, latest)
+        }
+        static var releaseNotesTitle: String { localized("settings.update.release_notes") }
+        static var downloadAndInstall: String { localized("settings.update.download_and_install") }
+        static var viewOnGitHub: String { localized("settings.update.view_on_github") }
+        static var later: String { localized("settings.update.later") }
+        static var upToDateTitle: String { localized("settings.update.up_to_date_title") }
+        static func upToDateMessage(_ version: String) -> String {
+            String(format: localized("settings.update.up_to_date_message"), version)
+        }
+        static func notificationBody(_ version: String) -> String {
+            String(format: localized("settings.update.notification_body"), version)
+        }
+        static var downloading: String { localized("settings.update.downloading") }
+        static var downloadSuccessTitle: String { localized("settings.update.download_success_title") }
+        static func downloadSuccessMessage(_ file: String) -> String {
+            String(format: localized("settings.update.download_success_message"), file)
+        }
+        static var downloadFailedTitle: String { localized("settings.update.download_failed_title") }
+        static func lastChecked(_ time: String) -> String {
+            String(format: localized("settings.update.last_checked"), time)
+        }
+    }
     
     // MARK: - Icon Display Mode
     enum Display {

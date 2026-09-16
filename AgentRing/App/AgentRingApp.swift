@@ -34,7 +34,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     private var popover: NSPopover!
 
     /// 菜单栏管理器，负责所有菜单栏相关功能
-    private var menuBarManager: MenuBarManager!
+    private(set) var menuBarManager: MenuBarManager!
 
     /// 欢迎窗口，在首次启动时显示
     private var welcomeWindow: NSWindow?
@@ -43,23 +43,14 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     private let settings = UserSettings.shared
 
     /// Sparkle 更新控制器
-    /// - `startingUpdater: true` 让 Sparkle 按 Info.plist 中的
-    ///   SUEnableAutomaticChecks / SUScheduledCheckInterval 自动后台检查（默认24小时）
-    /// - `updaterDelegate: self` 让 AppDelegate 作为 SPUUpdaterDelegate，把
-    ///   `didFindValidUpdate` / `updaterDidNotFindUpdate` 转给菜单栏徽章状态机，
-    ///   使彩虹文字 / 红点徽章与 Sparkle 自己的模态对话框并存；EdDSA 签名校验
-    ///   仍通过 Info.plist 的 SUPublicEDKey 完成
-    /// - 暴露为 internal，让 MenuBarManager 通过 `AppDelegate.shared` 调用
-    ///
-    /// 在 init() 的 super.init() 之后构造：updaterDelegate 需要 self，而 Swift
-    /// 不允许在存储属性初始化器里引用 self（此时仍早于任何后台检查）。
+    /// 暴露为 internal，让 MenuBarManager 通过 `AppDelegate.shared` 调用
     private(set) var updaterController: SPUStandardUpdaterController!
 
     override init() {
         super.init()
         AppDelegate.shared = self
         updaterController = SPUStandardUpdaterController(
-            startingUpdater: true,
+            startingUpdater: false,
             updaterDelegate: self,
             userDriverDelegate: nil
         )
@@ -79,6 +70,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         NotificationManager.shared.requestPermission()
 
         menuBarManager = MenuBarManager()
+        GitHubUpdateManager.shared.start()
 
         if settings.isFirstLaunch || !settings.hasAnyValidCredentials {
             showWelcomeWindow()

@@ -8,6 +8,8 @@ import SwiftUI
 /// 关于页面
 /// 显示应用信息、版本号和 fork 说明
 struct AboutView: View {
+    @ObservedObject private var updateManager = GitHubUpdateManager.shared
+
     /// 从 Bundle 中读取应用版本号
     private var appVersion: String {
         Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "Unknown"
@@ -25,7 +27,7 @@ struct AboutView: View {
             }
             
             // 应用名称和版本
-            VStack(spacing: 4) {
+            VStack(spacing: 6) {
                 Text(L.App.name)
                     .font(.title)
                     .fontWeight(.bold)
@@ -33,6 +35,25 @@ struct AboutView: View {
                 Text(L.SettingsAbout.version(appVersion))
                     .font(.subheadline)
                     .foregroundColor(.secondary)
+
+                Button(action: {
+                    updateManager.checkForUpdates(isUserInitiated: true)
+                }) {
+                    if updateManager.isChecking {
+                        HStack(spacing: 6) {
+                            ProgressView()
+                                .scaleEffect(0.7)
+                                .frame(width: 12, height: 12)
+                            Text(L.SettingsUpdate.checking)
+                        }
+                    } else {
+                        Text(L.SettingsUpdate.checkNow)
+                    }
+                }
+                .buttonStyle(.bordered)
+                .controlSize(.small)
+                .disabled(updateManager.isChecking || updateManager.isDownloading)
+                .padding(.top, 4)
             }
             
             Divider()

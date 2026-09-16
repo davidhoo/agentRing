@@ -27,6 +27,10 @@ extension Notification.Name {
     /// 当用户切换账户时发送，触发数据刷新
     static let accountChanged = Notification.Name("accountChanged")
 
+    /// 自动更新设置已更改通知
+    /// 当用户开启或关闭自动更新时发送，触发定时器更新
+    static let autoUpdateSettingChanged = Notification.Name("autoUpdateSettingChanged")
+
     // MARK: - Window Related
 
     /// 打开设置窗口通知

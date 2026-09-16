@@ -326,11 +326,7 @@ final class MenuBarManager: ObservableObject {
             updateMenuBarIcon()
         }
 
-        guard let appDelegate = AppDelegate.shared else {
-            Logger.menuBar.error("checkForUpdates: AppDelegate.shared not set")
-            return
-        }
-        appDelegate.updaterController.checkForUpdates(self)
+        GitHubUpdateManager.shared.checkForUpdates(isUserInitiated: true)
     }
 
     func applyUpdateAvailable(version: String?) {
