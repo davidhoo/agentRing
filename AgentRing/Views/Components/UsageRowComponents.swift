@@ -50,12 +50,20 @@ enum UsageRingDisplay {
         return UsageRingTrimRange(from: 0, to: used)
     }
 
-    /// 剩余模式下，已使用区间的弧线范围（用于 Dashboard 半透明底轨）。
+    /// 圆环未填充区间的弧线范围（用于 Dashboard 半透明底轨/灰圈占位）。
+    /// 无论「剩余」还是「已使用」模式，未填满的扇区均以半透明底轨补全成整圆。
+    static func trackTrimRange(usedPercentage: Double, showRemainingMode: Bool) -> UsageRingTrimRange? {
+        let displayedRange = displayedTrimRange(
+            usedPercentage: usedPercentage,
+            showRemainingMode: showRemainingMode
+        )
+        guard displayedRange.to < 0.998 else { return nil }
+        return UsageRingTrimRange(from: displayedRange.to, to: 1)
+    }
+
+    /// 兼容保留原方法名，指向统一的底轨计算
     static func usedPortionTrimRange(usedPercentage: Double, showRemainingMode: Bool) -> UsageRingTrimRange? {
-        guard showRemainingMode else { return nil }
-        let used = usedFraction(usedPercentage)
-        guard used >= 0.002 else { return nil }
-        return UsageRingTrimRange(from: 1 - used, to: 1)
+        trackTrimRange(usedPercentage: usedPercentage, showRemainingMode: showRemainingMode)
     }
 
     // MARK: - 额度告急分级

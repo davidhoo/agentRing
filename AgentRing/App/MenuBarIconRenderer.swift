@@ -396,7 +396,7 @@ final class MenuBarIconRenderer {
         return image
     }
 
-    /// 健身环：绘制进度弧，并在剩余模式下以圆点虚线呈现已消耗配额底轨
+    /// 健身环：绘制进度弧，并在未填充区域以精致圆点虚线呈现底轨占位
     private func drawActivityRing(
         percentage: Double,
         center: NSPoint,
@@ -406,17 +406,15 @@ final class MenuBarIconRenderer {
         isInner: Bool,
         isMonochrome: Bool
     ) {
-        if settings.showRemainingMode {
-            drawDottedUsedTrack(
-                remainingPercentage: percentage,
-                center: center,
-                radius: radius,
-                lineWidth: lineWidth,
-                color: color,
-                isInner: isInner,
-                isMonochrome: isMonochrome
-            )
-        }
+        drawDottedTrack(
+            progressPercentage: percentage,
+            center: center,
+            radius: radius,
+            lineWidth: lineWidth,
+            color: color,
+            isInner: isInner,
+            isMonochrome: isMonochrome
+        )
 
         drawRingProgress(
             percentage: percentage,
@@ -427,9 +425,9 @@ final class MenuBarIconRenderer {
         )
     }
 
-    /// 菜单栏圆点虚线底轨：在剩余模式下，将「已使用部分」以精致的同心圆点标尺展示
-    private func drawDottedUsedTrack(
-        remainingPercentage: Double,
+    /// 菜单栏圆点虚线底轨：将环形未填满的空闲部分以同心圆点标尺展示
+    private func drawDottedTrack(
+        progressPercentage: Double,
         center: NSPoint,
         radius: CGFloat,
         lineWidth: CGFloat,
@@ -437,7 +435,7 @@ final class MenuBarIconRenderer {
         isInner: Bool,
         isMonochrome: Bool
     ) {
-        let clamped = min(100, max(0, remainingPercentage))
+        let clamped = min(100, max(0, progressPercentage))
         guard clamped < 99.5 else { return }
 
         let circumference = 2 * CGFloat.pi * radius

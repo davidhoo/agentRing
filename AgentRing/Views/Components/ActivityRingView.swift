@@ -5,7 +5,7 @@
 
 import SwiftUI
 
-/// Apple Watch 风格双环：默认按「剩余」填充；未用区间不画底轨。
+/// Apple Watch 风格双环：按设置展示剩余或已用进度；未填充区间以半透明底轨补全成整圆。
 /// 中心不放百分比——明细行已展示数值，圆环只做纯视觉仪表。
 struct ActivityRingView: View {
     let outerPercentage: Double
@@ -65,7 +65,7 @@ struct ActivityRingView: View {
             usedPercentage: percentage,
             showRemainingMode: showRemainingMode
         )
-        let usedRange = UsageRingDisplay.usedPortionTrimRange(
+        let trackRange = UsageRingDisplay.trackTrimRange(
             usedPercentage: percentage,
             showRemainingMode: showRemainingMode
         )
@@ -73,10 +73,10 @@ struct ActivityRingView: View {
         if isRefreshing {
             loadingStroke(diameter: diameter, color: color, reverse: isInner)
         } else {
-            if let usedRange, abs(usedRange.to - usedRange.from) >= 0.002 {
+            if let trackRange, abs(trackRange.to - trackRange.from) >= 0.002 {
                 ringStroke(
                     diameter: diameter,
-                    range: usedRange,
+                    range: trackRange,
                     color: color.opacity(usedPortionOpacity)
                 )
             }

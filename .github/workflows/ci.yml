@@ -45,5 +45,8 @@ jobs:
       - name: Validate encrypted credential store
         run: bash Scripts/test-credential-store.sh
 
+      - name: Validate ring display logic
+        run: bash Scripts/test-ring-display.sh
+
       - name: Validate Sparkle delegate integration
         run: bash Scripts/test-update-manager.sh "$RUNNER_TEMP/SourcePackages/artifacts/sparkle/Sparkle"
