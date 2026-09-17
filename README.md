@@ -3,12 +3,12 @@
 [English](README_EN.md) · 简体中文
 
 <p align="center">
-  <strong>macOS 菜单栏上的 AI 用量环形监视器</strong><br />
-  一眼看清 Codex、Cursor、Antigravity 还剩多少额度。
+  <img src="AgentRing/Resources/Assets.xcassets/AppIcon.appiconset/256.png" width="128" alt="Agent Ring icon" />
 </p>
 
 <p align="center">
-  <img src="docs/screenshots/menubar-popover.png" width="860" alt="Agent Ring 菜单栏弹窗：多平台额度圆环实时监控" />
+  <strong>macOS 菜单栏上的 AI 用量环形监视器</strong><br />
+  一眼看清 Codex、Cursor、Antigravity 还剩多少额度。
 </p>
 
 <p align="center">
@@ -20,6 +20,10 @@
   <img alt="License MIT" src="https://img.shields.io/badge/license-MIT-green" />
   <img alt="Latest release" src="https://img.shields.io/github/v/release/haorui-lab/agentRing?include_prereleases" />
   <img alt="CI" src="https://img.shields.io/github/actions/workflow/status/haorui-lab/agentRing/ci.yml?branch=main&label=CI" />
+</p>
+
+<p align="center">
+  <img src="docs/screenshots/menubar-popover.png" width="860" alt="Agent Ring 菜单栏弹窗：多平台额度圆环实时监控" />
 </p>
 
 ## 界面预览
