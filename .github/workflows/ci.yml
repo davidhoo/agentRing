@@ -42,5 +42,8 @@ jobs:
       - name: Validate updater release tooling
         run: bash Scripts/test-release-tools.sh
 
+      - name: Validate encrypted credential store
+        run: bash Scripts/test-credential-store.sh
+
       - name: Validate Sparkle delegate integration
         run: bash Scripts/test-update-manager.sh "$RUNNER_TEMP/SourcePackages/artifacts/sparkle/Sparkle"

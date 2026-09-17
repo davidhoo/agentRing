@@ -7,13 +7,14 @@ import Foundation
 import Security
 import OSLog
 
-/// 管理 Keychain 存储的类
+/// 管理凭据存储的类
 /// 用于安全存储 Codex 账户凭据
 /// Debug 模式：使用 UserDefaults（便于开发测试，不弹窗）
-/// Release 模式：使用 Keychain（安全存储）
+/// Release 模式：沙盒容器内 AES-GCM 加密文件（跨版本零弹窗），
+///               旧系统钥匙串仅作为一次性迁移源与损坏回退
 class KeychainManager {
     static let shared = KeychainManager()
-    
+
     private init() {
         #if !DEBUG
         // 动态获取 Bundle ID，如果获取失败则使用默认值
@@ -23,14 +24,16 @@ class KeychainManager {
         migrateFromLegacyServiceIfNeeded()
         #endif
     }
-    
-    // MARK: - Keychain 配置
-    
+
+    // MARK: - 存储配置
+
     #if DEBUG
     /// Debug 模式：UserDefaults key 前缀
     private let debugKeyPrefix = "DEBUG_"
     #else
-    /// Keychain 服务标识符（自动从 Bundle 获取）
+    /// 沙盒容器内加密存储（主存储，跨版本零弹窗）
+    private let store = EncryptedCredentialStore()
+    /// 旧 Keychain 服务标识符（自动从 Bundle 获取），仅用于迁移与回退
     private var service: String = "app.agentring.AgentRing"
     /// 旧版 Bundle ID 对应的 Keychain service，用于一次性迁移
     private let legacyService = "app.agentsring.AgentsRing"
@@ -80,45 +83,25 @@ class KeychainManager {
         return true
     }
     #else
-    /// 保存账户列表到 Keychain（Release 模式）
+    /// 保存账户列表到加密存储（Release 模式）
     /// - Parameter accounts: 账户列表
     /// - Returns: 是否保存成功
     @discardableResult
     func saveAccounts(_ accounts: [Account]) -> Bool {
-        let encoder = JSONEncoder()
-        guard let jsonData = try? encoder.encode(accounts),
-              let jsonString = String(data: jsonData, encoding: .utf8) else {
-            Logger.keychain.error("账户列表编码失败")
-            return false
-        }
-        let result = save(key: "accounts", value: jsonString)
-        if result {
-            Logger.keychain.debug("保存 \(accounts.count) 个账户到 Keychain")
-        }
-        return result
+        saveAccountsToStore(key: "accounts", accounts: accounts)
     }
 
-    /// 从 Keychain 读取账户列表（Release 模式）
+    /// 从加密存储读取账户列表（Release 模式）
     /// - Returns: 账户列表，如果不存在返回 nil
     func loadAccounts() -> [Account]? {
-        guard let jsonString = load(key: "accounts"),
-              let jsonData = jsonString.data(using: .utf8) else {
-            return nil
-        }
-        let decoder = JSONDecoder()
-        guard let accounts = try? decoder.decode([Account].self, from: jsonData) else {
-            Logger.keychain.error("账户列表解码失败")
-            return nil
-        }
-        Logger.keychain.debug("读取 \(accounts.count) 个账户")
-        return accounts
+        loadAccountsFromStore(key: "accounts")
     }
 
-    /// 从 Keychain 删除账户列表（Release 模式）
+    /// 从加密存储删除账户列表（Release 模式）
     /// - Returns: 是否删除成功
     @discardableResult
     func deleteAccounts() -> Bool {
-        return delete(key: "accounts")
+        store.delete(key: "accounts")
     }
     #endif
 
@@ -159,36 +142,16 @@ class KeychainManager {
     #else
     @discardableResult
     func saveCodexAccounts(_ accounts: [Account]) -> Bool {
-        let encoder = JSONEncoder()
-        guard let jsonData = try? encoder.encode(accounts),
-              let jsonString = String(data: jsonData, encoding: .utf8) else {
-            Logger.keychain.error("Codex 账户列表编码失败")
-            return false
-        }
-        let result = save(key: "accounts_codex", value: jsonString)
-        if result {
-            Logger.keychain.debug("保存 \(accounts.count) 个 Codex 账户到 Keychain")
-        }
-        return result
+        saveAccountsToStore(key: "accounts_codex", accounts: accounts)
     }
 
     func loadCodexAccounts() -> [Account]? {
-        guard let jsonString = load(key: "accounts_codex"),
-              let jsonData = jsonString.data(using: .utf8) else {
-            return nil
-        }
-        let decoder = JSONDecoder()
-        guard let accounts = try? decoder.decode([Account].self, from: jsonData) else {
-            Logger.keychain.error("Codex 账户列表解码失败")
-            return nil
-        }
-        Logger.keychain.debug("读取 \(accounts.count) 个 Codex 账户")
-        return accounts
+        loadAccountsFromStore(key: "accounts_codex")
     }
 
     @discardableResult
     func deleteCodexAccounts() -> Bool {
-        return delete(key: "accounts_codex")
+        store.delete(key: "accounts_codex")
     }
     #endif
 
@@ -221,30 +184,64 @@ class KeychainManager {
     #else
     @discardableResult
     func saveCursorAccounts(_ accounts: [Account]) -> Bool {
-        let encoder = JSONEncoder()
-        guard let jsonData = try? encoder.encode(accounts),
-              let jsonString = String(data: jsonData, encoding: .utf8) else {
-            return false
-        }
-        return save(key: "accounts_cursor", value: jsonString)
+        saveAccountsToStore(key: "accounts_cursor", accounts: accounts)
     }
 
     func loadCursorAccounts() -> [Account]? {
-        guard let jsonString = load(key: "accounts_cursor"),
-              let jsonData = jsonString.data(using: .utf8) else {
-            return nil
-        }
-        return try? JSONDecoder().decode([Account].self, from: jsonData)
+        loadAccountsFromStore(key: "accounts_cursor")
     }
 
     @discardableResult
     func deleteCursorAccounts() -> Bool {
-        return delete(key: "accounts_cursor")
+        store.delete(key: "accounts_cursor")
     }
     #endif
 
     #if !DEBUG
-    // MARK: - 通用 Keychain 操作（仅 Release 模式）
+    // MARK: - 加密存储读取 + 旧钥匙串迁移（仅 Release 模式）
+
+    private func saveAccountsToStore(key: String, accounts: [Account]) -> Bool {
+        let encoder = JSONEncoder()
+        guard let jsonData = try? encoder.encode(accounts),
+              let jsonString = String(data: jsonData, encoding: .utf8) else {
+            Logger.keychain.error("账户列表编码失败(\(key, privacy: .public))")
+            return false
+        }
+        let result = store.save(key: key, value: jsonString)
+        if result {
+            Logger.keychain.debug("保存 \(accounts.count) 个账户到加密存储: \(key, privacy: .public)")
+            // 主存储写入成功后清理旧钥匙串条目，结束每次升级的授权弹窗
+            _ = delete(key: key)
+        }
+        return result
+    }
+
+    /// 统一读取入口：优先读加密文件；文件缺失时读旧钥匙串（可能弹最后一次授权窗）
+    /// 并立即加密落盘完成迁移；解密失败同样回退旧钥匙串，不丢凭据。
+    private func loadAccountsFromStore(key: String) -> [Account]? {
+        if let jsonString = store.load(key: key) {
+            return decodeAccounts(jsonString)
+        }
+        // 加密文件不存在或损坏：读旧钥匙串条目
+        guard let legacy = load(key: key) else { return nil }
+        // 一次性迁移：写加密文件成功后旧条目由后续 save 清理
+        if store.save(key: key, value: legacy) {
+            Logger.keychain.info("凭据已从系统钥匙串迁移到加密存储: \(key, privacy: .public)")
+            _ = delete(key: key)
+        }
+        return decodeAccounts(legacy)
+    }
+
+    private func decodeAccounts(_ jsonString: String) -> [Account]? {
+        guard let jsonData = jsonString.data(using: .utf8) else { return nil }
+        guard let accounts = try? JSONDecoder().decode([Account].self, from: jsonData) else {
+            Logger.keychain.error("账户列表解码失败")
+            return nil
+        }
+        return accounts
+    }
+
+    // MARK: - 旧 Keychain 操作（仅迁移与回退使用）
 
     /// 将旧 Bundle ID 下的凭据迁到当前 service，避免改名后要重新登录
     private func migrateFromLegacyServiceIfNeeded() {
@@ -264,15 +261,6 @@ class KeychainManager {
         }
     }
     
-    /// 保存数据到 Keychain
-    /// - Parameters:
-    ///   - key: 键名
-    ///   - value: 要保存的值
-    /// - Returns: 是否保存成功
-    private func save(key: String, value: String) -> Bool {
-        save(key: key, value: value, service: service)
-    }
-
     private func save(key: String, value: String, service: String) -> Bool {
         guard let data = value.data(using: .utf8) else {
             return false
