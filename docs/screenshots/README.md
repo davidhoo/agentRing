@@ -16,3 +16,11 @@ Capture tips:
 4. Do not commit secrets, tokens, or personal emails visible in shots — redact first.
 
 Until real shots exist, the README uses the app icon as a temporary visual.
+
+Current shots (2026-09, v0.1.8 UI) are linked from both READMEs:
+
+- `menubar-popover.png` — hero shot above the download badge
+- `settings-general.png` / `settings-auth.png` — side-by-side in the preview table
+
+`dashboard_redesign_live.png` was an internal design record and has been removed;
+re-capture from the live app if a dashboard shot is needed again.

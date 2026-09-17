@@ -3,12 +3,12 @@
 [简体中文](README.md) · English
 
 <p align="center">
-  <img src="AgentRing/Resources/Assets.xcassets/AppIcon.appiconset/256.png" width="128" alt="Agent Ring icon" />
+  <strong>AI usage rings in your macOS menu bar</strong><br />
+  See remaining Codex, Cursor, and Antigravity quota at a glance.
 </p>
 
 <p align="center">
-  <strong>AI usage rings in your macOS menu bar</strong><br />
-  See remaining Codex, Cursor, and Antigravity quota at a glance.
+  <img src="docs/screenshots/menubar-popover.png" width="860" alt="Agent Ring menu bar popover with live usage rings" />
 </p>
 
 <p align="center">
@@ -21,6 +21,12 @@
   <img alt="Latest release" src="https://img.shields.io/github/v/release/haorui-lab/agentRing?include_prereleases" />
   <img alt="CI" src="https://img.shields.io/github/actions/workflow/status/haorui-lab/agentRing/ci.yml?branch=main&label=CI" />
 </p>
+
+## Interface Preview
+
+| General Settings | Account Auth |
+| :---: | :---: |
+| <img src="docs/screenshots/settings-general.png" width="420" alt="General settings: usage display mode and alert thresholds" /> | <img src="docs/screenshots/settings-auth.png" width="420" alt="Account auth: multi-provider sign-in and switching" /> |
 
 ## Download
 

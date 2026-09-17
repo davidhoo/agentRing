@@ -3,12 +3,12 @@
 [English](README_EN.md) · 简体中文
 
 <p align="center">
-  <img src="AgentRing/Resources/Assets.xcassets/AppIcon.appiconset/256.png" width="128" alt="Agent Ring icon" />
+  <strong>macOS 菜单栏上的 AI 用量环形监视器</strong><br />
+  一眼看清 Codex、Cursor、Antigravity 还剩多少额度。
 </p>
 
 <p align="center">
-  <strong>macOS 菜单栏上的 AI 用量环形监视器</strong><br />
-  一眼看清 Codex、Cursor、Antigravity 还剩多少额度。
+  <img src="docs/screenshots/menubar-popover.png" width="860" alt="Agent Ring 菜单栏弹窗：多平台额度圆环实时监控" />
 </p>
 
 <p align="center">
@@ -21,6 +21,12 @@
   <img alt="Latest release" src="https://img.shields.io/github/v/release/haorui-lab/agentRing?include_prereleases" />
   <img alt="CI" src="https://img.shields.io/github/actions/workflow/status/haorui-lab/agentRing/ci.yml?branch=main&label=CI" />
 </p>
+
+## 界面预览
+
+| 通用设置 | 账户认证 |
+| :---: | :---: |
+| <img src="docs/screenshots/settings-general.png" width="420" alt="通用设置：用量展示模式与告急阈值" /> | <img src="docs/screenshots/settings-auth.png" width="420" alt="账户认证：多平台登录与切换" /> |
 
 ## 下载
 
