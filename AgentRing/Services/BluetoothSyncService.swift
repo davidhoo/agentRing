@@ -182,10 +182,11 @@ final class BluetoothSyncService: NSObject {
     private func findPairedDisplayDevice() -> IOBluetoothDevice? {
         let paired = IOBluetoothDevice.pairedDevices() as? [IOBluetoothDevice] ?? []
         return paired.first { device in
-            if device.name?.hasPrefix(Self.deviceNamePrefix) == true {
+            let name = (device.nameOrAddress ?? device.name ?? "")
+            if name.localizedCaseInsensitiveContains(Self.deviceNamePrefix) {
                 return true
             }
-            let normalizedDeviceAddr = device.addressString.filter { $0.isLetter || $0.isNumber }
+            let normalizedDeviceAddr = (device.addressString ?? "").filter { $0.isLetter || $0.isNumber }
             let normalizedKnownAddr = Self.knownDisplayMAC.filter { $0.isLetter || $0.isNumber }
             return normalizedDeviceAddr.caseInsensitiveCompare(normalizedKnownAddr) == .orderedSame
         }
@@ -233,19 +234,24 @@ final class BluetoothSyncService: NSObject {
         var channel: IOBluetoothRFCOMMChannel?
         // delegate 直接传入，确保断开回调从一开始就挂上
         let result = device.openRFCOMMChannelSync(&channel, withChannelID: channelID, delegate: self)
-        guard result == kIOReturnSuccess, let channel else {
-            Logger.bluetooth.info("打开 RFCOMM 通道失败: \(result, privacy: .public)")
-            teardownConnection()
+        if result == kIOReturnSuccess, let channel {
+            rfcommChannel = channel
+            Logger.bluetooth.notice("副屏 RFCOMM 通道已建立 (channel \(channelID))")
+
+            // 连接成功：补发最近一帧；无缓存帧则主动拉当前数据
+            if let line = lastPayloadLine {
+                write(line: line, to: channel)
+            } else {
+                pushIfNoCache()
+            }
             return
         }
-        rfcommChannel = channel
-        Logger.bluetooth.notice("副屏 RFCOMM 通道已建立 (channel \(channelID))")
 
-        // 连接成功：补发最近一帧；无缓存帧则主动拉当前数据
-        if let line = lastPayloadLine {
-            write(line: line, to: channel)
-        } else {
-            pushIfNoCache()
+        Logger.bluetooth.info("同步打开 RFCOMM 通道返回: \(result, privacy: .public)，尝试异步打开通道 \(channelID)...")
+        let asyncStatus = device.openRFCOMMChannelAsync(&channel, withChannelID: channelID, delegate: self)
+        if asyncStatus != kIOReturnSuccess {
+            Logger.bluetooth.info("异步发起 RFCOMM 通道失败: \(asyncStatus, privacy: .public)")
+            teardownConnection()
         }
     }
 
@@ -354,6 +360,25 @@ extension BluetoothSyncService {
 // MARK: - 通道回调
 
 extension BluetoothSyncService: IOBluetoothRFCOMMChannelDelegate {
+    /// 异步打开通道完成回调
+    @objc func rfcommChannelOpenComplete(_ channel: IOBluetoothRFCOMMChannel!, status: IOReturn) {
+        queue.async { [weak self] in
+            guard let self else { return }
+            guard status == kIOReturnSuccess, let channel else {
+                Logger.bluetooth.info("异步打开 RFCOMM 通道失败: \(status, privacy: .public)")
+                self.teardownConnection()
+                return
+            }
+            self.rfcommChannel = channel
+            Logger.bluetooth.notice("副屏 RFCOMM 通道已建立 (异步 channel \(channel.getID()))")
+            if let line = self.lastPayloadLine {
+                self.write(line: line, to: channel)
+            } else {
+                self.pushIfNoCache()
+            }
+        }
+    }
+
     /// 通道被远端/系统关闭：释放资源，等待下轮重连
     @objc func rfcommChannelClosed(_ channel: IOBluetoothRFCOMMChannel!) {
         queue.async { [weak self] in
