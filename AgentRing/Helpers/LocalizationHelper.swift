@@ -143,8 +143,6 @@ enum L {
         static func version(_ version: String) -> String {
             String(format: localized("settings.about.version"), version)
         }
-        static var license: String { localized("settings.about.license") }
-        static var licenseValue: String { localized("settings.about.license_value") }
     }
     
     // MARK: - Welcome View

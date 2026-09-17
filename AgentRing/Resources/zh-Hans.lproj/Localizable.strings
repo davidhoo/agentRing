@@ -96,11 +96,6 @@
 
 // MARK: - Settings - About
 "settings.about.version" = "版本 %@";
-"settings.about.developer" = "开发者";
-"settings.about.license" = "许可证";
-"settings.about.license_value" = "MIT License";
-"settings.about.github" = "访问 GitHub 仓库";
-"settings.about.copyright" = "© 2025 All Rights Reserved";
 
 // MARK: - Welcome View
 "welcome.title" = "欢迎使用 Agent Ring";

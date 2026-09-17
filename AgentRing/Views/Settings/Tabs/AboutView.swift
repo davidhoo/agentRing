@@ -6,7 +6,7 @@
 import SwiftUI
 
 /// 关于页面
-/// 显示应用信息、版本号和 fork 说明
+/// 显示应用信息、版本号与开源仓库
 struct AboutView: View {
     @ObservedObject private var updateManager = AppUpdateManager.shared
 
@@ -16,54 +16,77 @@ struct AboutView: View {
     }
     
     var body: some View {
-        VStack(spacing: 20) {
-            // 应用图标（不使用template模式）
-            if let icon = ImageHelper.createAppIcon(size: 100) {
+        VStack(spacing: 0) {
+            Spacer()
+
+            // 应用图标
+            if let icon = ImageHelper.createAppIcon(size: 96) {
                 Image(nsImage: icon)
                     .resizable()
-                    .frame(width: 100, height: 100)
-                    .cornerRadius(20)
-                    .shadow(radius: 5)
+                    .frame(width: 96, height: 96)
+                    .cornerRadius(22)
+                    .shadow(color: .black.opacity(0.12), radius: 8, x: 0, y: 3)
+                    .padding(.bottom, 16)
             }
             
             // 应用名称和版本
             VStack(spacing: 6) {
                 Text(L.App.name)
-                    .font(.title)
-                    .fontWeight(.bold)
+                    .font(.system(size: 20, weight: .bold))
                 
                 Text(L.SettingsAbout.version(appVersion))
                     .font(.subheadline)
                     .foregroundColor(.secondary)
-
-                Button(action: {
-                    updateManager.checkForUpdates(isUserInitiated: true)
-                }) {
-                    if updateManager.isChecking {
-                        HStack(spacing: 6) {
-                            ProgressView()
-                                .scaleEffect(0.7)
-                                .frame(width: 12, height: 12)
-                            Text(L.SettingsUpdate.checking)
-                        }
-                    } else {
-                        Text(L.SettingsUpdate.checkNow)
-                    }
-                }
-                .buttonStyle(.bordered)
-                .controlSize(.small)
-                .disabled(updateManager.isChecking || updateManager.isDownloading)
-                .padding(.top, 4)
             }
+            .padding(.bottom, 14)
+
+            // 检查更新按钮
+            Button(action: {
+                updateManager.checkForUpdates(isUserInitiated: true)
+            }) {
+                if updateManager.isChecking {
+                    HStack(spacing: 6) {
+                        ProgressView()
+                            .scaleEffect(0.7)
+                            .frame(width: 12, height: 12)
+                        Text(L.SettingsUpdate.checking)
+                    }
+                } else {
+                    Text(L.SettingsUpdate.checkNow)
+                }
+            }
+            .buttonStyle(.bordered)
+            .controlSize(.small)
+            .disabled(updateManager.isChecking || updateManager.isDownloading)
+            .padding(.bottom, 24)
             
             Divider()
-                .padding(.horizontal, 60)
+                .frame(maxWidth: 240)
+                .padding(.bottom, 20)
             
-            // 信息列表
-            VStack(alignment: .leading, spacing: 12) {
-                AboutInfoRow(icon: "doc.text", title: L.SettingsAbout.license, value: L.SettingsAbout.licenseValue)
-                AboutInfoRow(icon: "arrow.triangle.branch", title: "Fork", value: "Forked from f-is-h/Usage4Claude")
+            // 仓库地址链接
+            Link(destination: URL(string: "https://github.com/haorui-lab/agentRing")!) {
+                HStack(spacing: 6) {
+                    Image(systemName: "safari")
+                        .font(.system(size: 13))
+                        .foregroundColor(.accentColor)
+
+                    Text("haorui-lab/agentRing")
+                        .font(.system(size: 13, weight: .medium))
+                        .foregroundColor(.primary)
+
+                    Image(systemName: "arrow.up.right")
+                        .font(.system(size: 10))
+                        .foregroundColor(.secondary)
+                }
+                .padding(.horizontal, 14)
+                .padding(.vertical, 7)
+                .background(
+                    RoundedRectangle(cornerRadius: 8)
+                        .fill(Color(nsColor: .separatorColor).opacity(0.3))
+                )
             }
+            .buttonStyle(.plain)
 
             Spacer()
         }
