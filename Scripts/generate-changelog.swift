@@ -76,9 +76,13 @@ if args.count > 4 && !args[4].isEmpty {
     repoSlug = envRepo
 } else {
     let remoteUrl = runGit(["config", "--get", "remote.origin.url"])
-    if let match = remoteUrl.range(of: "github.com[:/](.+?)(?:\\.git)?$", options: .regularExpression) {
+    // 只认真正的 GitHub remote（ssh 的 git@github.com: 或 https 的 https://github.com/），
+    // 避免 file:///.../github.com/... 这类本地路径被误当成仓库 slug
+    if let match = remoteUrl.range(of: "github\\.com[:/]([^/]+/[^/]+?)(?:\\.git)?$", options: .regularExpression),
+       remoteUrl.hasSuffix(".git") || remoteUrl.contains("@github.com") || remoteUrl.contains("https://github.com") {
         let matchedString = String(remoteUrl[match])
         let cleaned = matchedString
+            .replacingOccurrences(of: "git@github.com:", with: "")
             .replacingOccurrences(of: "github.com:", with: "")
             .replacingOccurrences(of: "github.com/", with: "")
             .replacingOccurrences(of: ".git", with: "")

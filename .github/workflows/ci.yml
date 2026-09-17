@@ -11,6 +11,9 @@ jobs:
     runs-on: macos-15
     steps:
       - uses: actions/checkout@v4
+        with:
+          # test-changelog.sh 需要完整的 tag 历史（默认 depth=1 会拿不到 v0.1.7 等旧 tag）
+          fetch-depth: 0
 
       - name: Show Xcode version
         run: |
