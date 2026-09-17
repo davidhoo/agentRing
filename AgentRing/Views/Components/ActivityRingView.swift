@@ -6,6 +6,7 @@
 import SwiftUI
 
 /// Apple Watch 风格双环：默认按「剩余」填充；未用区间不画底轨。
+/// 中心不放百分比——明细行已展示数值，圆环只做纯视觉仪表。
 struct ActivityRingView: View {
     let outerPercentage: Double
     let innerPercentage: Double?
@@ -17,10 +18,13 @@ struct ActivityRingView: View {
     let remainingModeAnimationTrigger: Int
     var animationType: UsageDetailView.LoadingAnimationType = .rainbow
     var diameter: CGFloat = 110
-    var lineWidth: CGFloat = 11
+    /// 环线宽度：去掉中心文字后稍加粗，环在毛玻璃底上更扎实
+    var lineWidth: CGFloat = 13
+    /// 内外环之间的间隙：同心几何（规范第 10 节），双环留出呼吸感
+    private let ringSpacing: CGFloat = 5
 
     private var innerDiameter: CGFloat {
-        diameter - lineWidth * 2 - 6
+        diameter - (lineWidth + ringSpacing) * 2
     }
 
     var body: some View {
@@ -44,17 +48,11 @@ struct ActivityRingView: View {
             if !isRefreshing {
                 DetailUsageRingSweep(
                     trigger: remainingModeAnimationTrigger,
-                    diameter: diameter + 8,
+                    diameter: diameter + lineWidth,
                     lineWidth: 3,
                     color: outerColor
                 )
             }
-
-            DetailUsageRingCenterText(
-                usedPercentage: outerPercentage,
-                showRemainingMode: showRemainingMode,
-                fontSize: 22
-            )
         }
         .frame(width: diameter, height: diameter)
     }
@@ -85,6 +83,14 @@ struct ActivityRingView: View {
 
             if abs(range.to - range.from) >= 0.002 {
                 ringStroke(diameter: diameter, range: range, color: color)
+            } else {
+                // 弧长为 0 时不要整个消失：在 12 点位置留一个环色小点，
+                // 用 round 线帽的极小弧段画出，天然继承环色与动画
+                ringStroke(
+                    diameter: diameter,
+                    range: UsageRingTrimRange(from: 0, to: 0.002),
+                    color: color
+                )
             }
         }
     }
