@@ -299,7 +299,7 @@ struct UsageDetailView: View {
 
     private func providerHeader(for provider: ProviderType) -> some View {
         Text(providerTitle(for: provider))
-            .font(.system(size: 13, weight: .semibold))
+            .font(.system(size: 12, weight: .semibold))
             .foregroundColor(.secondary)
             .lineLimit(1)
             .frame(maxWidth: .infinity, alignment: .center)

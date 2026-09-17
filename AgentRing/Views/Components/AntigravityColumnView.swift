@@ -95,7 +95,7 @@ struct AntigravityColumnView: View {
                     showRemainingMode: showRemainingMode
                 )
             }
-            .padding(.horizontal, 14)
+            .padding(.horizontal, 10)
         }
     }
 }

@@ -218,7 +218,7 @@ struct UnifiedLimitRow: View {
                 .font(.system(size: 12))
                 .foregroundColor(.secondary)
                 .lineLimit(1)
-                .minimumScaleFactor(0.8)
+                .truncationMode(.tail)
                 .layoutPriority(0)
 
             Text(percentageLabel)
