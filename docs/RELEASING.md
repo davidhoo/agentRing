@@ -6,8 +6,10 @@
 
 | 文件 | 触发 | 作用 |
 | --- | --- | --- |
-| [`.github/workflows/ci.yml`](../.github/workflows/ci.yml) | push / PR 到 `main` | 云端 Debug 编译，验证能否构建 |
-| [`.github/workflows/release.yml`](../.github/workflows/release.yml) | 推送 `v*` 标签 | Release 编译 → 打 dmg 与 zip → 上传到 GitHub Releases |
+| [`.github/workflows/ci.yml`](../.github/workflows/ci.yml) | push / PR 到 `main` | Debug 编译和发布工具负例测试 |
+| [`.github/workflows/release.yml`](../.github/workflows/release.yml) | 推送 `v*` 标签 | Release 编译 → ad-hoc 签名 → DMG + EdDSA appcast → 验证 → GitHub Release |
+
+首次发布前，必须完成 [Sparkle 密钥与 GitHub Actions 配置](auto-update.md)。不需要 Apple 开发者账号。
 
 ## 发布新版本
 
@@ -15,30 +17,30 @@
 2. 打标签并推送：
 
 ```bash
-git tag v0.1.0
-git push origin v0.1.0
+git tag v0.1.6
+git push origin v0.1.6
 ```
 
 3. 在 [Actions](https://github.com/haorui-lab/agentRing/actions) 查看 **Release** 工作流
-4. 完成后到 [Releases](https://github.com/haorui-lab/agentRing/releases) 查看并下载 `AgentRing-*-macos.dmg`（或 `AgentRing-*-macos.zip`）
+4. 完成后到 [Releases](https://github.com/haorui-lab/agentRing/releases) 查看 DMG 和 `appcast.xml`。版本号须高于最新公开版本。
 
 ## 试打包（不创建 Release）
 
-在 Actions 页面手动运行 **Release** 工作流，选择 `workflow_dispatch`。仅上传 artifact，不创建 GitHub Release。
+在 Actions 页面手动运行 **Release** 工作流，保持 `dry_run` 开启（默认）。它仍要求有效的生产签名配置，但仅上传 artifact，不公开 Release。
 
 ## 签名说明
 
 当前 Release 构建使用 ad-hoc 签名（与本地 `CODE_SIGN_IDENTITY="-"` 一致），**未做 Apple 公证**。
 
-应用内更新（`GitHubUpdateManager` + `AppUpdateInstaller`）会：
+应用内更新（`AppUpdateManager` + Sparkle 2）会：
 
-1. 优先下载 `*-macos.zip`
-2. 清除 `com.apple.quarantine` 隔离属性（避免「无法打开」）
-3. 退出当前进程，用 helper 脚本 `ditto` 替换 `/Applications` 中的 App 并自动重新打开
+1. 获取并验证已签名的 appcast
+2. 用户确认后下载 DMG，在解包前验证 EdDSA 签名
+3. 通过沙盒外的 Installer XPC 安装并重新打开 App
 
-若用户从浏览器手动下载 DMG/ZIP 后仍提示无法打开：右键 App → **打开** → **仍要打开**。
+旧版用户手动覆盖安装首个 Sparkle 版本一次。正式 Release 不上传 ZIP，避免仍在使用旧版的用户误入旧 shell 安装器。
 
-若要无警告安装，需后续接入 Developer ID 证书并完成 notarization，并更新 `release.yml` 中的签名步骤。
+首次手动打开未经公证的 App 仍可能需要「隐私与安全性 → 仍要打开」。生产私钥务必备份；不要在后续版本中重新生成或替换它。
 
 ## 版本号
 

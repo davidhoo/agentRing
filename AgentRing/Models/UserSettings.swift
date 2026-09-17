@@ -479,10 +479,11 @@ final class UserSettings: ObservableObject {
         }
     }
 
-    /// 自动检查更新开关（默认开启，开启后每 1 小时自动检测一次 GitHub Releases）
+    /// 自动检查更新开关（默认开启，由 Sparkle 每小时调度，安装需用户确认）
     @Published var autoUpdateEnabled: Bool {
         didSet {
             defaults.set(autoUpdateEnabled, forKey: "autoUpdateEnabled")
+            defaults.set(autoUpdateEnabled, forKey: "SUEnableAutomaticChecks")
             NotificationCenter.default.post(name: .autoUpdateSettingChanged, object: nil)
         }
     }
@@ -679,7 +680,8 @@ final class UserSettings: ObservableObject {
 
         notificationsEnabled = defaults.object(forKey: "notificationsEnabled") as? Bool ?? true
         bluetoothSyncEnabled = defaults.bool(forKey: "bluetoothSyncEnabled")
-        autoUpdateEnabled = defaults.object(forKey: "autoUpdateEnabled") as? Bool ?? true
+        autoUpdateEnabled = defaults.object(forKey: "SUEnableAutomaticChecks") as? Bool
+            ?? defaults.object(forKey: "autoUpdateEnabled") as? Bool ?? true
         launchAtLogin = defaults.bool(forKey: "launchAtLogin")
         // 缺省开启：只要本机有 Antigravity 凭证就自动当一等公民监控
         if defaults.object(forKey: "antigravityEnabled") == nil {

@@ -8,7 +8,7 @@ import ServiceManagement
 
 struct GeneralSettingsView: View {
     @ObservedObject private var settings = UserSettings.shared
-    @ObservedObject private var updateManager = GitHubUpdateManager.shared
+    @ObservedObject private var updateManager = AppUpdateManager.shared
     @State private var showErrorAlert = false
     @State private var errorMessage = ""
 

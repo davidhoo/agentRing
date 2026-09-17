@@ -119,8 +119,9 @@
 // MARK: - Settings Update
 "settings.update.section" = "Software Update";
 "settings.update.hint" = "Check and download new versions from GitHub Releases";
-"settings.update.auto_update" = "Automatic Updates";
-"settings.update.auto_update_hint" = "Every hour, check GitHub Releases and download the installer when a new version is available";
+"settings.update.auto_update" = "Automatically Check for Updates";
+"settings.update.auto_update_hint" = "Check every hour; you choose when to download, install and restart";
+"settings.update.not_configured" = "This build has no update signing public key. Software updates are unavailable. Please use an official release.";
 "settings.update.check_now" = "Check for Updates";
 "settings.update.checking" = "Checking for updates...";
 "settings.update.check_failed" = "Failed to check for updates";

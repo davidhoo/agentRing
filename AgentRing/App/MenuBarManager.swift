@@ -74,8 +74,8 @@ final class MenuBarManager: ObservableObject {
     }
 
     var shouldShowUpdateBadge: Bool {
-        let releaseVersion = GitHubUpdateManager.shared.availableRelease?.tagName ?? latestVersion
-        guard hasAvailableUpdate || GitHubUpdateManager.shared.availableRelease != nil,
+        let releaseVersion = AppUpdateManager.shared.availableVersion ?? latestVersion
+        guard hasAvailableUpdate || AppUpdateManager.shared.availableVersion != nil,
               let version = releaseVersion else { return false }
         return acknowledgedVersion != version
     }
@@ -298,14 +298,14 @@ final class MenuBarManager: ObservableObject {
     }
 
     @objc func checkForUpdates() {
-        let versionToAcknowledge = GitHubUpdateManager.shared.availableRelease?.tagName ?? latestVersion
+        let versionToAcknowledge = AppUpdateManager.shared.availableVersion ?? latestVersion
         if let versionToAcknowledge {
             acknowledgedVersion = versionToAcknowledge
             objectWillChange.send()
             updateMenuBarIcon()
         }
 
-        GitHubUpdateManager.shared.checkForUpdates(isUserInitiated: true)
+        AppUpdateManager.shared.checkForUpdates(isUserInitiated: true)
     }
 
     func applyUpdateAvailable(version: String?) {

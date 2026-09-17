@@ -1,153 +1,174 @@
 name: Release
 
-# 推送形如 v0.1.0 的 tag 时，自动在云端 Mac 上编译并挂到 GitHub Releases。
-# 版本号以 tag 为准：构建时会把 tag 版本注入 MARKETING_VERSION，
-# 保证 App「关于」页显示的版本永远与发布版本一致，无需在多个地方对齐。
-# 当前是 ad-hoc 签名（与本地 CODE_SIGN_IDENTITY="-" 一致），未做 Apple 公证。
-# 用户首次打开可能需右键 → 打开；后续若接公证/Developer ID，再改签名步骤即可。
-
+# No Apple account required: ad-hoc app signing + Sparkle Ed25519 signatures.
+# One-time setup: docs/auto-update.md. Never generate a new production key per release.
 on:
   push:
-    tags:
-      - "v*"
+    tags: ["v*"]
   workflow_dispatch:
     inputs:
       dry_run:
-        description: "Only build and upload artifact; skip creating a GitHub Release"
-        required: false
-        default: "false"
-        type: choice
-        options:
-          - "false"
-          - "true"
+        description: "Build and validate artifacts without publishing a Release"
+        required: true
+        default: true
+        type: boolean
 
 permissions:
   contents: write
 
+concurrency:
+  group: agentring-release
+  cancel-in-progress: false
+
 jobs:
   build-and-release:
     runs-on: macos-15
+    env:
+      DEVELOPER_DIR: /Applications/Xcode.app/Contents/Developer
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Show Xcode version
+      - name: Prepare version and signing public key
+        id: config
+        env:
+          SPARKLE_PRIVATE_KEY: ${{ secrets.SPARKLE_PRIVATE_KEY }}
+          EXPECTED_PUBLIC_KEY: ${{ vars.SPARKLE_PUBLIC_ED_KEY }}
+          DRY_RUN: ${{ inputs.dry_run }}
         run: |
-          sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
+          set -euo pipefail
           xcodebuild -version
-
-      # tag 版本与项目文件版本不一致时仅告警，不阻断发布：
-      # 构建时会注入 tag 版本，发布产物始终与 tag 一致。
-      - name: Check tag vs project version
-        if: github.ref_type == 'tag'
-        run: |
-          TAG_VERSION="${GITHUB_REF_NAME#v}"
-          PROJECT_VERSION=$(grep -m1 'MARKETING_VERSION = ' AgentRing.xcodeproj/project.pbxproj | sed 's/.*MARKETING_VERSION = \([0-9.]*\);.*/\1/')
-          echo "tag: ${TAG_VERSION} / project: ${PROJECT_VERSION}"
-          if [[ "${TAG_VERSION}" != "${PROJECT_VERSION}" ]]; then
-            echo "::warning::tag v${TAG_VERSION} 与项目 MARKETING_VERSION ${PROJECT_VERSION} 不一致（发布不受影响，构建已注入 tag 版本）。建议运行 ./Scripts/set-version.sh ${TAG_VERSION} 同步。"
-          fi
-
-      - name: Resolve package dependencies
-        run: |
-          xcodebuild -resolvePackageDependencies \
-            -project AgentRing.xcodeproj \
-            -scheme AgentRing
-
-      # tag 构建时注入 tag 版本，这是 App 内版本号的唯一事实来源。
-      - name: Build Release
-        run: |
-          set -euo pipefail
-          if [[ "${GITHUB_REF_TYPE}" == "tag" ]]; then
-            EXTRA="MARKETING_VERSION=${GITHUB_REF_NAME#v}"
-          else
-            EXTRA=""
-          fi
-          xcodebuild \
-            -project AgentRing.xcodeproj \
-            -scheme AgentRing \
-            -configuration Release \
-            -derivedDataPath "$RUNNER_TEMP/DerivedData" \
-            -destination "generic/platform=macOS" \
-            CODE_SIGN_IDENTITY="-" \
-            CODE_SIGNING_REQUIRED=NO \
-            CODE_SIGNING_ALLOWED=YES \
-            $EXTRA \
-            build
-
-      # 发布前最后一道闸：直接读构建产物的 Info.plist，确认发出去的包就是 tag 的版本。
-      - name: Verify built app version
-        if: github.ref_type == 'tag'
-        run: |
-          set -euo pipefail
-          APP="$RUNNER_TEMP/DerivedData/Build/Products/Release/AgentRing.app"
-          BUILT_VERSION=$(/usr/libexec/PlistBuddy -c "Print :CFBundleShortVersionString" "$APP/Contents/Info.plist")
-          TAG_VERSION="${GITHUB_REF_NAME#v}"
-          echo "built: ${BUILT_VERSION} / tag: ${TAG_VERSION}"
-          if [[ "${BUILT_VERSION}" != "${TAG_VERSION}" ]]; then
-            echo "::error::构建出的 App 版本 ${BUILT_VERSION} 与 tag v${TAG_VERSION} 不一致，停止发布。"
+          if [[ -z "$SPARKLE_PRIVATE_KEY" || -z "$EXPECTED_PUBLIC_KEY" ]]; then
+            echo "::error::Configure SPARKLE_PRIVATE_KEY secret and SPARKLE_PUBLIC_ED_KEY variable first. See docs/auto-update.md."
             exit 1
           fi
+          PUBLIC_KEY=$(printf '%s' "$SPARKLE_PRIVATE_KEY" | swift Scripts/sparkle-key.swift)
+          if [[ "$PUBLIC_KEY" != "$EXPECTED_PUBLIC_KEY" ]]; then
+            echo "::error::Signing secret does not match the pinned public key; do not rotate ad-hoc update keys."
+            exit 1
+          fi
+          if [[ "$GITHUB_REF_TYPE" == tag ]]; then
+            VERSION="${GITHUB_REF_NAME#v}"
+          elif [[ "$DRY_RUN" == true ]]; then
+            VERSION=$(sed -n 's/.*MARKETING_VERSION = \([0-9.]*\);/\1/p' AgentRing.xcodeproj/project.pbxproj | head -1)
+          else
+            echo "::error::Publishing requires a version tag. Select a tag or enable dry_run."
+            exit 1
+          fi
+          if [[ ! "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "::error::Release version must be vMAJOR.MINOR.PATCH."
+            exit 1
+          fi
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "public_key=$PUBLIC_KEY" >> "$GITHUB_OUTPUT"
 
-      - name: Package DMG and Zip
-        id: package
+      - name: Resolve pinned Sparkle dependency
+        run: |
+          xcodebuild -resolvePackageDependencies -project AgentRing.xcodeproj -scheme AgentRing \
+            -clonedSourcePackagesDirPath "$RUNNER_TEMP/SourcePackages"
+
+      - name: Build Release
+        env:
+          VERSION: ${{ steps.config.outputs.version }}
+          PUBLIC_KEY: ${{ steps.config.outputs.public_key }}
+        run: |
+          set -euo pipefail
+          xcodebuild -project AgentRing.xcodeproj -scheme AgentRing -configuration Release \
+            -derivedDataPath "$RUNNER_TEMP/DerivedData" \
+            -clonedSourcePackagesDirPath "$RUNNER_TEMP/SourcePackages" \
+            -destination 'generic/platform=macOS' \
+            ARCHS='arm64 x86_64' ONLY_ACTIVE_ARCH=NO \
+            CODE_SIGN_IDENTITY=- CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=YES \
+            CODE_SIGN_INJECT_BASE_ENTITLEMENTS=NO ENABLE_HARDENED_RUNTIME=NO \
+            MARKETING_VERSION="$VERSION" CURRENT_PROJECT_VERSION="$VERSION" \
+            SPARKLE_PUBLIC_ED_KEY="$PUBLIC_KEY" build
+
+      - name: Sign nested components and verify app
+        env:
+          VERSION: ${{ steps.config.outputs.version }}
         run: |
           set -euo pipefail
           APP="$RUNNER_TEMP/DerivedData/Build/Products/Release/AgentRing.app"
-          test -d "$APP"
-          if [[ "${GITHUB_REF_TYPE}" == "tag" ]]; then
-            VERSION="${GITHUB_REF_NAME#v}"
-          else
-            VERSION="dev-$(echo "${GITHUB_SHA}" | cut -c1-7)"
+          bash Scripts/sign-app.sh "$APP"
+          swift Scripts/verify-release.swift "$APP" "$VERSION"
+
+      - name: Verify continuity with the last published update
+        if: github.ref_type == 'tag'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SPARKLE_PRIVATE_KEY: ${{ secrets.SPARKLE_PRIVATE_KEY }}
+          VERSION: ${{ steps.config.outputs.version }}
+        run: |
+          set -euo pipefail
+          # Fail on API errors instead of silently treating a network failure as first release.
+          gh api "repos/$GITHUB_REPOSITORY/releases/latest" > "$RUNNER_TEMP/previous-release.json"
+          swift Scripts/check-release-version.swift "$RUNNER_TEMP/previous-release.json" "$VERSION"
+          PREVIOUS_TAG=$(jq -r .tag_name "$RUNNER_TEMP/previous-release.json")
+          if jq -e '.assets[] | select(.name == "appcast.xml")' "$RUNNER_TEMP/previous-release.json" >/dev/null; then
+            gh release download "$PREVIOUS_TAG" --pattern appcast.xml --dir "$RUNNER_TEMP/previous-feed"
+            SIGN_UPDATE=$(find "$RUNNER_TEMP/SourcePackages/artifacts" -type f -name sign_update -print -quit)
+            printf '%s' "$SPARKLE_PRIVATE_KEY" | "$SIGN_UPDATE" --ed-key-file - --verify "$RUNNER_TEMP/previous-feed/appcast.xml"
           fi
 
-          # 1. Package DMG (contains AgentRing.app + /Applications symlink)
-          DMG_STAGING="$RUNNER_TEMP/dmg-staging"
-          rm -rf "$DMG_STAGING"
-          mkdir -p "$DMG_STAGING"
-          cp -R "$APP" "$DMG_STAGING/"
-          ln -s /Applications "$DMG_STAGING/Applications"
+      # Every legacy client prefers any .zip and would run its broken shell installer.
+      # Sparkle installs the same DMG used for manual first-time installation.
+      - name: Package DMG and generate signed appcast
+        env:
+          VERSION: ${{ steps.config.outputs.version }}
+          SPARKLE_PRIVATE_KEY: ${{ secrets.SPARKLE_PRIVATE_KEY }}
+        run: |
+          set -euo pipefail
+          APP="$RUNNER_TEMP/DerivedData/Build/Products/Release/AgentRing.app"
+          TOOLS=$(find "$RUNNER_TEMP/SourcePackages/artifacts" -type f -name generate_appcast -print -quit)
+          test -n "$TOOLS"
+          TOOLS=$(dirname "$TOOLS")
+          STAGING=$(mktemp -d "$RUNNER_TEMP/agentring-dmg.XXXXXX")
+          ditto "$APP" "$STAGING/AgentRing.app"
+          ln -s /Applications "$STAGING/Applications"
+          mkdir -p dist
+          ARCHIVE="AgentRing-${VERSION}-macos.dmg"
+          hdiutil create -volname 'Agent Ring' -srcfolder "$STAGING" -format UDZO "dist/$ARCHIVE"
+          PREFIX="https://github.com/$GITHUB_REPOSITORY/releases/download/v$VERSION/"
+          printf '%s' "$SPARKLE_PRIVATE_KEY" | "$TOOLS/generate_appcast" --ed-key-file - \
+            --maximum-deltas 0 --download-url-prefix "$PREFIX" \
+            --link "https://github.com/$GITHUB_REPOSITORY/releases/tag/v$VERSION" \
+            -o dist/appcast.xml dist
+          swift Scripts/verify-release.swift "$APP" "$VERSION" dist/appcast.xml "dist/$ARCHIVE" "$PREFIX$ARCHIVE"
+          printf '%s' "$SPARKLE_PRIVATE_KEY" | "$TOOLS/sign_update" --ed-key-file - --verify dist/appcast.xml
+          MOUNT=$(mktemp -d "$RUNNER_TEMP/agentring-mount.XXXXXX")
+          hdiutil attach -readonly -nobrowse -mountpoint "$MOUNT" "dist/$ARCHIVE"
+          trap 'hdiutil detach "$MOUNT"' EXIT
+          codesign --verify --deep --strict "$MOUNT/AgentRing.app"
+          swift Scripts/verify-release.swift "$MOUNT/AgentRing.app" "$VERSION"
+          ls -lh dist
 
-          DMG="AgentRing-${VERSION}-macos.dmg"
-          hdiutil create \
-            -volname "Agent Ring" \
-            -srcfolder "$DMG_STAGING" \
-            -ov \
-            -format UDZO \
-            "$DMG"
-
-          # 2. Package Zip
-          ZIP="AgentRing-${VERSION}-macos.zip"
-          ditto -c -k --sequesterRsrc --keepParent "$APP" "$ZIP"
-
-          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
-          echo "dmg=${DMG}" >> "$GITHUB_OUTPUT"
-          echo "zip=${ZIP}" >> "$GITHUB_OUTPUT"
-          ls -lh "$DMG" "$ZIP"
-
-      - name: Upload build artifacts
-        uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v4
         with:
-          name: AgentRing-${{ steps.package.outputs.version }}
+          name: AgentRing-${{ steps.config.outputs.version }}
           path: |
-            ${{ steps.package.outputs.dmg }}
-            ${{ steps.package.outputs.zip }}
+            dist/*.dmg
+            dist/appcast.xml
           if-no-files-found: error
 
-      - name: Create GitHub Release
-        if: github.ref_type == 'tag' && (github.event_name != 'workflow_dispatch' || inputs.dry_run != 'true')
-        uses: softprops/action-gh-release@v2
-        with:
-          files: |
-            ${{ steps.package.outputs.dmg }}
-            ${{ steps.package.outputs.zip }}
-          generate_release_notes: true
-          fail_on_unmatched_files: true
-          body: |
-            ## Agent Ring ${{ steps.package.outputs.version }}
-
-            推荐下载 `AgentRing-*-macos.dmg`：双击打开后，将 `Agent Ring` 拖入「应用程序」即可完成安装。
-            亦可下载 `AgentRing-*-macos.zip` 解压使用。
-
-            > 当前构建为 ad-hoc 签名，未经 Apple 公证。应用内更新会优先下载 ZIP，清除隔离属性后自动替换并重启。
-            > 若仍提示无法打开：右键 App → 打开 → 仍要打开；或将 App 放在「应用程序」文件夹后再用应用内更新。
+      # /releases/latest/download/appcast.xml never sees a partially uploaded release.
+      - name: Publish validated release
+        if: github.ref_type == 'tag' && (github.event_name != 'workflow_dispatch' || !inputs.dry_run)
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ steps.config.outputs.version }}
+        run: |
+          set -euo pipefail
+          if gh release view "$GITHUB_REF_NAME" --json isDraft >/dev/null 2>&1; then
+            if [[ $(gh release view "$GITHUB_REF_NAME" --json isDraft --jq .isDraft) != true ]]; then
+              echo "::error::Release is already public; refusing to replace a published signed update. Create a new version tag."
+              exit 1
+            fi
+          else
+            gh release create "$GITHUB_REF_NAME" --draft --verify-tag --title "Agent Ring $VERSION" \
+              --generate-notes --notes-file docs/release-installation.md
+          fi
+          if gh release view "$GITHUB_REF_NAME" --json assets --jq '.assets[].name' | grep -qi '\.zip$'; then
+            echo "::error::Draft contains a ZIP asset that would trigger the legacy installer. Remove it manually before retrying."
+            exit 1
+          fi
+          gh release upload "$GITHUB_REF_NAME" "dist/AgentRing-${VERSION}-macos.dmg" dist/appcast.xml --clobber
+          gh release edit "$GITHUB_REF_NAME" --draft=false --latest

@@ -185,6 +185,7 @@ enum L {
         static var checkNow: String { localized("settings.update.check_now") }
         static var checking: String { localized("settings.update.checking") }
         static var checkFailed: String { localized("settings.update.check_failed") }
+        static var notConfigured: String { localized("settings.update.not_configured") }
         static func updateAvailable(_ version: String) -> String {
             String(format: localized("settings.update.available"), version)
         }

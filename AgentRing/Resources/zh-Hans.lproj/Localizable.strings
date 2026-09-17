@@ -119,8 +119,9 @@
 // MARK: - Settings Update
 "settings.update.section" = "版本更新";
 "settings.update.hint" = "通过 GitHub Releases 检测并下载最新版本";
-"settings.update.auto_update" = "自动更新";
-"settings.update.auto_update_hint" = "开启后每 1 小时自动检测 GitHub Releases；发现新版本时下载安装包并通知你";
+"settings.update.auto_update" = "自动检查更新";
+"settings.update.auto_update_hint" = "每小时检查新版本；由你确认下载、安装和重启";
+"settings.update.not_configured" = "此构建未配置更新签名公钥，自动更新不可用。请使用正式发布版本。";
 "settings.update.check_now" = "检查更新";
 "settings.update.checking" = "正在检查更新...";
 "settings.update.check_failed" = "检查更新失败";

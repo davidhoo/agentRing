@@ -25,11 +25,11 @@
 ## Download
 
 1. Open [Latest Release](https://github.com/haorui-lab/agentRing/releases/latest)
-2. Download `AgentRing-*-macos.dmg` (recommended) or `AgentRing-*-macos.zip`
-3. Open the DMG and drag `Agent Ring` into Applications (or extract the zip)
-4. If macOS blocks it: right-click → **Open** → **Open Anyway**
+2. Download `AgentRing-*-macos.dmg`
+3. Quit the old version, open the DMG, and drag `AgentRing.app` into Applications, replacing the old copy
+4. If macOS blocks it, use **System Settings → Privacy & Security → Open Anyway**
 
-> Public builds are ad-hoc signed and not Apple-notarized yet. Developer ID + notarization can be added later.
+> Builds are ad-hoc signed and not Apple-notarized. Sparkle verifies in-app updates with EdDSA signatures before installing and restarting. Users of pre-Sparkle versions need one manual replacement installation.
 
 ## Features
 
@@ -73,3 +73,4 @@ xcodebuild -project AgentRing.xcodeproj -scheme AgentRing \
 
 - Bundle ID is `app.agentring.AgentRing`. On first upgrade, credentials and preferences migrate from the legacy ID `app.agentsring.AgentsRing`. Display name is **Agent Ring**.
 - Maintainer release process: [`docs/RELEASING.md`](docs/RELEASING.md).
+- Update signing keys and migration: [`docs/auto-update.md`](docs/auto-update.md).

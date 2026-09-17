@@ -25,11 +25,11 @@
 ## 下载
 
 1. 打开 [Latest Release](https://github.com/haorui-lab/agentRing/releases/latest)
-2. 下载 `AgentRing-*-macos.dmg`（推荐）或 `AgentRing-*-macos.zip`
-3. 双击打开 DMG，将 `Agent Ring` 拖入「应用程序」（或解压 zip 使用）
-4. 若系统提示无法验证开发者：右键 App → **打开** → **仍要打开**
+2. 下载 `AgentRing-*-macos.dmg`
+3. 退出旧版，打开 DMG，将 `AgentRing.app` 拖入「应用程序」并选择替换
+4. 若系统提示无法验证开发者，在「系统设置 → 隐私与安全性」中选择「仍要打开」
 
-> 当前公开发布包为 ad-hoc 签名，尚未 Apple 公证。接入 Developer ID 并完成公证后，此步骤将不再需要。
+> 发布包使用 ad-hoc 应用签名，未经 Apple 公证。安装含 Sparkle 的版本后，应用内更新会验证 EdDSA 签名并自动安装重启；更早版本需要手动覆盖安装一次。
 
 ## 功能
 
@@ -75,3 +75,4 @@ xcodebuild -project AgentRing.xcodeproj -scheme AgentRing \
 
 - Bundle ID 为 `app.agentring.AgentRing`；首次升级会从旧 ID `app.agentsring.AgentsRing` 迁移钥匙串与偏好设置。对外显示名为 **Agent Ring**。
 - 维护者发布流程见 [`docs/RELEASING.md`](docs/RELEASING.md)。
+- 更新签名密钥配置和迁移步骤见 [`docs/auto-update.md`](docs/auto-update.md)。

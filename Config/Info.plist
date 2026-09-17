@@ -10,8 +10,8 @@
     Build settings still interpolate via $(VARIABLE_NAME), so version bumps in
     project.pbxproj's MARKETING_VERSION / CURRENT_PROJECT_VERSION flow through.
 
-    App updates are handled by GitHubUpdateManager via GitHub Releases
-    (haorui-lab/agentRing), not Sparkle.
+    Sparkle verifies updates using our EdDSA key; Apple Developer ID is not required.
+    SPARKLE_PUBLIC_ED_KEY is supplied by the release build from its signing key.
 -->
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
@@ -48,5 +48,27 @@
     <string></string>
     <key>NSBluetoothAlwaysUsageDescription</key>
     <string>Agent Ring 需要蓝牙权限以向 Android 桌面副屏推送用量额度数据</string>
+    <key>SUFeedURL</key>
+    <string>https://github.com/haorui-lab/agentRing/releases/latest/download/appcast.xml</string>
+    <key>SUPublicEDKey</key>
+    <string>$(SPARKLE_PUBLIC_ED_KEY)</string>
+    <key>SUEnableInstallerLauncherService</key>
+    <true/>
+    <key>SUEnableDownloaderService</key>
+    <false/>
+    <key>SUVerifyUpdateBeforeExtraction</key>
+    <true/>
+    <key>SURequireSignedFeed</key>
+    <true/>
+    <key>SUEnableAutomaticChecks</key>
+    <true/>
+    <key>SUScheduledCheckInterval</key>
+    <integer>3600</integer>
+    <key>SUAutomaticallyUpdate</key>
+    <false/>
+    <key>SUAllowsAutomaticUpdates</key>
+    <false/>
+    <key>SUEnableSystemProfiling</key>
+    <false/>
 </dict>
 </plist>

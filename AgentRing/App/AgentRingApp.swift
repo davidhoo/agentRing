@@ -57,7 +57,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         NotificationManager.shared.requestPermission()
 
         menuBarManager = MenuBarManager()
-        GitHubUpdateManager.shared.start()
+        AppUpdateManager.shared.start()
 
         // 蓝牙副屏：跟随设置开关启动（连接周期性重连由服务内部管理）
         if settings.bluetoothSyncEnabled {

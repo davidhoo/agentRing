@@ -8,7 +8,7 @@ import SwiftUI
 /// 关于页面
 /// 显示应用信息、版本号和 fork 说明
 struct AboutView: View {
-    @ObservedObject private var updateManager = GitHubUpdateManager.shared
+    @ObservedObject private var updateManager = AppUpdateManager.shared
 
     /// 从 Bundle 中读取应用版本号
     private var appVersion: String {

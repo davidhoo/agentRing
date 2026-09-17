@@ -21,7 +21,8 @@ jobs:
         run: |
           xcodebuild -resolvePackageDependencies \
             -project AgentRing.xcodeproj \
-            -scheme AgentRing
+            -scheme AgentRing \
+            -clonedSourcePackagesDirPath "$RUNNER_TEMP/SourcePackages"
 
       - name: Build Debug
         run: |
@@ -31,8 +32,15 @@ jobs:
             -scheme AgentRing \
             -configuration Debug \
             -derivedDataPath "$RUNNER_TEMP/DerivedData" \
+            -clonedSourcePackagesDirPath "$RUNNER_TEMP/SourcePackages" \
             -destination "generic/platform=macOS" \
             CODE_SIGN_IDENTITY="-" \
             CODE_SIGNING_REQUIRED=NO \
             CODE_SIGNING_ALLOWED=YES \
             build
+
+      - name: Validate updater release tooling
+        run: bash Scripts/test-release-tools.sh
+
+      - name: Validate Sparkle delegate integration
+        run: bash Scripts/test-update-manager.sh "$RUNNER_TEMP/SourcePackages/artifacts/sparkle/Sparkle"
