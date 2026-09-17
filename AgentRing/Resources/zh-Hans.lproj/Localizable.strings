@@ -375,8 +375,8 @@
 "extra_usage.not_enabled" = "未启用";
 "extra_usage.unlimited" = "无限";
 "extra_usage.limit_reached" = "已达上限";
-"extra_usage.usage_amount" = "%@%.2f/%@%.0f";
-"extra_usage.remaining_amount" = "还可使用 %@%.2f";
+"extra_usage.usage_amount" = "%@%.0f/%@%.0f";
+"extra_usage.remaining_amount" = "剩 %@%.0f";
 "extra_usage.credits_balance" = "余额 %d 点";
 "extra_usage.credits_remaining" = "还剩 %d 点";
 "extra_usage.detail_credits_balance" = "%d 点";

@@ -377,8 +377,8 @@
 "extra_usage.not_enabled" = "Not Enabled";
 "extra_usage.unlimited" = "Unlimited";
 "extra_usage.limit_reached" = "Limit reached";
-"extra_usage.usage_amount" = "%@%.2f/%@%.0f";
-"extra_usage.remaining_amount" = "%@%.2f remaining";
+"extra_usage.usage_amount" = "%@%.0f/%@%.0f";
+"extra_usage.remaining_amount" = "%@%.0f";
 "extra_usage.credits_balance" = "Balance %d credits";
 "extra_usage.credits_remaining" = "%d credits remaining";
 "extra_usage.detail_credits_balance" = "%d credits";

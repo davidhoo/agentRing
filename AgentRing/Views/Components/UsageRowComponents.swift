@@ -188,6 +188,13 @@ enum UnifiedLimitRowMetrics {
     /// 行间 Divider 的渲染厚度
     static let interRowDividerHeight: CGFloat = 1
 
+    // 数值列固定通道宽度：所有行共用同一绝对基准，内容长短不一、
+    // 剩余/重置模式切换都不会让百分比列漂移（规范 24 节数值列对齐）
+    /// 百分比列通道宽：容纳 12pt semibold 的 "100%"
+    static let percentageColumnWidth: CGFloat = 36
+    /// 数值列通道宽：容纳 12pt 等宽数字的最长 "00h 00m" / "9/20 14:30"
+    static let valueColumnWidth: CGFloat = 64
+
     static var rowHeight: CGFloat {
         textLineHeight + verticalPadding * 2
     }
@@ -214,6 +221,7 @@ struct UnifiedLimitRow: View {
                 .fill(rowColor)
                 .frame(width: 5, height: 5)
 
+            // 类型名：弹性宽度，超长尾部截断，把剩余空间让给数值列
             Text(limitName)
                 .font(.system(size: 12))
                 .foregroundColor(.secondary)
@@ -221,19 +229,24 @@ struct UnifiedLimitRow: View {
                 .truncationMode(.tail)
                 .layoutPriority(0)
 
+            Spacer(minLength: 4)
+
+            // 百分比：固定通道右对齐，所有行的百分号钉在同一条垂直线上（规范 24 节）
             Text(percentageLabel)
                 .font(.system(size: 12, weight: .semibold).monospacedDigit())
                 .foregroundColor(.primary)
+                .lineLimit(1)
+                .multilineTextAlignment(.trailing)
+                .frame(width: UnifiedLimitRowMetrics.percentageColumnWidth, alignment: .trailing)
                 .fixedSize(horizontal: true, vertical: false)
 
-            Spacer(minLength: 4)
-
-            // 日期/额度优先完整显示，避免被左侧名称挤成省略号
+            // 剩余时间/额度：固定通道右对齐，模式切换时列边界稳定不横跳
             Text(displayValue)
                 .font(.system(size: 12).monospacedDigit())
                 .foregroundColor(.secondary)
                 .lineLimit(1)
-                .fixedSize(horizontal: true, vertical: false)
+                .multilineTextAlignment(.trailing)
+                .frame(width: UnifiedLimitRowMetrics.valueColumnWidth, alignment: .trailing)
                 .layoutPriority(1)
                 .id(showRemainingMode ? "remaining" : "reset")
                 .transition(.asymmetric(
