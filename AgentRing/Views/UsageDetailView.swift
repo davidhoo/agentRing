@@ -39,13 +39,11 @@ struct UsageDetailView: View {
         case authSettings
         case checkForUpdates
         case about
-        case codexStatus
         case quit
         case refresh
         case codexRelogin
         case cursorRelogin
         case antigravityRelogin
-        case cursorStatus
     }
 
     @State var codexAnimationType: LoadingAnimationType = .rainbow

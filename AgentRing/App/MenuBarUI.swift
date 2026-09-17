@@ -188,18 +188,6 @@ final class MenuBarUI {
 
         menu.addItem(.separator())
 
-        let statusItem = NSMenuItem(title: L.Menu.codexStatus, action: #selector(MenuBarManager.openCodexStatus), keyEquivalent: "")
-        statusItem.target = target
-        setMenuItemIcon(statusItem, systemName: "safari.fill")
-        menu.addItem(statusItem)
-
-        let cursorStatusItem = NSMenuItem(title: L.Menu.cursorStatus, action: #selector(MenuBarManager.openCursorStatus), keyEquivalent: "")
-        cursorStatusItem.target = target
-        setMenuItemIcon(cursorStatusItem, systemName: "safari")
-        menu.addItem(cursorStatusItem)
-
-        menu.addItem(.separator())
-
         let quitItem = NSMenuItem(title: L.Menu.quit, action: #selector(MenuBarManager.quitApp), keyEquivalent: "q")
         quitItem.target = target
         setMenuItemIcon(quitItem, systemName: "power")

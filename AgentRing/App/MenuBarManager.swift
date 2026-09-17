@@ -135,18 +135,6 @@ final class MenuBarManager: ObservableObject {
         ui.statusItem.menu = nil
     }
 
-    @objc func openCodexStatus() {
-        if let url = URL(string: "https://status.openai.com/") {
-            NSWorkspace.shared.open(url)
-        }
-    }
-
-    @objc func openCursorStatus() {
-        if let url = URL(string: "https://status.cursor.com/") {
-            NSWorkspace.shared.open(url)
-        }
-    }
-
     @objc func quitApp() {
         NSApplication.shared.terminate(nil)
     }
@@ -167,9 +155,6 @@ final class MenuBarManager: ObservableObject {
         case .about:
             closePopover()
             openSettingsWindow(tab: 2)
-        case .codexStatus:
-            closePopover()
-            openCodexStatus()
         case .codexRelogin:
             closePopover()
             WebLoginWindowManager.shared.showCodexLoginWindow()
@@ -179,9 +164,6 @@ final class MenuBarManager: ObservableObject {
         case .antigravityRelogin:
             closePopover()
             openAuthSettings()
-        case .cursorStatus:
-            closePopover()
-            openCursorStatus()
         case .quit:
             quitApp()
         }
