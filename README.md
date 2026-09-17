@@ -39,6 +39,12 @@
 - **多账户**：登录、切换、别名；Antigravity 使用本机凭证探测
 - **智能刷新**：用量变化时加快，空闲时放慢
 - **极简入口**：数据面板 `…` 直接进入设置
+- **Android 桌面副屏联动**：通过经典蓝牙 SPP 将用量与倒计时实时推送到副屏（配合 [agentRing-Android](https://github.com/davidhoo/agentRing-Android) 在闲置手机或外接屏幕上常显）
+
+## 副屏硬件生态
+
+- **[agentRing-Android](https://github.com/davidhoo/agentRing-Android)**：基于 Agent Ring 蓝牙输出数据打造的 Android 桌面副屏应用。利用经典蓝牙 SPP 实时同步用量额度、双同心圆环与重置倒计时，专为工位闲置手机、桌面小屏幕打造。
+- **通讯协议**：欢迎开发者适配更多硬件设备（如 ESP32、墨水屏摆件等），完整规范详见 [`docs/BLUETOOTH_PROTOCOL.md`](docs/BLUETOOTH_PROTOCOL.md)。
 
 ## 从源码构建
 

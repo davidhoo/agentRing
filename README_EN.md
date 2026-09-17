@@ -39,6 +39,12 @@
 - **Multi-account**: login, switch, aliases; Antigravity uses local credential discovery
 - **Smart refresh**: faster when usage moves, slower when idle
 - **Short path**: popover `…` opens Settings directly
+- **Android Companion Screen Sync**: streams usage and countdowns in real-time over Bluetooth SPP to [agentRing-Android](https://github.com/davidhoo/agentRing-Android)
+
+## Secondary Display Ecosystem
+
+- **[agentRing-Android](https://github.com/davidhoo/agentRing-Android)**: An Android desktop companion display app powered by Agent Ring's Bluetooth data stream. Synchronizes usage, concentric activity rings, and reset countdowns over classic Bluetooth SPP — ideal for repurposing idle Android phones or mini monitors into desktop gadgets.
+- **Protocol Specification**: Detailed Bluetooth communication frame format and schema in [`docs/BLUETOOTH_PROTOCOL.md`](docs/BLUETOOTH_PROTOCOL.md).
 
 ## Building from Source
 
