@@ -233,12 +233,7 @@ struct UnifiedLimitRow: View {
     let showRemainingMode: Bool
 
     var body: some View {
-        HStack(spacing: 6) {
-            // 左侧彩色小圆点：与圆环同色系的语义标识，不是纯装饰
-            Circle()
-                .fill(rowColor)
-                .frame(width: 5, height: 5)
-
+        HStack(spacing: 4) {
             // 类型名：弹性宽度，超长尾部截断，把剩余空间让给数值列
             Text(limitName)
                 .font(.system(size: 12))
@@ -283,20 +278,6 @@ struct UnifiedLimitRow: View {
         type.detailDisplayName
     }
 
-    /// 左侧圆点颜色：与各额度对应的大圆环颜色保持同一语义来源
-    private var rowColor: Color {
-        switch type {
-        case .codexPrimary: return UsageColorScheme.codexPrimaryColorSwiftUI(percentageValue ?? 0)
-        case .codexSecondary: return UsageColorScheme.codexSecondaryColorSwiftUI(percentageValue ?? 0)
-        case .codexExtraUsage: return UsageColorScheme.codexExtraUsageColorSwiftUI(percentageValue ?? 0)
-        case .cursorIncluded: return UsageColorScheme.cursorIncludedColorSwiftUI(percentageValue ?? 0)
-        case .cursorOnDemand: return UsageColorScheme.cursorOnDemandColorSwiftUI(percentageValue ?? 0)
-        case .antigravityPrimary: return UsageColorScheme.antigravityPrimaryColorSwiftUI(percentageValue ?? 0)
-        case .antigravitySecondary: return UsageColorScheme.antigravitySecondaryColorSwiftUI(percentageValue ?? 0)
-        case .antigravityThirdPartyPrimary: return UsageColorScheme.antigravityThirdPartyPrimaryColorSwiftUI(percentageValue ?? 0)
-        case .antigravityThirdPartySecondary: return UsageColorScheme.antigravityThirdPartySecondaryColorSwiftUI(percentageValue ?? 0)
-        }
-    }
 
     private var percentageLabel: String {
         guard let percentageValue else { return "—" }

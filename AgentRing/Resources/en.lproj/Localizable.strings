@@ -285,8 +285,8 @@
 "detail_row.cursor_ondemand" = "Other Models";
 "detail_row.antigravity_gemini_5h" = "Gemini 5h";
 "detail_row.antigravity_gemini_weekly" = "Gemini 7d";
-"detail_row.antigravity_third_party_5h" = "Claude/GPT 5h";
-"detail_row.antigravity_third_party_weekly" = "Claude/GPT 7d";
+"detail_row.antigravity_third_party_5h" = "Third 5h";
+"detail_row.antigravity_third_party_weekly" = "Third 7d";
 
 // MARK: - Display Options (v2.0.0)
 "display_options" = "Display Options";
