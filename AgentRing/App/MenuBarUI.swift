@@ -72,6 +72,12 @@ final class MenuBarUI {
         popoverWindow.level = .popUpMenu
         popoverWindow.makeKey()
 
+        adjustPopoverWindowPosition(popoverWindow)
+        DispatchQueue.main.async { [weak self, weak popoverWindow] in
+            guard let self, let popoverWindow else { return }
+            self.adjustPopoverWindowPosition(popoverWindow)
+        }
+
         #if DEBUG
         if settings.debugKeepDetailWindowOpen {
             popoverWindow.backgroundColor = .white
@@ -86,6 +92,18 @@ final class MenuBarUI {
         popoverWindow.isOpaque = false
         popover.contentViewController?.view.wantsLayer = true
         popover.contentViewController?.view.layer?.backgroundColor = NSColor.clear.cgColor
+    }
+
+    private func adjustPopoverWindowPosition(_ popoverWindow: NSWindow) {
+        let edgeMargin: CGFloat = 14
+        let screen = popoverWindow.screen ?? statusItem.button?.window?.screen ?? NSScreen.main
+        guard let screen else { return }
+        var frame = popoverWindow.frame
+        let maxAllowedX = screen.visibleFrame.maxX - frame.width - edgeMargin
+        if frame.origin.x > maxAllowedX {
+            frame.origin.x = maxAllowedX
+            popoverWindow.setFrame(frame, display: true)
+        }
     }
 
     func closePopover() {
