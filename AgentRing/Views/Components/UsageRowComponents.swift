@@ -57,6 +57,24 @@ enum UsageRingDisplay {
         guard used >= 0.002 else { return nil }
         return UsageRingTrimRange(from: 1 - used, to: 1)
     }
+
+    // MARK: - 额度告急分级
+
+    /// 百分比文本的告急状态分级（语义基于「额度剩余」：剩余 <=20% 警告、<=5% 紧急）
+    enum UrgencyLevel {
+        case normal
+        case warning
+        case critical
+
+        /// 显示值语义随模式反转：剩余模式显示剩余（低=告急），已用模式显示已用（高=告急）
+        static func from(usedPercentage: Double, showRemainingMode: Bool) -> UrgencyLevel {
+            let used = clampedPercentage(usedPercentage)
+            let remaining = 100 - used
+            if remaining <= 5 { return .critical }
+            if remaining <= 20 { return .warning }
+            return .normal
+        }
+    }
 }
 
 // MARK: - Ring Sweep
@@ -232,9 +250,10 @@ struct UnifiedLimitRow: View {
             Spacer(minLength: 4)
 
             // 百分比：固定通道右对齐，所有行的百分号钉在同一条垂直线上（规范 24 节）
+            // 额度告急时文字变橙/变红（语义状态色，规范 12.4），字号字重不动以保住对齐通道
             Text(percentageLabel)
                 .font(.system(size: 12, weight: .semibold).monospacedDigit())
-                .foregroundColor(.primary)
+                .foregroundColor(percentageColor)
                 .lineLimit(1)
                 .multilineTextAlignment(.trailing)
                 .frame(width: UnifiedLimitRowMetrics.percentageColumnWidth, alignment: .trailing)
@@ -285,6 +304,17 @@ struct UnifiedLimitRow: View {
             usedPercentage: percentageValue,
             showRemainingMode: showRemainingMode
         )
+    }
+
+    /// 额度告急分级颜色：常规 primary，剩余≤20% 橙色警告，剩余≤5% 红色紧急
+    /// （系统语义色，深浅色模式自动适配；字号字重不动，三列对齐通道不受影响）
+    private var percentageColor: Color {
+        guard let percentageValue else { return .primary }
+        switch UsageRingDisplay.UrgencyLevel.from(usedPercentage: percentageValue, showRemainingMode: showRemainingMode) {
+        case .normal: return .primary
+        case .warning: return Color(nsColor: .systemOrange)
+        case .critical: return Color(nsColor: .systemRed)
+        }
     }
 
     private var percentageValue: Double? {
