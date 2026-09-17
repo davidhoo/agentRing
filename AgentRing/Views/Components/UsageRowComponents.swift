@@ -59,24 +59,7 @@ enum UsageRingDisplay {
     }
 }
 
-/// 大圆环中心百分比。
-struct DetailUsageRingCenterText: View {
-    let usedPercentage: Double
-    let showRemainingMode: Bool
-    var fontSize: CGFloat = 22
-
-    var body: some View {
-        Text(
-            UsageRingDisplay.percentLabel(
-                usedPercentage: usedPercentage,
-                showRemainingMode: showRemainingMode
-            )
-        )
-        .font(.system(size: fontSize, weight: .bold))
-        .id(showRemainingMode ? "remaining" : "used")
-        .transition(.scale(scale: 0.92).combined(with: .opacity))
-    }
-}
+// MARK: - Ring Sweep
 
 /// 剩余/已用模式切换时的一次性外侧扫光。
 struct DetailUsageRingSweep: View {
