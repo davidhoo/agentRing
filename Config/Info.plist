@@ -46,5 +46,7 @@
     <true/>
     <key>NSHumanReadableCopyright</key>
     <string></string>
+    <key>NSBluetoothAlwaysUsageDescription</key>
+    <string>Agent Ring 需要蓝牙权限以向 Android 桌面副屏推送用量额度数据</string>
 </dict>
 </plist>

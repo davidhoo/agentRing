@@ -156,9 +156,13 @@ struct CodexCoreUsageResponse: Codable, Sendable {
             secondaryWindow = nil
         }
 
-        let primary = primaryWindow.map {
-            CodexCoreUsageData.LimitData(percentage: $0.used_percent, resetsAt: resetDate(for: $0))
-        }
+        let primary: CodexCoreUsageData.LimitData? = {
+            guard let window = primaryWindow else { return nil }
+            if window.used_percent == 0 && window.reset_at == nil && window.reset_after_seconds == nil {
+                return nil
+            }
+            return CodexCoreUsageData.LimitData(percentage: window.used_percent, resetsAt: resetDate(for: window))
+        }()
 
         let secondary: CodexCoreUsageData.LimitData? = {
             guard let window = secondaryWindow else { return nil }

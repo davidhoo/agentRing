@@ -6,6 +6,8 @@
 	<true/>
 	<key>com.apple.security.network.client</key>
 	<true/>
+	<key>com.apple.security.device.bluetooth</key>
+	<true/>
 	<!--
 	  OAuth 登录在本地起一个短时 NWListener（loopback）接收系统浏览器
 	  重定向回来的授权码。App Sandbox 下监听传入连接需要此 entitlement，

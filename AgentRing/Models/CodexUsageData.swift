@@ -149,6 +149,8 @@ nonisolated struct CodexUsageResponse: Codable, Sendable {
 
         let primary: CodexUsageData.LimitData? = {
             guard let w = primaryWindow else { return nil }
+            // 如果 used_percent 为 0 且无重置信息，视为无效数据
+            if w.used_percent == 0 && w.reset_at == nil && w.reset_after_seconds == nil { return nil }
             let resetsAt = resolvedResetDate(for: w)
             return .init(percentage: w.used_percent, resetsAt: resetsAt)
         }()
