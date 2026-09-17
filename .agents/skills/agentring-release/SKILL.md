@@ -33,40 +33,49 @@ git ls-remote --tags origin "refs/tags/v<VERSION>"
 ```
 If the tag exists, stop and request a new version number from the user.
 
-### Step 2: Bump Xcode Version
+### Step 2: Preview Changelog
+Generate and preview the categorized changelog comparing the previous release tag with the commits to be released:
+```bash
+PREVIOUS_TAG=$(git describe --tags --abbrev=0)
+swift Scripts/generate-changelog.swift "$PREVIOUS_TAG" HEAD
+```
+Verify that all intended bug fixes, features, and documentation changes are properly reflected, and confirm that version bump noise is excluded.
+
+### Step 3: Bump Xcode Version
 Execute the version update script:
 ```bash
 bash Scripts/set-version.sh <VERSION>
 ```
 Verify that `AgentRing.xcodeproj/project.pbxproj` has been updated with the new `MARKETING_VERSION`.
 
-### Step 3: Commit the Release Version
+### Step 4: Commit the Release Version
 Stage all changed files and create the release commit:
 ```bash
 git add -A
 git commit -m "chore(release): v<VERSION>"
 ```
 
-### Step 4: Push to Main Branch
+### Step 5: Push to Main Branch
 Push the version bump commit to GitHub:
 ```bash
 git push origin main
 ```
 
-### Step 5: Create and Push the Release Tag
+### Step 6: Create and Push the Release Tag
 Create the release tag (lightweight, matching the historical convention of this repository) and push it to trigger the automated Release workflow:
 ```bash
 git tag v<VERSION>
 git push origin v<VERSION>
 ```
 
-### Step 6: Monitor GitHub Actions Workflow
+### Step 7: Monitor GitHub Actions Workflow
 Once the tag is pushed, GitHub Actions automatically executes the `.github/workflows/release.yml` workflow:
 - Builds universal binaries for `arm64` and `x86_64`
 - Performs ad-hoc nested code signing
 - Generates and signs `appcast.xml` with the repository's Sparkle EdDSA private key
 - Builds and packages `AgentRing-<VERSION>-macos.dmg`
-- Publishes the final GitHub Release (with DMG and appcast.xml attached)
+- Generates categorized release notes via `Scripts/generate-changelog.swift` comparing the previous tag with the new release
+- Publishes the final GitHub Release (with DMG, appcast.xml, and the categorized changelog attached)
 
 To monitor progress from terminal:
 ```bash

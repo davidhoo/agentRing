@@ -42,6 +42,9 @@ jobs:
       - name: Validate updater release tooling
         run: bash Scripts/test-release-tools.sh
 
+      - name: Validate changelog generator
+        run: bash Scripts/test-changelog.sh
+
       - name: Validate encrypted credential store
         run: bash Scripts/test-credential-store.sh
 

@@ -27,6 +27,8 @@ jobs:
       DEVELOPER_DIR: /Applications/Xcode.app/Contents/Developer
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Prepare version and signing public key
         id: config
@@ -163,8 +165,10 @@ jobs:
               exit 1
             fi
           else
+            PREVIOUS_TAG=$(jq -r .tag_name "$RUNNER_TEMP/previous-release.json" 2>/dev/null || "")
+            swift Scripts/generate-changelog.swift "$PREVIOUS_TAG" "$GITHUB_REF_NAME" docs/release-installation.md "$GITHUB_REPOSITORY" > "$RUNNER_TEMP/release-notes.md"
             gh release create "$GITHUB_REF_NAME" --draft --verify-tag --title "Agent Ring $VERSION" \
-              --generate-notes --notes-file docs/release-installation.md
+              --notes-file "$RUNNER_TEMP/release-notes.md"
           fi
           if gh release view "$GITHUB_REF_NAME" --json assets --jq '.assets[].name' | grep -qi '\.zip$'; then
             echo "::error::Draft contains a ZIP asset that would trigger the legacy installer. Remove it manually before retrying."
