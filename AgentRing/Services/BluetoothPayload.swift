@@ -213,8 +213,7 @@ enum BluetoothPayloadBuilder {
             rows.append(row(
                 label: L.DetailRow.cursorOnDemand,
                 percentage: onDemand.percentage,
-                resetsAt: onDemand.resetsAt,
-                percentText: onDemandPercentText(onDemand)
+                resetsAt: onDemand.resetsAt
             ))
         }
 
@@ -310,9 +309,13 @@ enum BluetoothPayloadBuilder {
         resetsAt: Date?,
         percentText: String? = nil
     ) -> BluetoothSyncPayload.RowPayload {
-        BluetoothSyncPayload.RowPayload(
+        let percentString = percentText ?? UsageRingDisplay.percentLabel(
+            usedPercentage: percentage,
+            showRemainingMode: UserSettings.shared.showRemainingMode
+        )
+        return BluetoothSyncPayload.RowPayload(
             label: label,
-            percent: percentText ?? "\(Int(percentage.rounded()))%",
+            percent: percentString,
             reset: compactReset(resetsAt) ?? ""
         )
     }
