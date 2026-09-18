@@ -27,12 +27,24 @@ enum UsageRingDisplay {
     }
 
     /// One shared rounding rule so the big ring and detail rows never disagree.
+    /// 遵循业界标准临界保护（有效阈值 0.2%，与圆环 0.002 阈值同步）：
+    /// - < 0.2% 视为 0%（避免极小浮点残差误报 1%）
+    /// - 0.2% ~ 1.0% 保底显示 1%（实质微量额度保底）
+    /// - 99.0% ~ 99.8% 封顶显示 99%（实质微量消耗封顶）
+    /// - > 99.8% 视为 100%（极小消耗不扣为 99%）
     static func percentLabel(usedPercentage: Double, showRemainingMode: Bool) -> String {
         let displayed = displayedPercentage(
             usedPercentage: usedPercentage,
             showRemainingMode: showRemainingMode
         )
-        return "\(Int(displayed.rounded()))%"
+        let rounded: Int = {
+            if displayed < 0.2 { return 0 }
+            if displayed < 1.0 { return 1 }
+            if displayed >= 99.0 && displayed <= 99.8 { return 99 }
+            if displayed > 99.8 { return 100 }
+            return Int(displayed.rounded())
+        }()
+        return "\(rounded)%"
     }
 
     static func usedFraction(_ usedPercentage: Double) -> CGFloat {
