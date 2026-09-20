@@ -45,6 +45,7 @@ final class BluetoothSyncService: NSObject {
     /// 正在进行 SDP 查询的设备地址，防止重复发起
     private var queryingAddress: String?
     private var sdpQueryCompletion: ((BluetoothRFCOMMChannelID?) -> Void)?
+    private var wakeObserver: NSObjectProtocol?
 
     private let queue = DispatchQueue(label: "app.agentring.bluetooth")
 
@@ -61,6 +62,7 @@ final class BluetoothSyncService: NSObject {
             guard !self.isRunning else { return }
             self.isRunning = true
             Logger.bluetooth.notice("蓝牙同步服务启动")
+            self.setupWakeObserver()
             self.scheduleReconnectTimer(fireImmediately: true)
         }
     }
@@ -70,10 +72,43 @@ final class BluetoothSyncService: NSObject {
         queue.async { [weak self] in
             guard let self else { return }
             self.isRunning = false
+            self.removeWakeObserver()
             self.teardownConnection()
             self.reconnectTimer?.invalidate()
             self.reconnectTimer = nil
             Logger.bluetooth.notice("蓝牙同步服务停止")
+        }
+    }
+
+    // MARK: - 休眠唤醒监听
+
+    private func setupWakeObserver() {
+        DispatchQueue.main.async { [weak self] in
+            guard let self, self.wakeObserver == nil else { return }
+            self.wakeObserver = NSWorkspace.shared.notificationCenter.addObserver(
+                forName: NSWorkspace.didWakeNotification,
+                object: nil,
+                queue: .main
+            ) { [weak self] _ in
+                self?.handleSystemWake()
+            }
+        }
+    }
+
+    private func removeWakeObserver() {
+        DispatchQueue.main.async { [weak self] in
+            guard let self, let observer = self.wakeObserver else { return }
+            NSWorkspace.shared.notificationCenter.removeObserver(observer)
+            self.wakeObserver = nil
+        }
+    }
+
+    private func handleSystemWake() {
+        queue.async { [weak self] in
+            guard let self, self.isRunning else { return }
+            Logger.bluetooth.notice("系统从睡眠唤醒，重置副屏蓝牙链路并立即发起重连")
+            self.teardownConnection()
+            self.scheduleReconnectTimer(fireImmediately: true)
         }
     }
 
@@ -235,6 +270,7 @@ final class BluetoothSyncService: NSObject {
         // delegate 直接传入，确保断开回调从一开始就挂上
         let result = device.openRFCOMMChannelSync(&channel, withChannelID: channelID, delegate: self)
         if result == kIOReturnSuccess, let channel {
+            cancelConnectTimeout()
             rfcommChannel = channel
             Logger.bluetooth.notice("副屏 RFCOMM 通道已建立 (channel \(channelID))")
 
@@ -248,6 +284,7 @@ final class BluetoothSyncService: NSObject {
         }
 
         Logger.bluetooth.info("同步打开 RFCOMM 通道返回: \(result, privacy: .public)，尝试异步打开通道 \(channelID)...")
+        beginConnectTimeout()
         let asyncStatus = device.openRFCOMMChannelAsync(&channel, withChannelID: channelID, delegate: self)
         if asyncStatus != kIOReturnSuccess {
             Logger.bluetooth.info("异步发起 RFCOMM 通道失败: \(asyncStatus, privacy: .public)")
@@ -264,6 +301,8 @@ final class BluetoothSyncService: NSObject {
         }
         rfcommChannel = nil
         device = nil
+        queryingAddress = nil
+        sdpQueryCompletion = nil
         cancelConnectTimeout()
     }
 
@@ -364,6 +403,7 @@ extension BluetoothSyncService: IOBluetoothRFCOMMChannelDelegate {
     @objc func rfcommChannelOpenComplete(_ channel: IOBluetoothRFCOMMChannel!, status: IOReturn) {
         queue.async { [weak self] in
             guard let self else { return }
+            self.cancelConnectTimeout()
             guard status == kIOReturnSuccess, let channel else {
                 Logger.bluetooth.info("异步打开 RFCOMM 通道失败: \(status, privacy: .public)")
                 self.teardownConnection()
