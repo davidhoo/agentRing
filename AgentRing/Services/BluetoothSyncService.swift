@@ -337,34 +337,41 @@ final class BluetoothSyncService: NSObject {
 
     private func write(line: String, to channel: IOBluetoothRFCOMMChannel) {
         let data = Data((line + "\n").utf8)
+        guard !data.isEmpty else { return }
+
+        // 优先通过 writeSync 单次发送完整报文（底层 L2CAP 自动处理分段，避免上层紧凑写入导致 credit 耗尽）
+        let status = writeRaw(data, to: channel)
+        if status == kIOReturnSuccess {
+            Logger.bluetooth.debug("蓝牙写入 \(data.count) 字节")
+            return
+        }
+
+        // 若单次写入返回失败且超出了通道 MTU，降级按 MTU 分段发送并微休眠让出发送信用额度 (credit)
         let mtu = Int(channel.getMTU())
         if mtu > 0 && data.count > mtu {
-            // RFCOMM 单次写入不得超过 MTU；报文按 MTU 分段
             var offset = 0
             var segments = 0
             while offset < data.count {
                 let end = min(offset + mtu, data.count)
                 let chunk = data.subdata(in: offset..<end)
-                let status = writeRaw(chunk, to: channel)
-                if status != kIOReturnSuccess {
-                    Logger.bluetooth.error("蓝牙写入分段失败: \(status, privacy: .public)")
+                let segStatus = writeRaw(chunk, to: channel)
+                if segStatus != kIOReturnSuccess {
+                    Logger.bluetooth.error("蓝牙写入分段失败: \(segStatus, privacy: .public)")
                     teardownConnection()
                     return
                 }
                 offset = end
                 segments += 1
+                if offset < data.count {
+                    usleep(15_000) // 15ms 让出底层 RFCOMM credit
+                }
             }
-            Logger.bluetooth.debug("蓝牙写入 \(data.count) 字节（分 \(segments) 段）")
+            Logger.bluetooth.debug("蓝牙分段写入 \(data.count) 字节（分 \(segments) 段）")
             return
         }
 
-        let status = writeRaw(data, to: channel)
-        if status == kIOReturnSuccess {
-            Logger.bluetooth.debug("蓝牙写入 \(data.count) 字节")
-        } else {
-            Logger.bluetooth.error("蓝牙写入失败: \(status, privacy: .public)")
-            teardownConnection()
-        }
+        Logger.bluetooth.error("蓝牙写入失败: \(status, privacy: .public)")
+        teardownConnection()
     }
 }
 
